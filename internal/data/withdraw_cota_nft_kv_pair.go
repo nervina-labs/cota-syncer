@@ -15,7 +15,6 @@ type WithdrawCotaNftKvPair struct {
 	BlockNumber         uint64
 	CotaId              string
 	CotaIdCRC           uint32
-	Total               uint32
 	TokenIndex          uint32
 	OutPoint            string
 	OutPointCrc         uint32

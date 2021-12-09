@@ -9,7 +9,6 @@ type HoldCotaNftKvPair struct {
 	BlockNumber    uint64
 	CotaId         string
 	CotaIdCRC      uint32
-	Total          uint32
 	TokenIndex     uint32
 	State          uint8
 	Configure      uint8
