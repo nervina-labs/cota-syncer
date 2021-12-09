@@ -6,9 +6,9 @@ import (
 	"github.com/nervina-labs/compact-nft-entries-syncer/internal/logger"
 )
 
-var _ biz.HoldCotaNftKVPairRepo = (*holdCotaNftKVPairRepo)(nil)
+var _ biz.HoldCotaNftKvPairRepo = (*holdCotaNftKvPairRepo)(nil)
 
-type HoldCotaNftKVPair struct {
+type HoldCotaNftKvPair struct {
 	BlockNumber    uint64
 	CotaId         string
 	CotaIdCRC      uint32
@@ -21,27 +21,27 @@ type HoldCotaNftKVPair struct {
 	LockHashCRC    uint32
 }
 
-func NewHoldCotaNftKVPairRepo(data *Data, logger *logger.Logger) *holdCotaNftKVPairRepo {
-	return &holdCotaNftKVPairRepo{
+func NewHoldCotaNftKvPairRepo(data *Data, logger *logger.Logger) *holdCotaNftKvPairRepo {
+	return &holdCotaNftKvPairRepo{
 		data:   data,
 		logger: logger,
 	}
 }
 
-type holdCotaNftKVPairRepo struct {
+type holdCotaNftKvPairRepo struct {
 	data   *Data
 	logger *logger.Logger
 }
 
-func (rp holdCotaNftKVPairRepo) CreateHoldCotaNftKVPair(ctx context.Context, h *biz.HoldCotaNftKVPair) error {
+func (rp holdCotaNftKvPairRepo) CreateHoldCotaNftKvPair(ctx context.Context, h *biz.HoldCotaNftKvPair) error {
 	if err := rp.data.db.WithContext(ctx).Create(h).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-func (rp holdCotaNftKVPairRepo) DeleteHoldCotaNftKVPairs(ctx context.Context, blockNumber uint64) error {
-	if err := rp.data.db.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(HoldCotaNftKVPair{}).Error; err != nil {
+func (rp holdCotaNftKvPairRepo) DeleteHoldCotaNftKvPairs(ctx context.Context, blockNumber uint64) error {
+	if err := rp.data.db.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(HoldCotaNftKvPair{}).Error; err != nil {
 		return err
 	}
 	return nil

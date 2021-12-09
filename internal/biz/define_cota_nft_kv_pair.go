@@ -5,7 +5,7 @@ import (
 	"github.com/nervina-labs/compact-nft-entries-syncer/internal/logger"
 )
 
-type DefineCotaNftKVPair struct {
+type DefineCotaNftKvPair struct {
 	BlockNumber uint64
 	CotaId      string
 	CotaIdCRC   uint32
@@ -16,27 +16,27 @@ type DefineCotaNftKVPair struct {
 	LockHashCRC uint32
 }
 
-type DefineCotaNftKVPairRepo interface {
-	CreateDefineCotaNftKVPair(ctx context.Context, d *DefineCotaNftKVPair) error
-	DeleteDefineCotaNftKVPairs(ctx context.Context, blockNumber uint64) error
+type DefineCotaNftKvPairRepo interface {
+	CreateDefineCotaNftKvPair(ctx context.Context, d *DefineCotaNftKvPair) error
+	DeleteDefineCotaNftKvPairs(ctx context.Context, blockNumber uint64) error
 }
 
-type DefineCotaNftKVPairUsecase struct {
-	repo   DefineCotaNftKVPairRepo
+type DefineCotaNftKvPairUsecase struct {
+	repo   DefineCotaNftKvPairRepo
 	logger *logger.Logger
 }
 
-func NewDefineCotaNftKVPairUsecase(repo DefineCotaNftKVPairRepo, logger *logger.Logger) *DefineCotaNftKVPairUsecase {
-	return &DefineCotaNftKVPairUsecase{
+func NewDefineCotaNftKvPairUsecase(repo DefineCotaNftKvPairRepo, logger *logger.Logger) *DefineCotaNftKvPairUsecase {
+	return &DefineCotaNftKvPairUsecase{
 		repo:   repo,
 		logger: logger,
 	}
 }
 
-func (uc *DefineCotaNftKVPairUsecase) Create(ctx context.Context, d *DefineCotaNftKVPair) error {
-	return uc.repo.CreateDefineCotaNftKVPair(ctx, d)
+func (uc *DefineCotaNftKvPairUsecase) Create(ctx context.Context, d *DefineCotaNftKvPair) error {
+	return uc.repo.CreateDefineCotaNftKvPair(ctx, d)
 }
 
-func (uc *DefineCotaNftKVPairUsecase) DeleteByBlockNumber(ctx context.Context, blockNumber uint64) error {
-	return uc.repo.DeleteDefineCotaNftKVPairs(ctx, blockNumber)
+func (uc *DefineCotaNftKvPairUsecase) DeleteByBlockNumber(ctx context.Context, blockNumber uint64) error {
+	return uc.repo.DeleteDefineCotaNftKvPairs(ctx, blockNumber)
 }

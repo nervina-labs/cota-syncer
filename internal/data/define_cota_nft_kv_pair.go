@@ -7,9 +7,9 @@ import (
 	"gorm.io/gorm"
 )
 
-var _ biz.DefineCotaNftKVPairRepo = (*defineCotaNftKVPairRepo)(nil)
+var _ biz.DefineCotaNftKvPairRepo = (*defineCotaNftKvPairRepo)(nil)
 
-type DefineCotaNftKVPair struct {
+type DefineCotaNftKvPair struct {
 	gorm.Model
 
 	BlockNumber uint64
@@ -22,26 +22,26 @@ type DefineCotaNftKVPair struct {
 	LockHashCRC uint32
 }
 
-func NewDefineCotaNftKVPairRepo(data *Data, logger *logger.Logger) *defineCotaNftKVPairRepo {
-	return &defineCotaNftKVPairRepo{
+func NewDefineCotaNftKvPairRepo(data *Data, logger *logger.Logger) *defineCotaNftKvPairRepo {
+	return &defineCotaNftKvPairRepo{
 		data:   data,
 		logger: logger,
 	}
 }
 
-type defineCotaNftKVPairRepo struct {
+type defineCotaNftKvPairRepo struct {
 	data   *Data
 	logger *logger.Logger
 }
 
-func (rp defineCotaNftKVPairRepo) CreateDefineCotaNftKVPair(ctx context.Context, d *biz.DefineCotaNftKVPair) error {
+func (rp defineCotaNftKvPairRepo) CreateDefineCotaNftKvPair(ctx context.Context, d *biz.DefineCotaNftKvPair) error {
 	if err := rp.data.db.WithContext(ctx).Create(d).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-func (rp defineCotaNftKVPairRepo) DeleteDefineCotaNftKVPairs(ctx context.Context, blockNumber uint64) error {
+func (rp defineCotaNftKvPairRepo) DeleteDefineCotaNftKvPairs(ctx context.Context, blockNumber uint64) error {
 	if err := rp.data.db.WithContext(ctx).Where("block_number = ?", blockNumber).Error; err != nil {
 		return err
 	}

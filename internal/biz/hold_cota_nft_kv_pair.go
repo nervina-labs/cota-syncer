@@ -5,7 +5,7 @@ import (
 	"github.com/nervina-labs/compact-nft-entries-syncer/internal/logger"
 )
 
-type HoldCotaNftKVPair struct {
+type HoldCotaNftKvPair struct {
 	BlockNumber    uint64
 	CotaId         string
 	CotaIdCRC      uint32
@@ -18,27 +18,27 @@ type HoldCotaNftKVPair struct {
 	LockHashCRC    uint32
 }
 
-type HoldCotaNftKVPairRepo interface {
-	CreateHoldCotaNftKVPair(ctx context.Context, h *HoldCotaNftKVPair) error
-	DeleteHoldCotaNftKVPairs(ctx context.Context, blockNumber uint64) error
+type HoldCotaNftKvPairRepo interface {
+	CreateHoldCotaNftKvPair(ctx context.Context, h *HoldCotaNftKvPair) error
+	DeleteHoldCotaNftKvPairs(ctx context.Context, blockNumber uint64) error
 }
 
-type HoldCotaNftKVPairUsecase struct {
-	repo   HoldCotaNftKVPairRepo
+type HoldCotaNftKvPairUsecase struct {
+	repo   HoldCotaNftKvPairRepo
 	logger *logger.Logger
 }
 
-func NewHoldCotaNftKVPairUsecase(repo HoldCotaNftKVPairRepo, logger *logger.Logger) *HoldCotaNftKVPairUsecase {
-	return &HoldCotaNftKVPairUsecase{
+func NewHoldCotaNftKvPairUsecase(repo HoldCotaNftKvPairRepo, logger *logger.Logger) *HoldCotaNftKvPairUsecase {
+	return &HoldCotaNftKvPairUsecase{
 		repo:   repo,
 		logger: logger,
 	}
 }
 
-func (uc *HoldCotaNftKVPairUsecase) Create(ctx context.Context, h *HoldCotaNftKVPair) error {
-	return uc.repo.CreateHoldCotaNftKVPair(ctx, h)
+func (uc *HoldCotaNftKvPairUsecase) Create(ctx context.Context, h *HoldCotaNftKvPair) error {
+	return uc.repo.CreateHoldCotaNftKvPair(ctx, h)
 }
 
-func (uc *HoldCotaNftKVPairUsecase) DeleteByBlockNumber(ctx context.Context, blockNumber uint64) error {
-	return uc.repo.DeleteHoldCotaNftKVPairs(ctx, blockNumber)
+func (uc *HoldCotaNftKvPairUsecase) DeleteByBlockNumber(ctx context.Context, blockNumber uint64) error {
+	return uc.repo.DeleteHoldCotaNftKvPairs(ctx, blockNumber)
 }

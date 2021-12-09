@@ -7,9 +7,9 @@ import (
 	"gorm.io/gorm"
 )
 
-var _ biz.RegisterCotaKVPairRepo = (*registerCotaKVPairRepo)(nil)
+var _ biz.RegisterCotaKvPairRepo = (*registerCotaKvPairRepo)(nil)
 
-type RegisterCotaKVPair struct {
+type RegisterCotaKvPair struct {
 	gorm.Model
 
 	BlockNumber uint64
@@ -17,27 +17,27 @@ type RegisterCotaKVPair struct {
 	LockHashCRC uint32
 }
 
-func NewRegisterCotaKVPairRepo(data *Data, logger *logger.Logger) *registerCotaKVPairRepo {
-	return &registerCotaKVPairRepo{
+func NewRegisterCotaKvPairRepo(data *Data, logger *logger.Logger) *registerCotaKvPairRepo {
+	return &registerCotaKvPairRepo{
 		data:   data,
 		logger: logger,
 	}
 }
 
-type registerCotaKVPairRepo struct {
+type registerCotaKvPairRepo struct {
 	data   *Data
 	logger *logger.Logger
 }
 
-func (rp registerCotaKVPairRepo) CreateRegisterCotaKVPair(ctx context.Context, register *biz.RegisterCotaKVPair) error {
+func (rp registerCotaKvPairRepo) CreateRegisterCotaKvPair(ctx context.Context, register *biz.RegisterCotaKvPair) error {
 	if err := rp.data.db.WithContext(ctx).Create(register).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-func (rp registerCotaKVPairRepo) DeleteRegisterCotaKVPairs(ctx context.Context, blockNumber uint64) error {
-	if err := rp.data.db.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(RegisterCotaKVPair{}).Error; err != nil {
+func (rp registerCotaKvPairRepo) DeleteRegisterCotaKvPairs(ctx context.Context, blockNumber uint64) error {
+	if err := rp.data.db.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(RegisterCotaKvPair{}).Error; err != nil {
 		return err
 	}
 	return nil

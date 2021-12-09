@@ -2,4 +2,4 @@ package biz
 
 import "github.com/google/wire"
 
-var ProviderSet = wire.NewSet(NewCheckInfoUsecase, NewRegisterCotaKVPairUsecase, NewDefineCotaNftKVPairUsecase)
+var ProviderSet = wire.NewSet(NewCheckInfoUsecase, NewRegisterCotaKvPairUsecase, NewDefineCotaNftKvPairUsecase, NewHoldCotaNftKvPairUsecase)
