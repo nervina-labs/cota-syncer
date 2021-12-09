@@ -29,8 +29,8 @@ type registerCotaKvPairRepo struct {
 	logger *logger.Logger
 }
 
-func (rp registerCotaKvPairRepo) CreateRegisterCotaKvPair(ctx context.Context, register *biz.RegisterCotaKvPair) error {
-	if err := rp.data.db.WithContext(ctx).Create(register).Error; err != nil {
+func (rp registerCotaKvPairRepo) CreateRegisterCotaKvPair(ctx context.Context, r *biz.RegisterCotaKvPair) error {
+	if err := rp.data.db.WithContext(ctx).Create(r).Error; err != nil {
 		return err
 	}
 	return nil
