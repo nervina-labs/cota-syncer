@@ -1,0 +1,16 @@
+data:
+  database:
+    driver: mysql
+    dsn: root@tcp(127.0.0.1:3306)/cota_entries?charset=utf8mb4&parseTime=True&multiStatements=true
+    max_idle_conns: 100
+    max_open_conns: 100
+    conn_max_lifetime: 10s
+app:
+  log_save_path: storage/logs
+  log_file_name: app
+  log_file_ext: .logger
+ckb_node:
+  rpc_url: http://localhost:8114
+  mode: testnet
+
+
