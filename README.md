@@ -1,1 +1,1 @@
-# compact-nft-entries-syncer
+# cota-nft-entries-syncer
