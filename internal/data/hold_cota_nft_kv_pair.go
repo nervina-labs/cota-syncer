@@ -20,16 +20,16 @@ type HoldCotaNftKvPair struct {
 	LockHashCRC    uint32
 }
 
-func NewHoldCotaNftKvPairRepo(data *Data, logger *logger.Logger) *holdCotaNftKvPairRepo {
+type holdCotaNftKvPairRepo struct {
+	data   *Data
+	logger *logger.Logger
+}
+
+func NewHoldCotaNftKvPairRepo(data *Data, logger *logger.Logger) biz.HoldCotaNftKvPairRepo {
 	return &holdCotaNftKvPairRepo{
 		data:   data,
 		logger: logger,
 	}
-}
-
-type holdCotaNftKvPairRepo struct {
-	data   *Data
-	logger *logger.Logger
 }
 
 func (rp holdCotaNftKvPairRepo) CreateHoldCotaNftKvPair(ctx context.Context, h *biz.HoldCotaNftKvPair) error {

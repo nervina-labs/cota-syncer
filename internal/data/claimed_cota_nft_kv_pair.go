@@ -2,8 +2,8 @@ package data
 
 import (
 	"context"
-	"github.com/docker/docker/daemon/logger"
 	"github.com/nervina-labs/compact-nft-entries-syncer/internal/biz"
+	"github.com/nervina-labs/compact-nft-entries-syncer/internal/logger"
 	"gorm.io/gorm"
 )
 
@@ -23,16 +23,16 @@ type ClaimedCotaNftKvPair struct {
 	LockHashCrc uint32
 }
 
-func NewClaimedCotaNftKvPairRepo(data *Data, logger *logger.Logger) *claimedCotaNftKvPairRepo {
+type claimedCotaNftKvPairRepo struct {
+	data   *Data
+	logger *logger.Logger
+}
+
+func NewClaimedCotaNftKvPairRepo(data *Data, logger *logger.Logger) biz.ClaimedCotaNftKvPairRepo {
 	return &claimedCotaNftKvPairRepo{
 		data:   data,
 		logger: logger,
 	}
-}
-
-type claimedCotaNftKvPairRepo struct {
-	data   *Data
-	logger *logger.Logger
 }
 
 func (rp claimedCotaNftKvPairRepo) CreateClaimedCotaNftKvPair(ctx context.Context, c *biz.ClaimedCotaNftKvPair) error {

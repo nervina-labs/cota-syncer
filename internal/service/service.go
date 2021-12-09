@@ -12,9 +12,14 @@ import (
 var ProviderSet = wire.NewSet(NewSyncService)
 
 type SyncService struct {
-	checkInfoUsecase *biz.CheckInfoUsecase
-	logger           *logger.Logger
-	client           *data.CkbNodeClient
+	checkInfoUsecase    *biz.CheckInfoUsecase
+	claimedCotaUsecase  *biz.ClaimedCotaNftKvPairUsecase
+	defineCotaUsecase   *biz.DefineCotaNftKvPairUsecase
+	holdCotaUsecase     *biz.HoldCotaNftKvPairUsecase
+	registerCotaUsecase *biz.RegisterCotaKvPairUsecase
+	withdrawCotaUsecase *biz.WithdrawCotaNftKvPairUsecase
+	logger              *logger.Logger
+	client              *data.CkbNodeClient
 }
 
 func (s *SyncService) Start(ctx context.Context) error {
@@ -41,11 +46,16 @@ func (s *SyncService) Stop(ctx context.Context) error {
 	return nil
 }
 
-func NewSyncService(checkInfoUsecase *biz.CheckInfoUsecase, logger *logger.Logger, client *data.CkbNodeClient) *SyncService {
+func NewSyncService(checkInfoUsecase *biz.CheckInfoUsecase, claimedCotaUsecase *biz.ClaimedCotaNftKvPairUsecase, defineCotaUsecase *biz.DefineCotaNftKvPairUsecase, holdCotaUsecase *biz.HoldCotaNftKvPairUsecase, registerCotaUsecase *biz.RegisterCotaKvPairUsecase, withdrawCotaUsecase *biz.WithdrawCotaNftKvPairUsecase, logger *logger.Logger, client *data.CkbNodeClient) *SyncService {
 	return &SyncService{
-		checkInfoUsecase: checkInfoUsecase,
-		logger:           logger,
-		client:           client,
+		checkInfoUsecase:    checkInfoUsecase,
+		claimedCotaUsecase:  claimedCotaUsecase,
+		defineCotaUsecase:   defineCotaUsecase,
+		holdCotaUsecase:     holdCotaUsecase,
+		registerCotaUsecase: registerCotaUsecase,
+		withdrawCotaUsecase: withdrawCotaUsecase,
+		logger:              logger,
+		client:              client,
 	}
 }
 

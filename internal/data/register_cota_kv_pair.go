@@ -17,16 +17,16 @@ type RegisterCotaKvPair struct {
 	LockHashCRC uint32
 }
 
-func NewRegisterCotaKvPairRepo(data *Data, logger *logger.Logger) *registerCotaKvPairRepo {
+type registerCotaKvPairRepo struct {
+	data   *Data
+	logger *logger.Logger
+}
+
+func NewRegisterCotaKvPairRepo(data *Data, logger *logger.Logger) biz.RegisterCotaKvPairRepo {
 	return &registerCotaKvPairRepo{
 		data:   data,
 		logger: logger,
 	}
-}
-
-type registerCotaKvPairRepo struct {
-	data   *Data
-	logger *logger.Logger
 }
 
 func (rp registerCotaKvPairRepo) CreateRegisterCotaKvPair(ctx context.Context, r *biz.RegisterCotaKvPair) error {

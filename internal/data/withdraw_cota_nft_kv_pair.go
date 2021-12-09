@@ -27,16 +27,16 @@ type WithdrawCotaNftKvPair struct {
 	LockHashCrc         uint32
 }
 
-func NewWithdrawCotaNftKvPairRepo(data *Data, logger *logger.Logger) *withdrawCotaNftKvPairRepo {
+type withdrawCotaNftKvPairRepo struct {
+	data   *Data
+	logger *logger.Logger
+}
+
+func NewWithdrawCotaNftKvPairRepo(data *Data, logger *logger.Logger) biz.WithdrawCotaNftKvPairRepo {
 	return &withdrawCotaNftKvPairRepo{
 		data:   data,
 		logger: logger,
 	}
-}
-
-type withdrawCotaNftKvPairRepo struct {
-	data   *Data
-	logger *logger.Logger
 }
 
 func (rp withdrawCotaNftKvPairRepo) CreateWithdrawCotaNftKvPair(ctx context.Context, w *biz.WithdrawCotaNftKvPair) error {

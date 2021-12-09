@@ -22,14 +22,24 @@ func initApp(database *config.Database, ckbNode *config.CkbNode, loggerLogger *l
 	if err != nil {
 		return nil, nil, err
 	}
-	tipBlockRepo := data.NewTipBlockRepo(dataData, loggerLogger)
-	tipBlockUsecase := biz.NewTipBlockUsecase(tipBlockRepo, loggerLogger)
+	checkInfoRepo := data.NewCheckInfoRepo(dataData, loggerLogger)
+	checkInfoUsecase := biz.NewCheckInfoUsecase(checkInfoRepo, loggerLogger)
+	claimedCotaNftKvPairRepo := data.NewClaimedCotaNftKvPairRepo(dataData, loggerLogger)
+	claimedCotaNftKvPairUsecase := biz.NewClaimedCotaNftKvPairUsecase(claimedCotaNftKvPairRepo, loggerLogger)
+	defineCotaNftKvPairRepo := data.NewDefineCotaNftKvPairRepo(dataData, loggerLogger)
+	defineCotaNftKvPairUsecase := biz.NewDefineCotaNftKvPairUsecase(defineCotaNftKvPairRepo, loggerLogger)
+	holdCotaNftKvPairRepo := data.NewHoldCotaNftKvPairRepo(dataData, loggerLogger)
+	holdCotaNftKvPairUsecase := biz.NewHoldCotaNftKvPairUsecase(holdCotaNftKvPairRepo, loggerLogger)
+	registerCotaKvPairRepo := data.NewRegisterCotaKvPairRepo(dataData, loggerLogger)
+	registerCotaKvPairUsecase := biz.NewRegisterCotaKvPairUsecase(registerCotaKvPairRepo, loggerLogger)
+	withdrawCotaNftKvPairRepo := data.NewWithdrawCotaNftKvPairRepo(dataData, loggerLogger)
+	withdrawCotaNftKvPairUsecase := biz.NewWithdrawCotaNftKvPairUsecase(withdrawCotaNftKvPairRepo, loggerLogger)
 	ckbNodeClient, err := data.NewCkbNodeClient(ckbNode, loggerLogger)
 	if err != nil {
 		cleanup()
 		return nil, nil, err
 	}
-	syncService := service.NewSyncService(tipBlockUsecase, loggerLogger, ckbNodeClient)
+	syncService := service.NewSyncService(checkInfoUsecase, claimedCotaNftKvPairUsecase, defineCotaNftKvPairUsecase, holdCotaNftKvPairUsecase, registerCotaKvPairUsecase, withdrawCotaNftKvPairUsecase, loggerLogger, ckbNodeClient)
 	dbMigration := data.NewDBMigration(dataData, loggerLogger)
 	appApp := newApp(loggerLogger, syncService, dbMigration)
 	return appApp, func() {

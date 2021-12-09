@@ -22,16 +22,16 @@ type DefineCotaNftKvPair struct {
 	LockHashCRC uint32
 }
 
-func NewDefineCotaNftKvPairRepo(data *Data, logger *logger.Logger) *defineCotaNftKvPairRepo {
+type defineCotaNftKvPairRepo struct {
+	data   *Data
+	logger *logger.Logger
+}
+
+func NewDefineCotaNftKvPairRepo(data *Data, logger *logger.Logger) biz.DefineCotaNftKvPairRepo {
 	return &defineCotaNftKvPairRepo{
 		data:   data,
 		logger: logger,
 	}
-}
-
-type defineCotaNftKvPairRepo struct {
-	data   *Data
-	logger *logger.Logger
 }
 
 func (rp defineCotaNftKvPairRepo) CreateDefineCotaNftKvPair(ctx context.Context, d *biz.DefineCotaNftKvPair) error {
