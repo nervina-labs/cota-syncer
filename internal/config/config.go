@@ -52,8 +52,8 @@ func NewSystemScripts(client rpc.Client, options ...SystemScriptOption) (*System
 		return nil, errors.WithMessage(err, "RPC get_blockchain_info error")
 	}
 	scripts := &SystemScripts{
-		CompactRegistryType: compactRegistryScript(chainInfo.Chain),
-		CompactNFTType:      compactNFTScript(chainInfo.Chain),
+		CompactRegistryType: cotaRegistryScript(chainInfo.Chain),
+		CompactNFTType:      cotaTypeScript(chainInfo.Chain),
 	}
 
 	for _, option := range options {
@@ -63,7 +63,7 @@ func NewSystemScripts(client rpc.Client, options ...SystemScriptOption) (*System
 	return scripts, nil
 }
 
-func compactRegistryScript(chain string) SystemScript {
+func cotaRegistryScript(chain string) SystemScript {
 	if chain == "ckb" {
 		return SystemScript{
 			CodeHash: ckbTypes.HexToHash("0x"),
@@ -86,7 +86,7 @@ func compactRegistryScript(chain string) SystemScript {
 	}
 }
 
-func compactNFTScript(chain string) SystemScript {
+func cotaTypeScript(chain string) SystemScript {
 	if chain == "ckb" {
 		return SystemScript{
 			CodeHash: ckbTypes.HexToHash("0x"),
