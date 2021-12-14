@@ -7,12 +7,12 @@
 package main
 
 import (
-	"github.com/nervina-labs/compact-nft-entries-syncer/internal/app"
-	"github.com/nervina-labs/compact-nft-entries-syncer/internal/biz"
-	"github.com/nervina-labs/compact-nft-entries-syncer/internal/config"
-	"github.com/nervina-labs/compact-nft-entries-syncer/internal/data"
-	"github.com/nervina-labs/compact-nft-entries-syncer/internal/logger"
-	"github.com/nervina-labs/compact-nft-entries-syncer/internal/service"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/app"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/config"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/data"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/service"
 )
 
 // Injectors from wire.go:
@@ -31,7 +31,19 @@ func initApp(database *config.Database, ckbNode *config.CkbNode, loggerLogger *l
 		cleanup()
 		return nil, nil, err
 	}
-	syncService := service.NewSyncService(checkInfoUsecase, syncKvPairUsecase, loggerLogger, ckbNodeClient)
+	systemScripts := data.NewSystemScripts(ckbNodeClient, loggerLogger)
+	claimedCotaNftKvPairRepo := data.NewClaimedCotaNftKvPairRepo(dataData, loggerLogger)
+	claimedCotaNftKvPairUsecase := biz.NewClaimedCotaNftKvPairUsecase(claimedCotaNftKvPairRepo, loggerLogger)
+	defineCotaNftKvPairRepo := data.NewDefineCotaNftKvPairRepo(dataData, loggerLogger)
+	defineCotaNftKvPairUsecase := biz.NewDefineCotaNftKvPairUsecase(defineCotaNftKvPairRepo, loggerLogger)
+	holdCotaNftKvPairRepo := data.NewHoldCotaNftKvPairRepo(dataData, loggerLogger)
+	holdCotaNftKvPairUsecase := biz.NewHoldCotaNftKvPairUsecase(holdCotaNftKvPairRepo, loggerLogger)
+	registerCotaKvPairRepo := data.NewRegisterCotaKvPairRepo(dataData, loggerLogger)
+	registerCotaKvPairUsecase := biz.NewRegisterCotaKvPairUsecase(registerCotaKvPairRepo, loggerLogger)
+	withdrawCotaNftKvPairRepo := data.NewWithdrawCotaNftKvPairRepo(dataData, loggerLogger)
+	withdrawCotaNftKvPairUsecase := biz.NewWithdrawCotaNftKvPairUsecase(withdrawCotaNftKvPairRepo, loggerLogger)
+	blockParser := data.NewBlockParser(claimedCotaNftKvPairUsecase, defineCotaNftKvPairUsecase, holdCotaNftKvPairUsecase, registerCotaKvPairUsecase, withdrawCotaNftKvPairUsecase)
+	syncService := service.NewSyncService(checkInfoUsecase, syncKvPairUsecase, loggerLogger, ckbNodeClient, systemScripts, blockParser)
 	dbMigration := data.NewDBMigration(dataData, loggerLogger)
 	appApp := newApp(loggerLogger, syncService, dbMigration)
 	return appApp, func() {

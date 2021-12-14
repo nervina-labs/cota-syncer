@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/nervina-labs/compact-nft-entries-syncer/internal/app"
-	"github.com/nervina-labs/compact-nft-entries-syncer/internal/config"
-	"github.com/nervina-labs/compact-nft-entries-syncer/internal/data"
-	"github.com/nervina-labs/compact-nft-entries-syncer/internal/logger"
-	"github.com/nervina-labs/compact-nft-entries-syncer/internal/service"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/app"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/config"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/data"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/service"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"log"
 	"os"
@@ -14,7 +14,7 @@ import (
 
 func newApp(logger *logger.Logger, service *service.SyncService, m *data.DBMigration) *app.App {
 	return app.NewApp(
-		app.Name("compact-nft-entries-syncer"),
+		app.Name("cota-nft-entries-syncer"),
 		app.Version("0.0.1"),
 		app.Logger(logger),
 		app.Services(service), app.Migration(m))

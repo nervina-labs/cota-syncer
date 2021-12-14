@@ -7,15 +7,16 @@ import (
 	mMsql "github.com/golang-migrate/migrate/v4/database/mysql"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/google/wire"
-	"github.com/nervina-labs/compact-nft-entries-syncer/internal/config"
-	"github.com/nervina-labs/compact-nft-entries-syncer/internal/logger"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/config"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
 	"github.com/nervosnetwork/ckb-sdk-go/rpc"
+	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 // ProviderSet is data providers
-var ProviderSet = wire.NewSet(NewData, NewDBMigration, NewCheckInfoRepo, NewRegisterCotaKvPairRepo, NewDefineCotaNftKvPairRepo, NewHoldCotaNftKvPairRepo, NewWithdrawCotaNftKvPairRepo, NewClaimedCotaNftKvPairRepo, NewKvPairRepo, NewCkbNodeClient)
+var ProviderSet = wire.NewSet(NewData, NewDBMigration, NewCheckInfoRepo, NewRegisterCotaKvPairRepo, NewDefineCotaNftKvPairRepo, NewHoldCotaNftKvPairRepo, NewWithdrawCotaNftKvPairRepo, NewClaimedCotaNftKvPairRepo, NewKvPairRepo, NewSystemScripts, NewBlockParser, NewCkbNodeClient)
 
 type Data struct {
 	db *gorm.DB
@@ -88,6 +89,77 @@ func (m *DBMigration) Up() error {
 		return err
 	}
 	return nil
+}
+
+type SystemScriptOption func(o *SystemScripts)
+
+type SystemScript struct {
+	CodeHash ckbTypes.Hash
+	HashType ckbTypes.ScriptHashType
+	OutPoint ckbTypes.OutPoint
+	DepType  ckbTypes.DepType
+}
+
+type SystemScripts struct {
+	CotaRegistryType SystemScript
+	CotaType         SystemScript
+}
+
+func NewSystemScripts(client *CkbNodeClient, logger *logger.Logger) SystemScripts {
+	chainInfo, err := client.Rpc.GetBlockchainInfo(context.Background())
+	if err != nil {
+		logger.Fatalf(context.Background(), "RPC get_blockchain_info error")
+	}
+	return SystemScripts{
+		CotaRegistryType: cotaRegistryScript(chainInfo.Chain),
+		CotaType:         cotaTypeScript(chainInfo.Chain),
+	}
+}
+
+func cotaRegistryScript(chain string) SystemScript {
+	if chain == "ckb" {
+		return SystemScript{
+			CodeHash: ckbTypes.HexToHash("0x"),
+			HashType: ckbTypes.HashTypeType,
+			OutPoint: ckbTypes.OutPoint{
+				TxHash: ckbTypes.HexToHash("0x"),
+				Index:  0,
+			},
+			DepType: ckbTypes.DepTypeDepGroup,
+		}
+	}
+	return SystemScript{
+		CodeHash: ckbTypes.HexToHash("0x3a6897ab78ad10d028d0c5ef375545e66bfdffd01f3a369b5b07906078e04f6d"),
+		HashType: ckbTypes.HashTypeType,
+		OutPoint: ckbTypes.OutPoint{
+			TxHash: ckbTypes.HexToHash("0x4410efbdfb83c58198a10eae621a3169c4f8f776cb4c2dd61b69947b1f4b922a"),
+			Index:  0,
+		},
+		DepType: ckbTypes.DepTypeDepGroup,
+	}
+}
+
+func cotaTypeScript(chain string) SystemScript {
+	if chain == "ckb" {
+		return SystemScript{
+			CodeHash: ckbTypes.HexToHash("0x"),
+			HashType: ckbTypes.HashTypeType,
+			OutPoint: ckbTypes.OutPoint{
+				TxHash: ckbTypes.HexToHash("0x"),
+				Index:  0,
+			},
+			DepType: ckbTypes.DepTypeDepGroup,
+		}
+	}
+	return SystemScript{
+		CodeHash: ckbTypes.HexToHash("0x"),
+		HashType: ckbTypes.HashTypeType,
+		OutPoint: ckbTypes.OutPoint{
+			TxHash: ckbTypes.HexToHash("0x"),
+			Index:  0,
+		},
+		DepType: ckbTypes.DepTypeDepGroup,
+	}
 }
 
 func (m *DBMigration) Down() error {

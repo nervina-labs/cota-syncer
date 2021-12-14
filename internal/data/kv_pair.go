@@ -3,8 +3,8 @@ package data
 import (
 	"context"
 	"fmt"
-	"github.com/nervina-labs/compact-nft-entries-syncer/internal/biz"
-	"github.com/nervina-labs/compact-nft-entries-syncer/internal/logger"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
 	"gorm.io/gorm"
 )
 

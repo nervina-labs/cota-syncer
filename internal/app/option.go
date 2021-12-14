@@ -7,9 +7,9 @@ package app
 
 import (
 	"context"
-	"github.com/nervina-labs/compact-nft-entries-syncer/internal/data"
-	"github.com/nervina-labs/compact-nft-entries-syncer/internal/logger"
-	"github.com/nervina-labs/compact-nft-entries-syncer/internal/service"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/data"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/service"
 	"os"
 	"time"
 )
