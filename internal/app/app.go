@@ -105,9 +105,9 @@ func (a *App) Run() error {
 }
 
 func (a *App) Stop() error {
-	a.options.logger.Infof(context.TODO(), "successfully stop the app: %v", a.Name())
 	if a.cancel != nil {
 		a.cancel()
+		a.options.logger.Infof(context.TODO(), "successfully stop the app: %v", a.Name())
 	}
 	return nil
 }

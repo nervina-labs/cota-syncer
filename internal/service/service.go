@@ -6,56 +6,97 @@ import (
 	"github.com/nervina-labs/compact-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/compact-nft-entries-syncer/internal/data"
 	"github.com/nervina-labs/compact-nft-entries-syncer/internal/logger"
+	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 	"time"
 )
 
 var ProviderSet = wire.NewSet(NewSyncService)
 
 type SyncService struct {
-	checkInfoUsecase    *biz.CheckInfoUsecase
-	claimedCotaUsecase  *biz.ClaimedCotaNftKvPairUsecase
-	defineCotaUsecase   *biz.DefineCotaNftKvPairUsecase
-	holdCotaUsecase     *biz.HoldCotaNftKvPairUsecase
-	registerCotaUsecase *biz.RegisterCotaKvPairUsecase
-	withdrawCotaUsecase *biz.WithdrawCotaNftKvPairUsecase
-	logger              *logger.Logger
-	client              *data.CkbNodeClient
+	checkInfoUsecase *biz.CheckInfoUsecase
+	kvPairUsecase    *biz.SyncKvPairUsecase
+	logger           *logger.Logger
+	client           *data.CkbNodeClient
+	status           chan struct{}
 }
 
 func (s *SyncService) Start(ctx context.Context) error {
 	s.logger.Info(ctx, "Successfully started the sync service~")
-	for {
-		number, err := s.client.Rpc.GetTipBlockNumber(ctx)
-		//block, err := s.client.Rpc.GetBlockByNumber(ctx, 30000)
-
-		if err != nil {
-			return err
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				s.status <- struct{}{}
+				s.logger.Infof(ctx, "receive cancel signal %v", ctx.Err())
+				return
+			default:
+				s.sync(ctx)
+				time.Sleep(1 * time.Second)
+			}
 		}
-		time.Sleep(1 * time.Second)
-		return s.sync(ctx, number)
+	}()
+	return nil
+}
+
+func (s *SyncService) sync(ctx context.Context) {
+	tipBlockNumber, err := s.client.Rpc.GetTipBlockNumber(ctx)
+	if err != nil {
+		s.logger.Errorf(ctx, "get tip block number rpc error: %v", err)
+	}
+	s.logger.Infof(ctx, "block_number: %v", tipBlockNumber)
+	checkInfo := biz.CheckInfo{CheckType: biz.SyncEvent}
+	err = s.checkInfoUsecase.FindOrCreate(ctx, &checkInfo)
+	if err != nil {
+		s.logger.Errorf(ctx, "get check info error: %v", err)
+	}
+	if checkInfo.BlockNumber > tipBlockNumber {
+		return
+	}
+
+	tipBlock, err := s.client.Rpc.GetBlockByNumber(ctx, checkInfo.BlockNumber)
+	if checkInfo.BlockHash != tipBlock.Header.ParentHash.String() {
+		s.logger.Info(ctx, "forked")
+		err = s.rollback(ctx, checkInfo.BlockNumber)
+		if err != nil {
+			s.logger.Errorf(ctx, "rollback error: %v", err)
+		}
+		return
+	}
+	// save key pairs
+	err = s.saveKvPairs(ctx, tipBlock)
+	if err != nil {
+		s.logger.Errorf(ctx, "save kv pairs error: %v", err)
 	}
 }
 
-func (s *SyncService) sync(ctx context.Context, blockNumber uint64) error {
-	s.logger.Infof(ctx, "current block number: %v", blockNumber)
-	return nil
+func (s *SyncService) saveKvPairs(ctx context.Context, block *ckbTypes.Block) error {
+	return s.kvPairUsecase.CreateKvPairs(ctx, &biz.KvPair{})
+}
+
+func (s *SyncService) rollback(ctx context.Context, blockNumber uint64) error {
+	return s.kvPairUsecase.DeleteKvPairs(ctx, blockNumber)
 }
 
 func (s *SyncService) Stop(ctx context.Context) error {
-	s.logger.Info(ctx, "Successfully closed the sync service~")
-	return nil
+	s.client.Rpc.Close()
+	for {
+		select {
+		case <-s.status:
+			s.logger.Info(ctx, "Successfully closed the sync service~")
+			return nil
+		default:
+			time.Sleep(1 * time.Second)
+		}
+	}
 }
 
-func NewSyncService(checkInfoUsecase *biz.CheckInfoUsecase, claimedCotaUsecase *biz.ClaimedCotaNftKvPairUsecase, defineCotaUsecase *biz.DefineCotaNftKvPairUsecase, holdCotaUsecase *biz.HoldCotaNftKvPairUsecase, registerCotaUsecase *biz.RegisterCotaKvPairUsecase, withdrawCotaUsecase *biz.WithdrawCotaNftKvPairUsecase, logger *logger.Logger, client *data.CkbNodeClient) *SyncService {
+func NewSyncService(checkInfoUsecase *biz.CheckInfoUsecase, kvPairUsecase *biz.SyncKvPairUsecase, logger *logger.Logger, client *data.CkbNodeClient) *SyncService {
 	return &SyncService{
-		checkInfoUsecase:    checkInfoUsecase,
-		claimedCotaUsecase:  claimedCotaUsecase,
-		defineCotaUsecase:   defineCotaUsecase,
-		holdCotaUsecase:     holdCotaUsecase,
-		registerCotaUsecase: registerCotaUsecase,
-		withdrawCotaUsecase: withdrawCotaUsecase,
-		logger:              logger,
-		client:              client,
+		checkInfoUsecase: checkInfoUsecase,
+		kvPairUsecase:    kvPairUsecase,
+		logger:           logger,
+		client:           client,
+		status:           make(chan struct{}, 1),
 	}
 }
 
