@@ -8,7 +8,6 @@ import (
 type RegisterCotaKvPair struct {
 	BlockNumber uint64
 	LockHash    string
-	LockHashCRC uint32
 }
 
 type RegisterCotaKvPairRepo interface {

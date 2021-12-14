@@ -13,17 +13,15 @@ CREATE TABLE IF NOT EXISTS register_cota_kv_pairs (
     id bigint NOT NULL AUTO_INCREMENT,
     block_number bigint unsigned NOT NULL,
     lock_hash char(64) NOT NULL,
-    lock_hash_crc int unsigned NOT NULL,
     PRIMARY KEY (id),
     KEY index_register_on_block_number (block_number),
-    KEY index_register_on_lock_hash_crc (lock_hash_crc)
+    CONSTRAINT uc_register_on_lock_hash UNIQUE (lock_hash)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE IF NOT EXISTS define_cota_nft_kv_pairs (
     id bigint NOT NULL AUTO_INCREMENT,
     block_number bigint unsigned NOT NULL,
     cota_id char(40) NOT NULL,
-    cota_id_crc int unsigned NOT NULL,
     total int unsigned NOT NULL,
     issued int unsigned NOT NULL,
     configure tinyint unsigned NOT NULL,
@@ -32,7 +30,7 @@ CREATE TABLE IF NOT EXISTS define_cota_nft_kv_pairs (
     PRIMARY KEY (id),
     KEY index_define_on_block_number (block_number),
     KEY index_define_on_lock_hash_crc (lock_hash_crc),
-    KEY index_define_on_cota_id_crc (cota_id_crc)
+    CONSTRAINT uc_define_on_cota_id UNIQUE (cota_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE IF NOT EXISTS hold_cota_nft_kv_pairs (

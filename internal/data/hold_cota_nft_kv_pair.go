@@ -4,11 +4,14 @@ import (
 	"context"
 	"github.com/nervina-labs/compact-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/compact-nft-entries-syncer/internal/logger"
+	"gorm.io/gorm"
 )
 
 var _ biz.HoldCotaNftKvPairRepo = (*holdCotaNftKvPairRepo)(nil)
 
 type HoldCotaNftKvPair struct {
+	gorm.Model
+
 	BlockNumber    uint64
 	CotaId         string
 	CotaIdCRC      uint32

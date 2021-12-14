@@ -14,7 +14,7 @@ type CheckInfo struct {
 
 	BlockNumber uint64
 	BlockHash   string
-	biz.CheckType
+	CheckType   biz.CheckType
 }
 
 type checkInfoRepo struct {
@@ -30,7 +30,7 @@ func NewCheckInfoRepo(data *Data, logger *logger.Logger) biz.CheckInfoRepo {
 }
 
 func (rp checkInfoRepo) FindOrCreateCheckInfo(ctx context.Context, info *biz.CheckInfo) error {
-	if err := rp.data.db.WithContext(ctx).FirstOrCreate(info, CheckInfo{BlockNumber: info.BlockNumber, CheckType: biz.CheckType(0)}).Error; err != nil {
+	if err := rp.data.db.WithContext(ctx).FirstOrCreate(info, CheckInfo{BlockNumber: info.BlockNumber, CheckType: info.CheckType}).Error; err != nil {
 		return err
 	}
 	return nil

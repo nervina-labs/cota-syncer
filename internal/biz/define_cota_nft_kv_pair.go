@@ -8,7 +8,6 @@ import (
 type DefineCotaNftKvPair struct {
 	BlockNumber uint64
 	CotaId      string
-	CotaIdCRC   uint32
 	Total       uint32
 	Issued      uint32
 	Configure   uint8
