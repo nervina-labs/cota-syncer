@@ -2,8 +2,12 @@ package data
 
 import (
 	"context"
+	"encoding/hex"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/data/blockchain"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
+	"github.com/nervina-labs/cota-smt-go/smt"
+	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 	"gorm.io/gorm"
 )
 
@@ -40,4 +44,22 @@ func (rp registerCotaKvPairRepo) DeleteRegisterCotaKvPairs(ctx context.Context, 
 		return err
 	}
 	return nil
+}
+
+func (rp registerCotaKvPairRepo) ParseRegistryEntries(_ context.Context, blockNumber uint64, tx *ckbTypes.Transaction) ([]biz.RegisterCotaKvPair, error) {
+	bytes, err := blockchain.WitnessArgsFromSliceUnchecked(tx.Witnesses[0]).InputType().IntoBytes()
+	if err != nil {
+		return []biz.RegisterCotaKvPair{}, err
+	}
+	registerWitnessType := bytes.RawData()
+	registryEntries := smt.RegistryVecFromSliceUnchecked(registerWitnessType)
+	registerCotas := make([]biz.RegisterCotaKvPair, registryEntries.Len())
+	for i := uint(0); i < registryEntries.Len(); i++ {
+		registryEntry := registryEntries.Get(i)
+		registerCotas = append(registerCotas, biz.RegisterCotaKvPair{
+			BlockNumber: blockNumber,
+			LockHash:    hex.EncodeToString(registryEntry.LockHash().RawData()),
+		})
+	}
+	return registerCotas, nil
 }
