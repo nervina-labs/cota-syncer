@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 	"github.com/google/wire"
-	"github.com/nervina-labs/compact-nft-entries-syncer/internal/biz"
-	"github.com/nervina-labs/compact-nft-entries-syncer/internal/data"
-	"github.com/nervina-labs/compact-nft-entries-syncer/internal/logger"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/data"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 	"time"
 )
@@ -18,6 +18,8 @@ type SyncService struct {
 	logger           *logger.Logger
 	client           *data.CkbNodeClient
 	status           chan struct{}
+	systemScripts    data.SystemScripts
+	blockParser      data.BlockParser
 }
 
 func (s *SyncService) Start(ctx context.Context) error {
@@ -54,6 +56,7 @@ func (s *SyncService) sync(ctx context.Context) {
 	}
 
 	tipBlock, err := s.client.Rpc.GetBlockByNumber(ctx, checkInfo.BlockNumber)
+	// rollback
 	if checkInfo.BlockHash != tipBlock.Header.ParentHash.String() {
 		s.logger.Info(ctx, "forked")
 		err = s.rollback(ctx, checkInfo.BlockNumber)
@@ -70,7 +73,11 @@ func (s *SyncService) sync(ctx context.Context) {
 }
 
 func (s *SyncService) saveKvPairs(ctx context.Context, block *ckbTypes.Block) error {
-	return s.kvPairUsecase.CreateKvPairs(ctx, &biz.KvPair{})
+	kvPair, err := s.blockParser.Parse(block, s.systemScripts)
+	if err != nil {
+		return err
+	}
+	return s.kvPairUsecase.CreateKvPairs(ctx, &kvPair)
 }
 
 func (s *SyncService) rollback(ctx context.Context, blockNumber uint64) error {
@@ -90,13 +97,15 @@ func (s *SyncService) Stop(ctx context.Context) error {
 	}
 }
 
-func NewSyncService(checkInfoUsecase *biz.CheckInfoUsecase, kvPairUsecase *biz.SyncKvPairUsecase, logger *logger.Logger, client *data.CkbNodeClient) *SyncService {
+func NewSyncService(checkInfoUsecase *biz.CheckInfoUsecase, kvPairUsecase *biz.SyncKvPairUsecase, logger *logger.Logger, client *data.CkbNodeClient, systemScripts data.SystemScripts, blockParser data.BlockParser) *SyncService {
 	return &SyncService{
 		checkInfoUsecase: checkInfoUsecase,
 		kvPairUsecase:    kvPairUsecase,
 		logger:           logger,
 		client:           client,
 		status:           make(chan struct{}, 1),
+		systemScripts:    systemScripts,
+		blockParser:      blockParser,
 	}
 }
 
