@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/data/blockchain"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 )
@@ -21,7 +22,7 @@ type cotaCell struct {
 	index  int
 }
 
-func (c CotaWitnessArgsParser) Parse(tx *ckbTypes.Transaction, cotaType SystemScript) ([][]byte, error) {
+func (c CotaWitnessArgsParser) Parse(tx *ckbTypes.Transaction, cotaType SystemScript) ([]biz.Entry, error) {
 	if !c.hasCotaCell(tx.Outputs, cotaType) {
 		return nil, nil
 	}
@@ -33,7 +34,7 @@ func (c CotaWitnessArgsParser) isCotaCell(output *ckbTypes.CellOutput, cotaType 
 }
 
 // inputs 中 cota cells 的个数一定与 outputs 中 cota cells 的个数相等
-func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, cotaType SystemScript) ([][]byte, error) {
+func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, cotaType SystemScript) ([]biz.Entry, error) {
 	inputCotaCellGroups, err := c.inputCotaCellGroups(tx.Inputs, cotaType)
 	if err != nil {
 		return nil, err
@@ -42,22 +43,25 @@ func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, cotaType Sy
 	if err != nil {
 		return nil, err
 	}
-	cotaCellIndexes := make([]int, len(outputCotaCellGroups))
+	cotaCells := make([]cotaCell, len(outputCotaCellGroups))
 	for typeHash := range outputCotaCellGroups {
 		cotaCell := inputCotaCellGroups[typeHash]
-		cotaCellIndexes = append(cotaCellIndexes, cotaCell.index)
+		cotaCells = append(cotaCells, cotaCell)
 	}
 
-	witnessArgs := [][]byte{{}}
-	for _, index := range cotaCellIndexes {
-		witness := tx.Witnesses[index]
+	var entries []biz.Entry
+	for _, cotaCell := range cotaCells {
+		witness := tx.Witnesses[cotaCell.index]
 		bytes, err := blockchain.WitnessArgsFromSliceUnchecked(witness).InputType().IntoBytes()
 		if err != nil {
 			return nil, err
 		}
-		witnessArgs = append(witnessArgs, bytes.RawData())
+		entries = append(entries, biz.Entry{
+			Witness:    bytes.RawData(),
+			LockScript: cotaCell.output.Lock,
+		})
 	}
-	return witnessArgs, nil
+	return entries, nil
 }
 
 func (c CotaWitnessArgsParser) inputCotaCellGroups(inputs []*ckbTypes.CellInput, cotaType SystemScript) (map[string]cotaCell, error) {
