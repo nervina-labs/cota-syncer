@@ -14,13 +14,30 @@ type HoldCotaNftKvPair struct {
 
 	BlockNumber    uint64
 	CotaId         string
-	CotaIdCRC      uint32
 	TokenIndex     uint32
 	State          uint8
 	Configure      uint8
 	Characteristic string
 	LockHash       string
 	LockHashCRC    uint32
+}
+
+type HoldCotaNftKvPairVersion struct {
+	gorm.Model
+
+	OldBlockNumber    uint64
+	BlockNumber       uint64
+	CotaId            string
+	TokenIndex        uint32
+	OldState          uint8
+	State             uint8
+	Configure         uint8
+	OldCharacteristic string
+	Characteristic    string
+	OldLockHash       string
+	LockHash          string
+	ActionType        uint8 //	0-create 1-update 2-delete
+	TxIndex           uint32
 }
 
 type holdCotaNftKvPairRepo struct {
