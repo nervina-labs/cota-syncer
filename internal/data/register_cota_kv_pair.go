@@ -52,10 +52,11 @@ func (rp registerCotaKvPairRepo) ParseRegistryEntries(_ context.Context, blockNu
 		return []biz.RegisterCotaKvPair{}, err
 	}
 	registerWitnessType := bytes.RawData()
-	registryEntries := smt.RegistryVecFromSliceUnchecked(registerWitnessType)
-	registerCotas := make([]biz.RegisterCotaKvPair, registryEntries.Len())
-	for i := uint(0); i < registryEntries.Len(); i++ {
-		registryEntry := registryEntries.Get(i)
+	registryEntries := smt.RegistryFromSliceUnchecked(registerWitnessType)
+	registryVec := smt.RegistryVecFromSliceUnchecked(registryEntries.AsSlice())
+	registerCotas := make([]biz.RegisterCotaKvPair, registryVec.Len())
+	for i := uint(0); i < registryVec.Len(); i++ {
+		registryEntry := registryVec.Get(i)
 		registerCotas = append(registerCotas, biz.RegisterCotaKvPair{
 			BlockNumber: blockNumber,
 			LockHash:    hex.EncodeToString(registryEntry.LockHash().RawData()),
