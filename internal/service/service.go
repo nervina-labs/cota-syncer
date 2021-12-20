@@ -14,12 +14,11 @@ var ProviderSet = wire.NewSet(NewSyncService)
 
 type SyncService struct {
 	checkInfoUsecase *biz.CheckInfoUsecase
-	kvPairUsecase    *biz.SyncKvPairUsecase
 	logger           *logger.Logger
 	client           *data.CkbNodeClient
 	status           chan struct{}
 	systemScripts    data.SystemScripts
-	blockParser      data.BlockParser
+	blockSyncer      data.BlockSyncer
 }
 
 func (s *SyncService) Start(ctx context.Context) error {
@@ -66,22 +65,18 @@ func (s *SyncService) sync(ctx context.Context) {
 		return
 	}
 	// save key pairs
-	err = s.saveKvPairs(ctx, tipBlock)
+	err = s.syncBlock(ctx, tipBlock)
 	if err != nil {
 		s.logger.Errorf(ctx, "save kv pairs error: %v", err)
 	}
 }
 
-func (s *SyncService) saveKvPairs(ctx context.Context, block *ckbTypes.Block) error {
-	kvPair, err := s.blockParser.Parse(block, s.systemScripts)
-	if err != nil {
-		return err
-	}
-	return s.kvPairUsecase.CreateKvPairs(ctx, &kvPair)
+func (s *SyncService) syncBlock(ctx context.Context, block *ckbTypes.Block) error {
+	return s.blockSyncer.Sync(ctx, block, s.systemScripts)
 }
 
 func (s *SyncService) rollback(ctx context.Context, blockNumber uint64) error {
-	return s.kvPairUsecase.DeleteKvPairs(ctx, blockNumber)
+	return s.blockSyncer.Rollback(ctx, blockNumber)
 }
 
 func (s *SyncService) Stop(ctx context.Context) error {
@@ -97,15 +92,14 @@ func (s *SyncService) Stop(ctx context.Context) error {
 	}
 }
 
-func NewSyncService(checkInfoUsecase *biz.CheckInfoUsecase, kvPairUsecase *biz.SyncKvPairUsecase, logger *logger.Logger, client *data.CkbNodeClient, systemScripts data.SystemScripts, blockParser data.BlockParser) *SyncService {
+func NewSyncService(checkInfoUsecase *biz.CheckInfoUsecase, logger *logger.Logger, client *data.CkbNodeClient, systemScripts data.SystemScripts, blockParser data.BlockSyncer) *SyncService {
 	return &SyncService{
 		checkInfoUsecase: checkInfoUsecase,
-		kvPairUsecase:    kvPairUsecase,
 		logger:           logger,
 		client:           client,
 		status:           make(chan struct{}, 1),
 		systemScripts:    systemScripts,
-		blockParser:      blockParser,
+		blockSyncer:      blockParser,
 	}
 }
 

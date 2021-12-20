@@ -6,16 +6,18 @@ import (
 )
 
 type KvPair struct {
-	Registers     []RegisterCotaKvPair
-	DefineCotas   []DefineCotaNftKvPair
-	HoldCotas     []HoldCotaNftKvPair
-	WithdrawCotas []WithdrawCotaNftKvPair
-	ClaimedCotas  []ClaimedCotaNftKvPair
+	Registers          []RegisterCotaKvPair
+	DefineCotas        []DefineCotaNftKvPair
+	UpdatedDefineCotas []DefineCotaNftKvPair
+	HoldCotas          []HoldCotaNftKvPair
+	UpdatedHoldCotas   []HoldCotaNftKvPair
+	WithdrawCotas      []WithdrawCotaNftKvPair
+	ClaimedCotas       []ClaimedCotaNftKvPair
 }
 
 type KvPairRepo interface {
-	CreateKvPairs(ctx context.Context, kvPair *KvPair) error
-	DeleteKvPairs(ctx context.Context, blockNumber uint64) error
+	CreateKvPairs(ctx context.Context, txIndex int, kvPair *KvPair) error
+	RestoreKvPairs(ctx context.Context, blockNumber uint64) error
 }
 
 type SyncKvPairUsecase struct {
@@ -30,10 +32,10 @@ func NewSyncKvPairUsecase(repo KvPairRepo, logger *logger.Logger) *SyncKvPairUse
 	}
 }
 
-func (uc SyncKvPairUsecase) CreateKvPairs(ctx context.Context, kvPair *KvPair) error {
-	return uc.repo.CreateKvPairs(ctx, kvPair)
+func (uc SyncKvPairUsecase) CreateKvPairs(ctx context.Context, txIndex int, kvPair *KvPair) error {
+	return uc.repo.CreateKvPairs(ctx, txIndex, kvPair)
 }
 
-func (uc SyncKvPairUsecase) DeleteKvPairs(ctx context.Context, blockNumber uint64) error {
-	return uc.repo.DeleteKvPairs(ctx, blockNumber)
+func (uc SyncKvPairUsecase) RestoreKvPairs(ctx context.Context, blockNumber uint64) error {
+	return uc.repo.RestoreKvPairs(ctx, blockNumber)
 }
