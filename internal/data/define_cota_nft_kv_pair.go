@@ -2,9 +2,13 @@ package data
 
 import (
 	"context"
+	"encoding/binary"
+	"encoding/hex"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
+	"github.com/nervina-labs/cota-smt-go/smt"
 	"gorm.io/gorm"
+	"hash/crc32"
 )
 
 var _ biz.DefineCotaNftKvPairRepo = (*defineCotaNftKvPairRepo)(nil)
@@ -60,4 +64,30 @@ func (rp defineCotaNftKvPairRepo) DeleteDefineCotaNftKvPairs(ctx context.Context
 		return err
 	}
 	return nil
+}
+
+func (rp defineCotaNftKvPairRepo) ParseDefineCotaEntries(blockNumber uint64, entry biz.Entry) (defineCotas []biz.DefineCotaNftKvPair, err error) {
+	entries := smt.DefineCotaNFTEntriesFromSliceUnchecked(entry.Witness[1:])
+	defineCotaKeyVec := entries.DefineKeys()
+	defineCotaValueVec := entries.DefineValues()
+	lockHash, err := entry.LockScript.Hash()
+	if err != nil {
+		return
+	}
+	lockHashStr := lockHash.String()
+	lockHashCRC32 := crc32.ChecksumIEEE([]byte(lockHashStr))
+	for i := uint(0); i < defineCotaKeyVec.Len(); i++ {
+		key := defineCotaKeyVec.Get(i)
+		value := defineCotaValueVec.Get(i)
+		defineCotas = append(defineCotas, biz.DefineCotaNftKvPair{
+			BlockNumber: blockNumber,
+			CotaId:      hex.EncodeToString(key.CotaId().RawData()),
+			Total:       binary.BigEndian.Uint32(value.Total().RawData()),
+			Issued:      binary.BigEndian.Uint32(value.Issued().RawData()),
+			Configure:   value.Configure().AsSlice()[0],
+			LockHash:    lockHashStr,
+			LockHashCRC: lockHashCRC32,
+		})
+	}
+	return
 }

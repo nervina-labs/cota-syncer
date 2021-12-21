@@ -18,6 +18,7 @@ type DefineCotaNftKvPair struct {
 type DefineCotaNftKvPairRepo interface {
 	CreateDefineCotaNftKvPair(ctx context.Context, d *DefineCotaNftKvPair) error
 	DeleteDefineCotaNftKvPairs(ctx context.Context, blockNumber uint64) error
+	ParseDefineCotaEntries(blockNumber uint64, entry Entry) ([]DefineCotaNftKvPair, error)
 }
 
 type DefineCotaNftKvPairUsecase struct {
@@ -38,4 +39,8 @@ func (uc *DefineCotaNftKvPairUsecase) Create(ctx context.Context, d *DefineCotaN
 
 func (uc *DefineCotaNftKvPairUsecase) DeleteByBlockNumber(ctx context.Context, blockNumber uint64) error {
 	return uc.repo.DeleteDefineCotaNftKvPairs(ctx, blockNumber)
+}
+
+func (uc *DefineCotaNftKvPairUsecase) ParseDefineCotaEntries(blockNumber uint64, entry Entry) ([]DefineCotaNftKvPair, error) {
+	return uc.repo.ParseDefineCotaEntries(blockNumber, entry)
 }
