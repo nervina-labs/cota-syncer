@@ -17,18 +17,18 @@ type mintCotaKvPairRepo struct {
 }
 
 func (rp mintCotaKvPairRepo) ParseMintCotaEntries(blockNumber uint64, entry biz.Entry) (updatedDefineCotas []biz.DefineCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
-	entries := smt.MintCotaNFTEntriesFromSliceUnchecked(entry.Witness)
+	entries := smt.MintCotaNFTEntriesFromSliceUnchecked(entry.Witness[1:])
 	defineCotaKeyVec := entries.DefineKeys()
 	defineCotaValueVec := entries.DefineNewValues()
 	lockHash, err := entry.LockScript.Hash()
+	if err != nil {
+		return
+	}
 	lockHashStr := lockHash.String()
 	lockHashCRC32 := crc32.ChecksumIEEE([]byte(lockHashStr))
 	for i := uint(0); i < defineCotaKeyVec.Len(); i++ {
 		key := defineCotaKeyVec.Get(i)
 		value := defineCotaValueVec.Get(i)
-		if err != nil {
-			return
-		}
 		updatedDefineCotas = append(updatedDefineCotas, biz.DefineCotaNftKvPair{
 			BlockNumber: blockNumber,
 			CotaId:      hex.EncodeToString(key.CotaId().RawData()),
