@@ -16,6 +16,7 @@ func (t CheckType) String() string {
 }
 
 type CheckInfo struct {
+	Id          uint64
 	BlockNumber uint64
 	BlockHash   string
 	CheckType   CheckType
