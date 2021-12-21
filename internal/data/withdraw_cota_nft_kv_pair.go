@@ -7,15 +7,14 @@ import (
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
 	"github.com/nervina-labs/cota-smt-go/smt"
-	"gorm.io/gorm"
 	"hash/crc32"
+	"time"
 )
 
 var _ biz.WithdrawCotaNftKvPairRepo = (*withdrawCotaNftKvPairRepo)(nil)
 
 type WithdrawCotaNftKvPair struct {
-	gorm.Model
-
+	ID                  uint `gorm:"primaryKey"`
 	BlockNumber         uint64
 	CotaId              string
 	CotaIdCRC           uint32
@@ -29,6 +28,8 @@ type WithdrawCotaNftKvPair struct {
 	ReceiverLockHashCrc uint32
 	LockHash            string
 	LockHashCrc         uint32
+	CreatedAt           time.Time
+	UpdatedAt           time.Time
 }
 
 type withdrawCotaNftKvPairRepo struct {

@@ -7,15 +7,14 @@ import (
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
 	"github.com/nervina-labs/cota-smt-go/smt"
-	"gorm.io/gorm"
 	"hash/crc32"
+	"time"
 )
 
 var _ biz.DefineCotaNftKvPairRepo = (*defineCotaNftKvPairRepo)(nil)
 
 type DefineCotaNftKvPair struct {
-	gorm.Model
-
+	ID          uint `gorm:"primaryKey"`
 	BlockNumber uint64
 	CotaId      string
 	Total       uint32
@@ -23,11 +22,12 @@ type DefineCotaNftKvPair struct {
 	Configure   uint8
 	LockHash    string
 	LockHashCRC uint32
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type DefineCotaNftKvPairVersion struct {
-	gorm.Model
-
+	ID             uint `gorm:"primaryKey"`
 	OldBlockNumber uint64
 	BlockNumber    uint64
 	CotaId         string
@@ -37,7 +37,8 @@ type DefineCotaNftKvPairVersion struct {
 	Configure      uint8
 	LockHash       string
 	ActionType     uint8 //	0-create 1-update 2-delete
-	TxIndex        uint32
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
 }
 
 type defineCotaNftKvPairRepo struct {

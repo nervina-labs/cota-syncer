@@ -8,16 +8,17 @@ import (
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
 	"github.com/nervina-labs/cota-smt-go/smt"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
-	"gorm.io/gorm"
+	"time"
 )
 
 var _ biz.RegisterCotaKvPairRepo = (*registerCotaKvPairRepo)(nil)
 
 type RegisterCotaKvPair struct {
-	gorm.Model
-
+	ID          uint `gorm:"primaryKey"`
 	BlockNumber uint64
 	LockHash    string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type registerCotaKvPairRepo struct {
@@ -52,15 +53,16 @@ func (rp registerCotaKvPairRepo) ParseRegistryEntries(_ context.Context, blockNu
 		return []biz.RegisterCotaKvPair{}, err
 	}
 	registerWitnessType := bytes.RawData()
-	registryEntries := smt.RegistryFromSliceUnchecked(registerWitnessType)
-	registryVec := smt.RegistryVecFromSliceUnchecked(registryEntries.AsSlice())
+	registryEntries := smt.CotaNFTRegistryEntriesFromSliceUnchecked(registerWitnessType)
+	rp.logger.Infof(context.TODO(), "entries: %v", registryEntries)
+	registryVec := registryEntries.Registries()
 	registerCotas := make([]biz.RegisterCotaKvPair, registryVec.Len())
 	for i := uint(0); i < registryVec.Len(); i++ {
 		registryEntry := registryVec.Get(i)
-		registerCotas = append(registerCotas, biz.RegisterCotaKvPair{
+		registerCotas[i] = biz.RegisterCotaKvPair{
 			BlockNumber: blockNumber,
 			LockHash:    hex.EncodeToString(registryEntry.LockHash().RawData()),
-		})
+		}
 	}
 	return registerCotas, nil
 }

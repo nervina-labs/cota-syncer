@@ -4,17 +4,18 @@ import (
 	"context"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
-	"gorm.io/gorm"
+	"time"
 )
 
 var _ biz.CheckInfoRepo = (*checkInfoRepo)(nil)
 
 type CheckInfo struct {
-	gorm.Model
-
+	ID          uint `gorm:"primaryKey"`
 	BlockNumber uint64
 	BlockHash   string
 	CheckType   biz.CheckType
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type checkInfoRepo struct {
