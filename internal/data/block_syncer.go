@@ -14,23 +14,29 @@ type BlockSyncer struct {
 	withdrawCotaUsecase   *biz.WithdrawCotaNftKvPairUsecase
 	cotaWitnessArgsParser CotaWitnessArgsParser
 	kvPairUsecase         *biz.SyncKvPairUsecase
-	mintCotaUsecase       biz.MintCotaKvPairUsecase
+	mintCotaUsecase       *biz.MintCotaKvPairUsecase
 }
 
-func NewBlockParser(claimedCotaUsecase *biz.ClaimedCotaNftKvPairUsecase, defineCotaUsecase *biz.DefineCotaNftKvPairUsecase, holdCotaUsecase *biz.HoldCotaNftKvPairUsecase, registerCotaUsecase *biz.RegisterCotaKvPairUsecase, withdrawCotaUsecase *biz.WithdrawCotaNftKvPairUsecase, kvPairUsecase *biz.SyncKvPairUsecase) BlockSyncer {
+func NewBlockParser(claimedCotaUsecase *biz.ClaimedCotaNftKvPairUsecase, defineCotaUsecase *biz.DefineCotaNftKvPairUsecase,
+	holdCotaUsecase *biz.HoldCotaNftKvPairUsecase, registerCotaUsecase *biz.RegisterCotaKvPairUsecase,
+	withdrawCotaUsecase *biz.WithdrawCotaNftKvPairUsecase, cotaWitnessArgsParser CotaWitnessArgsParser,
+	kvPairUsecase *biz.SyncKvPairUsecase, mintCotaUsecase *biz.MintCotaKvPairUsecase) BlockSyncer {
 	return BlockSyncer{
-		claimedCotaUsecase:  claimedCotaUsecase,
-		defineCotaUsecase:   defineCotaUsecase,
-		holdCotaUsecase:     holdCotaUsecase,
-		registerCotaUsecase: registerCotaUsecase,
-		withdrawCotaUsecase: withdrawCotaUsecase,
-		kvPairUsecase:       kvPairUsecase,
+		claimedCotaUsecase:    claimedCotaUsecase,
+		defineCotaUsecase:     defineCotaUsecase,
+		holdCotaUsecase:       holdCotaUsecase,
+		registerCotaUsecase:   registerCotaUsecase,
+		withdrawCotaUsecase:   withdrawCotaUsecase,
+		cotaWitnessArgsParser: cotaWitnessArgsParser,
+		kvPairUsecase:         kvPairUsecase,
+		mintCotaUsecase:       mintCotaUsecase,
 	}
 }
 
-func (bp BlockSyncer) Sync(ctx context.Context, block *ckbTypes.Block, systemScripts SystemScripts) error {
-	for index, tx := range block.Transactions {
-		kvPair := biz.KvPair{}
+func (bp BlockSyncer) Sync(ctx context.Context, block *ckbTypes.Block, checkInfo biz.CheckInfo, systemScripts SystemScripts) error {
+	var entryVec []biz.Entry
+	kvPair := biz.KvPair{}
+	for _, tx := range block.Transactions {
 		// ParseRegistryEntries TODO 拆到独立到 repo 中
 		if bp.hasCotaRegistryCell(tx.Outputs, systemScripts.CotaRegistryType) {
 			registers, err := bp.registerCotaUsecase.ParseRegistryEntries(ctx, block.Header.Number, tx)
@@ -43,18 +49,21 @@ func (bp BlockSyncer) Sync(ctx context.Context, block *ckbTypes.Block, systemScr
 		if err != nil {
 			return err
 		}
-		pairs, err := bp.parseCotaEntries(block.Header.Number, entries)
-		kvPair.DefineCotas = pairs.DefineCotas
-		kvPair.WithdrawCotas = pairs.WithdrawCotas
-		err = bp.kvPairUsecase.CreateKvPairs(ctx, index, &pairs)
-		if err != nil {
-			return err
-		}
+		entryVec = append(entryVec, entries...)
+	}
+	pairs, err := bp.parseCotaEntries(block.Header.Number, entryVec)
+	pairs.Registers = kvPair.Registers
+	err = bp.kvPairUsecase.CreateKvPairs(ctx, checkInfo, &pairs)
+	if err != nil {
+		return err
 	}
 	return nil
 }
 
 func (bp BlockSyncer) isCotaRegistryCell(output *ckbTypes.CellOutput, registryType SystemScript) bool {
+	if output.Type == nil {
+		return false
+	}
 	return output.Type.CodeHash == registryType.CodeHash && output.Type.HashType == registryType.HashType && argsEq(output.Type.Args, registryType.Args)
 }
 
@@ -118,6 +127,9 @@ func (bp BlockSyncer) parseCotaEntries(blockNumber uint64, entries []biz.Entry) 
 }
 
 func argsEq(args1, args2 []byte) bool {
+	if args1 == nil || args2 == nil {
+		return false
+	}
 	if len(args1) != len(args2) {
 		return false
 	}
