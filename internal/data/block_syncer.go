@@ -55,7 +55,7 @@ func (bp BlockSyncer) Sync(ctx context.Context, block *ckbTypes.Block, systemScr
 }
 
 func (bp BlockSyncer) isCotaRegistryCell(output *ckbTypes.CellOutput, registryType SystemScript) bool {
-	return output.Type.CodeHash == registryType.CodeHash && output.Type.HashType == registryType.HashType
+	return output.Type.CodeHash == registryType.CodeHash && output.Type.HashType == registryType.HashType && argsEq(output.Type.Args, registryType.Args)
 }
 
 func (bp BlockSyncer) hasCotaRegistryCell(outputs []*ckbTypes.CellOutput, registryType SystemScript) (result bool) {
@@ -115,4 +115,16 @@ func (bp BlockSyncer) parseCotaEntries(blockNumber uint64, entries []biz.Entry) 
 		}
 	}
 	return kvPair, nil
+}
+
+func argsEq(args1, args2 []byte) bool {
+	if len(args1) != len(args2) {
+		return false
+	}
+	for i := range args1 {
+		if args1[i] != args2[i] {
+			return false
+		}
+	}
+	return true
 }

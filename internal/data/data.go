@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
 	"github.com/golang-migrate/migrate/v4"
 	mMsql "github.com/golang-migrate/migrate/v4/database/mysql"
@@ -98,6 +99,7 @@ type SystemScriptOption func(o *SystemScripts)
 type SystemScript struct {
 	CodeHash ckbTypes.Hash
 	HashType ckbTypes.ScriptHashType
+	Args     []byte
 	OutPoint ckbTypes.OutPoint
 	DepType  ckbTypes.DepType
 }
@@ -120,9 +122,11 @@ func NewSystemScripts(client *CkbNodeClient, logger *logger.Logger) SystemScript
 
 func cotaRegistryScript(chain string) SystemScript {
 	if chain == "ckb" {
+		args, _ := hex.DecodeString("")
 		return SystemScript{
 			CodeHash: ckbTypes.HexToHash("0x"),
 			HashType: ckbTypes.HashTypeType,
+			Args:     args,
 			OutPoint: ckbTypes.OutPoint{
 				TxHash: ckbTypes.HexToHash("0x"),
 				Index:  0,
@@ -130,9 +134,11 @@ func cotaRegistryScript(chain string) SystemScript {
 			DepType: ckbTypes.DepTypeDepGroup,
 		}
 	}
+	args, _ := hex.DecodeString("448a78650544bcf9b0ec1cf6d11d8cdc8fd9201b")
 	return SystemScript{
 		CodeHash: ckbTypes.HexToHash("0x3840d6b71a291f95430a24274206aa5b636319f17c955e780011c97d986070e3"),
 		HashType: ckbTypes.HashTypeType,
+		Args:     args,
 		OutPoint: ckbTypes.OutPoint{
 			TxHash: ckbTypes.HexToHash("0x349d6ffa2b7d11238365b592bf93af48f7fff76542ec3b025d35f26ca6927654"),
 			Index:  0,
