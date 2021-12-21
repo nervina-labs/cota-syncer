@@ -15,8 +15,53 @@ type KvPair struct {
 	ClaimedCotas       []ClaimedCotaNftKvPair
 }
 
+func (p KvPair) HasRegisters() bool {
+	if len(p.Registers) > 0 {
+		return true
+	}
+	return false
+}
+
+func (p KvPair) HasDefineCotas() bool {
+	if len(p.DefineCotas) > 0 {
+		return true
+	}
+	return false
+}
+
+func (p KvPair) HasUpdatedDefineCotas() bool {
+	if len(p.UpdatedDefineCotas) > 0 {
+		return true
+	}
+	return false
+}
+func (p KvPair) HasHoldCotas() bool {
+	if len(p.HoldCotas) > 0 {
+		return true
+	}
+	return false
+}
+func (p KvPair) HasUpdatedHoldCotas() bool {
+	if len(p.UpdatedHoldCotas) > 0 {
+		return true
+	}
+	return false
+}
+func (p KvPair) HasWithdrawCotas() bool {
+	if len(p.WithdrawCotas) > 0 {
+		return true
+	}
+	return false
+}
+func (p KvPair) HasClaimedCotas() bool {
+	if len(p.ClaimedCotas) > 0 {
+		return true
+	}
+	return false
+}
+
 type KvPairRepo interface {
-	CreateKvPairs(ctx context.Context, txIndex int, kvPair *KvPair) error
+	CreateKvPairs(ctx context.Context, checkInfo CheckInfo, kvPair *KvPair) error
 	RestoreKvPairs(ctx context.Context, blockNumber uint64) error
 }
 
@@ -32,8 +77,8 @@ func NewSyncKvPairUsecase(repo KvPairRepo, logger *logger.Logger) *SyncKvPairUse
 	}
 }
 
-func (uc SyncKvPairUsecase) CreateKvPairs(ctx context.Context, txIndex int, kvPair *KvPair) error {
-	return uc.repo.CreateKvPairs(ctx, txIndex, kvPair)
+func (uc SyncKvPairUsecase) CreateKvPairs(ctx context.Context, checkInfo CheckInfo, kvPair *KvPair) error {
+	return uc.repo.CreateKvPairs(ctx, checkInfo, kvPair)
 }
 
 func (uc SyncKvPairUsecase) RestoreKvPairs(ctx context.Context, blockNumber uint64) error {
