@@ -2,9 +2,13 @@ package data
 
 import (
 	"context"
+	"encoding/binary"
+	"encoding/hex"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
+	"github.com/nervina-labs/cota-smt-go/smt"
 	"gorm.io/gorm"
+	"hash/crc32"
 )
 
 var _ biz.ClaimedCotaNftKvPairRepo = (*claimedCotaNftKvPairRepo)(nil)
@@ -47,4 +51,47 @@ func (rp claimedCotaNftKvPairRepo) DeleteClaimedCotaNftKvPairs(ctx context.Conte
 		return err
 	}
 	return nil
+}
+
+func (rp claimedCotaNftKvPairRepo) ParseClaimedCotaEntries(blockNumber uint64, entry biz.Entry) (holdCotas []biz.HoldCotaNftKvPair, claimedCotas []biz.ClaimedCotaNftKvPair, err error) {
+	entries := smt.ClaimCotaNFTEntriesFromSliceUnchecked(entry.Witness[1:])
+	holdCotaKeyVec := entries.HoldKeys()
+	holdCotaValueVec := entries.HoldValues()
+	lockHash, err := entry.LockScript.Hash()
+	if err != nil {
+		return
+	}
+	lockHashStr := lockHash.String()
+	lockHashCRC32 := crc32.ChecksumIEEE([]byte(lockHashStr))
+	for i := uint(0); i < holdCotaKeyVec.Len(); i++ {
+		key := holdCotaKeyVec.Get(i)
+		value := holdCotaValueVec.Get(i)
+		holdCotas = append(holdCotas, biz.HoldCotaNftKvPair{
+			BlockNumber:    blockNumber,
+			CotaId:         hex.EncodeToString(key.CotaId().RawData()),
+			TokenIndex:     binary.BigEndian.Uint32(key.Index().RawData()),
+			State:          value.State().AsSlice()[0],
+			Configure:      value.Configure().AsSlice()[0],
+			Characteristic: hex.EncodeToString(value.Characteristic().RawData()),
+			LockHash:       lockHashStr,
+			LockHashCRC:    lockHashCRC32,
+		})
+	}
+	claimedCotaKeyVec := entries.ClaimKeys()
+	for i := uint(0); i < claimedCotaKeyVec.Len(); i++ {
+		key := claimedCotaKeyVec.Get(i)
+		cotaId := hex.EncodeToString(key.NftId().CotaId().RawData())
+		outpointStr := hex.EncodeToString(key.OutPoint().RawData())
+		claimedCotas = append(claimedCotas, biz.ClaimedCotaNftKvPair{
+			BlockNumber: blockNumber,
+			CotaId:      hex.EncodeToString(key.NftId().CotaId().RawData()),
+			CotaIdCRC:   crc32.ChecksumIEEE([]byte(cotaId)),
+			TokenIndex:  binary.BigEndian.Uint32(key.NftId().Index().RawData()),
+			OutPoint:    outpointStr,
+			OutPointCrc: crc32.ChecksumIEEE([]byte(outpointStr)),
+			LockHash:    lockHashStr,
+			LockHashCrc: lockHashCRC32,
+		})
+	}
+	return
 }
