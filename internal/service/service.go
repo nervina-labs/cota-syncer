@@ -40,23 +40,26 @@ func (s *SyncService) Start(ctx context.Context) error {
 }
 
 func (s *SyncService) sync(ctx context.Context) {
+	checkInfo := biz.CheckInfo{CheckType: biz.SyncEvent}
+	err := s.checkInfoUsecase.FindOrCreate(ctx, &checkInfo)
+	if err != nil {
+		s.logger.Errorf(ctx, "get check info error: %v", err)
+	}
 	tipBlockNumber, err := s.client.Rpc.GetTipBlockNumber(ctx)
 	if err != nil {
 		s.logger.Errorf(ctx, "get tip block number rpc error: %v", err)
 	}
-	s.logger.Infof(ctx, "block_number: %v", tipBlockNumber)
-	checkInfo := biz.CheckInfo{CheckType: biz.SyncEvent}
-	err = s.checkInfoUsecase.FindOrCreate(ctx, &checkInfo)
-	if err != nil {
-		s.logger.Errorf(ctx, "get check info error: %v", err)
-	}
+	s.logger.Infof(ctx, "check tip block number: %v, tip block number: %v", checkInfo.BlockNumber, tipBlockNumber)
 	if checkInfo.BlockNumber > tipBlockNumber {
 		return
 	}
-
-	tipBlock, err := s.client.Rpc.GetBlockByNumber(ctx, checkInfo.BlockNumber)
+	targetBlockNumber := checkInfo.BlockNumber + 1
+	if targetBlockNumber > tipBlockNumber {
+		return
+	}
+	targetBlock, err := s.client.Rpc.GetBlockByNumber(ctx, targetBlockNumber)
 	// rollback
-	if checkInfo.BlockHash != tipBlock.Header.ParentHash.String() {
+	if checkInfo.BlockHash != targetBlock.Header.ParentHash.String()[2:] {
 		s.logger.Info(ctx, "forked")
 		err = s.rollback(ctx, checkInfo.BlockNumber)
 		if err != nil {
@@ -65,14 +68,16 @@ func (s *SyncService) sync(ctx context.Context) {
 		return
 	}
 	// save key pairs
-	err = s.syncBlock(ctx, tipBlock)
+	checkInfo.BlockNumber = targetBlockNumber
+	checkInfo.BlockHash = targetBlock.Header.Hash.String()[2:]
+	err = s.syncBlock(ctx, targetBlock, checkInfo)
 	if err != nil {
 		s.logger.Errorf(ctx, "save kv pairs error: %v", err)
 	}
 }
 
-func (s *SyncService) syncBlock(ctx context.Context, block *ckbTypes.Block) error {
-	return s.blockSyncer.Sync(ctx, block, s.systemScripts)
+func (s *SyncService) syncBlock(ctx context.Context, block *ckbTypes.Block, checkInfo biz.CheckInfo) error {
+	return s.blockSyncer.Sync(ctx, block, checkInfo, s.systemScripts)
 }
 
 func (s *SyncService) rollback(ctx context.Context, blockNumber uint64) error {
