@@ -19,6 +19,7 @@ type HoldCotaNftKvPair struct {
 type HoldCotaNftKvPairRepo interface {
 	CreateHoldCotaNftKvPair(ctx context.Context, h *HoldCotaNftKvPair) error
 	DeleteHoldCotaNftKvPairs(ctx context.Context, blockNumber uint64) error
+	ParseHoldCotaEntries(blockNumber uint64, entry Entry) ([]HoldCotaNftKvPair, error)
 }
 
 type HoldCotaNftKvPairUsecase struct {
@@ -39,4 +40,8 @@ func (uc *HoldCotaNftKvPairUsecase) Create(ctx context.Context, h *HoldCotaNftKv
 
 func (uc *HoldCotaNftKvPairUsecase) DeleteByBlockNumber(ctx context.Context, blockNumber uint64) error {
 	return uc.repo.DeleteHoldCotaNftKvPairs(ctx, blockNumber)
+}
+
+func (uc HoldCotaNftKvPairUsecase) ParseHoldCotaEntries(blockNumber uint64, entry Entry) ([]HoldCotaNftKvPair, error) {
+	return uc.repo.ParseHoldCotaEntries(blockNumber, entry)
 }
