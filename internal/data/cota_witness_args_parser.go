@@ -30,10 +30,14 @@ func (c CotaWitnessArgsParser) Parse(tx *ckbTypes.Transaction, cotaType SystemSc
 }
 
 func (c CotaWitnessArgsParser) isCotaCell(output *ckbTypes.CellOutput, cotaType SystemScript) bool {
+	if output.Type == nil {
+		return false
+	}
 	return output.Type.CodeHash == cotaType.CodeHash && output.Type.HashType == cotaType.HashType
 }
 
 // inputs 中 cota cells 的个数一定与 outputs 中 cota cells 的个数相等
+// 批量注册多个 cota cell 的时候 input 里可能没有 cota cell
 func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, cotaType SystemScript) ([]biz.Entry, error) {
 	inputCotaCellGroups, err := c.inputCotaCellGroups(tx.Inputs, cotaType)
 	if err != nil {
@@ -43,10 +47,12 @@ func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, cotaType Sy
 	if err != nil {
 		return nil, err
 	}
-	cotaCells := make([]cotaCell, len(outputCotaCellGroups))
-	for typeHash := range outputCotaCellGroups {
-		cotaCell := inputCotaCellGroups[typeHash]
-		cotaCells = append(cotaCells, cotaCell)
+	cotaCells := make([]cotaCell, len(inputCotaCellGroups))
+	var index int
+	for typeHash := range inputCotaCellGroups {
+		cotaCell := outputCotaCellGroups[typeHash]
+		cotaCells[index] = cotaCell
+		index += 1
 	}
 
 	var entries []biz.Entry
@@ -65,7 +71,7 @@ func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, cotaType Sy
 }
 
 func (c CotaWitnessArgsParser) inputCotaCellGroups(inputs []*ckbTypes.CellInput, cotaType SystemScript) (map[string]cotaCell, error) {
-	var group map[string]cotaCell
+	group := make(map[string]cotaCell)
 	cotaCells, err := c.inputCotaCells(inputs, cotaType)
 	if err != nil {
 		return group, err
@@ -125,7 +131,7 @@ func (c CotaWitnessArgsParser) outputCotaCells(outputs []*ckbTypes.CellOutput, c
 }
 
 func (c CotaWitnessArgsParser) outputCotaCellGroups(outputs []*ckbTypes.CellOutput, cotaType SystemScript) (map[string]cotaCell, error) {
-	var group map[string]cotaCell
+	group := make(map[string]cotaCell)
 	cotaCells, err := c.outputCotaCells(outputs, cotaType)
 	if err != nil {
 		return group, err
