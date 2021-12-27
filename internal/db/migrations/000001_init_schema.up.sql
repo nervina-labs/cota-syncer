@@ -105,8 +105,7 @@ CREATE TABLE IF NOT EXISTS withdraw_cota_nft_kv_pairs (
     state tinyint unsigned NOT NULL,
     configure tinyint unsigned NOT NULL,
     characteristic char(40) NOT NULL,
-    receiver_lock_hash char(64) NOT NULL,
-    receiver_lock_hash_crc int unsigned NOT NULL,
+    receiver_lock_script_id bigint NOT NULL,
     lock_hash char(64) NOT NULL,
     lock_hash_crc int unsigned NOT NULL,
     created_at datetime(6) NOT NULL,
@@ -114,7 +113,7 @@ CREATE TABLE IF NOT EXISTS withdraw_cota_nft_kv_pairs (
     PRIMARY KEY (id),
     KEY index_withdraw_on_block_number (block_number),
     KEY index_withdraw_on_cota_id_crc_token_index (cota_id_crc, token_index),
-    KEY index_withdraw_on_receiver_lock_hash_crc (receiver_lock_hash_crc),
+    KEY index_withdraw_on_lock_script_id (receiver_lock_script_id),
     KEY index_withdraw_on_out_point_crc (out_point_crc),
     KEY index_withdraw_on_lock_hash_crc (lock_hash_crc)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -136,6 +135,19 @@ CREATE TABLE IF NOT EXISTS claimed_cota_nft_kv_pairs (
     KEY index_claimed_on_cota_id_crc_token_index (cota_id_crc, token_index),
     KEY index_claimed_on_out_point_crc (out_point_crc),
     KEY index_claimed_on_lock_hash_crc (lock_hash_crc)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS scripts (
+    id bigint NOT NULL AUTO_INCREMENT,
+    code_hash char(64) NOT NULL,
+    code_hash_crc int unsigned NOT NULL,
+    hash_type tinyint unsigned NOT NULL,
+    args text NOT NULL,
+    args_crc int unsigned NOT NULL,
+    created_at datetime(6) NOT NULL,
+    updated_at datetime(6) NOT NULL,
+    PRIMARY KEY (id),
+    key index_script_on_script_identifier (code_hash_crc, hash_type, args_crc)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 COMMIT;
