@@ -65,6 +65,7 @@ func (rp kvPairRepo) CreateKvPairs(ctx context.Context, checkInfo biz.CheckInfo,
 					OldIssued:   define.Issued,
 					Configure:   define.Configure,
 					LockHash:    define.LockHash,
+					TxIndex:     define.TxIndex,
 					ActionType:  0,
 				}
 				defineCotaVersions[i] = defineCotaVersion
@@ -90,6 +91,7 @@ func (rp kvPairRepo) CreateKvPairs(ctx context.Context, checkInfo biz.CheckInfo,
 					OldIssued:      defineCota.Issued,
 					Configure:      define.Configure,
 					LockHash:       define.LockHash,
+					TxIndex:        define.TxIndex,
 					ActionType:     1,
 				}
 				updatedDefineCotaVersions[i] = defineCotaVersion
@@ -141,10 +143,10 @@ func (rp kvPairRepo) CreateKvPairs(ctx context.Context, checkInfo biz.CheckInfo,
 				return err
 			}
 			holdCotasSize := len(kvPair.WithdrawCotas)
-			removedHoldCotas := make([]HoldCotaNftKvPair, holdCotasSize)
+			removedHoldCotas := make([]biz.HoldCotaNftKvPair, holdCotasSize)
 			removedHoldCotaIds := make([]uint, holdCotasSize)
 			for i, withdrawCota := range kvPair.WithdrawCotas {
-				var holdCota HoldCotaNftKvPair
+				var holdCota biz.HoldCotaNftKvPair
 				if err := tx.Model(HoldCotaNftKvPair{}).WithContext(ctx).Select("id").Where("cota_id = ? and token_index = ?", withdrawCota.CotaId, withdrawCota.TokenIndex).Find(&holdCota).Error; err != nil {
 					return err
 				}
@@ -163,6 +165,7 @@ func (rp kvPairRepo) CreateKvPairs(ctx context.Context, checkInfo biz.CheckInfo,
 					Configure:         cota.Configure,
 					OldCharacteristic: cota.Characteristic,
 					OldLockHash:       cota.LockHash,
+					TxIndex:           cota.TxIndex,
 					ActionType:        2,
 				}
 			}
@@ -203,6 +206,7 @@ func (rp kvPairRepo) CreateKvPairs(ctx context.Context, checkInfo biz.CheckInfo,
 					Configure:      cota.Configure,
 					Characteristic: cota.Characteristic,
 					LockHash:       cota.LockHash,
+					TxIndex:        cota.TxIndex,
 					ActionType:     0,
 				}
 			}
@@ -230,6 +234,7 @@ func (rp kvPairRepo) CreateKvPairs(ctx context.Context, checkInfo biz.CheckInfo,
 					Characteristic:    cota.Characteristic,
 					OldLockHash:       oldHoldCota.LockHash,
 					LockHash:          cota.LockHash,
+					TxIndex:           cota.TxIndex,
 					ActionType:        1,
 				}
 			}

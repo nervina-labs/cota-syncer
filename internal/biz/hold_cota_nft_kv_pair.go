@@ -6,6 +6,7 @@ import (
 )
 
 type HoldCotaNftKvPair struct {
+	ID             uint
 	BlockNumber    uint64
 	CotaId         string
 	TokenIndex     uint32
@@ -14,6 +15,7 @@ type HoldCotaNftKvPair struct {
 	Characteristic string
 	LockHash       string
 	LockHashCRC    uint32
+	TxIndex        uint32
 }
 
 type HoldCotaNftKvPairRepo interface {

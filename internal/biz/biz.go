@@ -11,4 +11,5 @@ var ProviderSet = wire.NewSet(NewCheckInfoUsecase, NewRegisterCotaKvPairUsecase,
 type Entry struct {
 	Witness    []byte
 	LockScript *ckbTypes.Script
+	TxIndex    uint32
 }

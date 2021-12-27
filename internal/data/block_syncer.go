@@ -36,7 +36,7 @@ func NewBlockParser(claimedCotaUsecase *biz.ClaimedCotaNftKvPairUsecase, defineC
 func (bp BlockSyncer) Sync(ctx context.Context, block *ckbTypes.Block, checkInfo biz.CheckInfo, systemScripts SystemScripts) error {
 	var entryVec []biz.Entry
 	kvPair := biz.KvPair{}
-	for _, tx := range block.Transactions {
+	for index, tx := range block.Transactions {
 		// ParseRegistryEntries TODO 拆到独立到 repo 中
 		if bp.hasCotaRegistryCell(tx.Outputs, systemScripts.CotaRegistryType) {
 			registers, err := bp.registerCotaUsecase.ParseRegistryEntries(ctx, block.Header.Number, tx)
@@ -45,7 +45,7 @@ func (bp BlockSyncer) Sync(ctx context.Context, block *ckbTypes.Block, checkInfo
 			}
 			kvPair.Registers = append(kvPair.Registers, registers...)
 		}
-		entries, err := bp.cotaWitnessArgsParser.Parse(tx, systemScripts.CotaType)
+		entries, err := bp.cotaWitnessArgsParser.Parse(tx, uint32(index), systemScripts.CotaType)
 		if err != nil {
 			return err
 		}

@@ -37,6 +37,7 @@ type DefineCotaNftKvPairVersion struct {
 	Configure      uint8
 	LockHash       string
 	ActionType     uint8 //	0-create 1-update 2-delete
+	TxIndex        uint32
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 }
@@ -88,6 +89,7 @@ func (rp defineCotaNftKvPairRepo) ParseDefineCotaEntries(blockNumber uint64, ent
 			Configure:   value.Configure().AsSlice()[0],
 			LockHash:    lockHashStr,
 			LockHashCRC: lockHashCRC32,
+			TxIndex:     entry.TxIndex,
 		})
 	}
 	return

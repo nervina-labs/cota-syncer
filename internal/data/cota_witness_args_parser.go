@@ -22,11 +22,11 @@ type cotaCell struct {
 	index  int
 }
 
-func (c CotaWitnessArgsParser) Parse(tx *ckbTypes.Transaction, cotaType SystemScript) ([]biz.Entry, error) {
+func (c CotaWitnessArgsParser) Parse(tx *ckbTypes.Transaction, txIndex uint32, cotaType SystemScript) ([]biz.Entry, error) {
 	if !c.hasCotaCell(tx.Outputs, cotaType) {
 		return nil, nil
 	}
-	return c.cotaEntries(tx, cotaType)
+	return c.cotaEntries(tx, txIndex, cotaType)
 }
 
 func (c CotaWitnessArgsParser) isCotaCell(output *ckbTypes.CellOutput, cotaType SystemScript) bool {
@@ -38,7 +38,7 @@ func (c CotaWitnessArgsParser) isCotaCell(output *ckbTypes.CellOutput, cotaType 
 
 // inputs 中 cota cells 的个数一定与 outputs 中 cota cells 的个数相等
 // 批量注册多个 cota cell 的时候 input 里可能没有 cota cell
-func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, cotaType SystemScript) ([]biz.Entry, error) {
+func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, txIndex uint32, cotaType SystemScript) ([]biz.Entry, error) {
 	inputCotaCellGroups, err := c.inputCotaCellGroups(tx.Inputs, cotaType)
 	if err != nil {
 		return nil, err
@@ -65,6 +65,7 @@ func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, cotaType Sy
 		entries = append(entries, biz.Entry{
 			Witness:    bytes.RawData(),
 			LockScript: cotaCell.output.Lock,
+			TxIndex:    txIndex,
 		})
 	}
 	return entries, nil

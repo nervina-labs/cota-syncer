@@ -13,6 +13,7 @@ type DefineCotaNftKvPair struct {
 	Configure   uint8
 	LockHash    string
 	LockHashCRC uint32
+	TxIndex     uint32
 }
 
 type DefineCotaNftKvPairRepo interface {

@@ -41,6 +41,7 @@ type HoldCotaNftKvPairVersion struct {
 	OldLockHash       string
 	LockHash          string
 	ActionType        uint8 //	0-create 1-update 2-delete
+	TxIndex           uint32
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
 }
@@ -93,6 +94,7 @@ func (rp holdCotaNftKvPairRepo) ParseHoldCotaEntries(blockNumber uint64, entry b
 			Characteristic: hex.EncodeToString(value.Characteristic().RawData()),
 			LockHash:       lockHashStr,
 			LockHashCRC:    lockHashCRC32,
+			TxIndex:        entry.TxIndex,
 		})
 	}
 	return
