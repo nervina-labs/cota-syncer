@@ -79,7 +79,7 @@ func (rp holdCotaNftKvPairRepo) ParseHoldCotaEntries(blockNumber uint64, entry b
 	if err != nil {
 		return
 	}
-	lockHashStr := lockHash.String()
+	lockHashStr := lockHash.String()[2:]
 	lockHashCRC32 := crc32.ChecksumIEEE([]byte(lockHashStr))
 	for i := uint(0); i < holdCotaKeyVec.Len(); i++ {
 		key := holdCotaKeyVec.Get(i)

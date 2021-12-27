@@ -75,7 +75,7 @@ func (rp defineCotaNftKvPairRepo) ParseDefineCotaEntries(blockNumber uint64, ent
 	if err != nil {
 		return
 	}
-	lockHashStr := lockHash.String()
+	lockHashStr := lockHash.String()[2:]
 	lockHashCRC32 := crc32.ChecksumIEEE([]byte(lockHashStr))
 	for i := uint(0); i < defineCotaKeyVec.Len(); i++ {
 		key := defineCotaKeyVec.Get(i)
