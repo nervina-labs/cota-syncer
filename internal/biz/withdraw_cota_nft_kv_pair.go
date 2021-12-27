@@ -6,25 +6,32 @@ import (
 )
 
 type WithdrawCotaNftKvPair struct {
-	BlockNumber         uint64
-	CotaId              string
-	CotaIdCRC           uint32
-	TokenIndex          uint32
-	OutPoint            string
-	OutPointCrc         uint32
-	State               uint8
-	Configure           uint8
-	Characteristic      string
-	ReceiverLockHash    string
-	ReceiverLockHashCrc uint32
-	LockHash            string
-	LockHashCrc         uint32
+	BlockNumber          uint64
+	CotaId               string
+	CotaIdCRC            uint32
+	TokenIndex           uint32
+	OutPoint             string
+	OutPointCrc          uint32
+	State                uint8
+	Configure            uint8
+	Characteristic       string
+	ReceiverLockScriptId uint
+	LockHash             string
+	LockHashCrc          uint32
+}
+
+type Script struct {
+	ID       uint
+	CodeHash string
+	HashType string
+	Args     string
 }
 
 type WithdrawCotaNftKvPairRepo interface {
 	CreateWithdrawCotaNftKvPair(ctx context.Context, w *WithdrawCotaNftKvPair) error
 	DeleteWithdrawCotaNftKvPairs(ctx context.Context, blockNumber uint64) error
 	ParseWithdrawCotaEntries(blockNumber uint64, entry Entry) ([]WithdrawCotaNftKvPair, error)
+	FindOrCreateScript(ctx context.Context, script Script) error
 }
 
 type WithdrawCotaNftKvPairUsecase struct {
@@ -49,4 +56,8 @@ func (uc *WithdrawCotaNftKvPairUsecase) DeleteByBlockNumber(ctx context.Context,
 
 func (uc *WithdrawCotaNftKvPairUsecase) ParseWithdrawCotaEntries(blockNumber uint64, entry Entry) ([]WithdrawCotaNftKvPair, error) {
 	return uc.repo.ParseWithdrawCotaEntries(blockNumber, entry)
+}
+
+func (uc *WithdrawCotaNftKvPairUsecase) FindOrCreateScript(ctx context.Context, script Script) error {
+	return uc.repo.FindOrCreateScript(ctx, script)
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
+	"github.com/nervina-labs/cota-nft-entries-syncer/internal/data/blockchain"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
 	"github.com/nervina-labs/cota-smt-go/smt"
 	"hash/crc32"
@@ -46,21 +47,25 @@ func (rp mintCotaKvPairRepo) ParseMintCotaEntries(blockNumber uint64, entry biz.
 		value := withdrawValueVec.Get(i)
 		cotaId := hex.EncodeToString(key.CotaId().RawData())
 		outpointStr := hex.EncodeToString(value.OutPoint().RawData())
-		receiverLockHashStr := hex.EncodeToString(value.To().RawData())
+		receiverLock := blockchain.ScriptFromSliceUnchecked(value.ToLock().RawData())
+		script := biz.Script{
+			CodeHash: hex.EncodeToString(receiverLock.CodeHash().RawData()),
+			HashType: hex.EncodeToString(receiverLock.HashType().AsSlice()),
+			Args:     hex.EncodeToString(receiverLock.Args().RawData()),
+		}
 		withdrawCotas = append(withdrawCotas, biz.WithdrawCotaNftKvPair{
-			BlockNumber:         blockNumber,
-			CotaId:              cotaId,
-			CotaIdCRC:           crc32.ChecksumIEEE([]byte(cotaId)),
-			TokenIndex:          binary.BigEndian.Uint32(key.Index().RawData()),
-			OutPoint:            outpointStr,
-			OutPointCrc:         crc32.ChecksumIEEE([]byte(outpointStr)),
-			State:               value.NftInfo().State().AsSlice()[0],
-			Configure:           value.NftInfo().Configure().AsSlice()[0],
-			Characteristic:      hex.EncodeToString(value.NftInfo().Characteristic().RawData()),
-			ReceiverLockHash:    receiverLockHashStr,
-			ReceiverLockHashCrc: crc32.ChecksumIEEE([]byte(receiverLockHashStr)),
-			LockHash:            lockHashStr,
-			LockHashCrc:         lockHashCRC32,
+			BlockNumber:          blockNumber,
+			CotaId:               cotaId,
+			CotaIdCRC:            crc32.ChecksumIEEE([]byte(cotaId)),
+			TokenIndex:           binary.BigEndian.Uint32(key.Index().RawData()),
+			OutPoint:             outpointStr,
+			OutPointCrc:          crc32.ChecksumIEEE([]byte(outpointStr)),
+			State:                value.NftInfo().State().AsSlice()[0],
+			Configure:            value.NftInfo().Configure().AsSlice()[0],
+			Characteristic:       hex.EncodeToString(value.NftInfo().Characteristic().RawData()),
+			ReceiverLockScriptId: script.ID,
+			LockHash:             lockHashStr,
+			LockHashCrc:          lockHashCRC32,
 		})
 
 	}

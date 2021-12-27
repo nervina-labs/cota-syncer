@@ -123,19 +123,18 @@ func (rp kvPairRepo) CreateKvPairs(ctx context.Context, checkInfo biz.CheckInfo,
 			withdrawCotas := make([]WithdrawCotaNftKvPair, len(kvPair.WithdrawCotas))
 			for i, cota := range kvPair.WithdrawCotas {
 				withdrawCotas[i] = WithdrawCotaNftKvPair{
-					BlockNumber:         cota.BlockNumber,
-					CotaId:              cota.CotaId,
-					CotaIdCRC:           cota.CotaIdCRC,
-					TokenIndex:          cota.TokenIndex,
-					OutPoint:            cota.OutPoint,
-					OutPointCrc:         cota.OutPointCrc,
-					State:               cota.State,
-					Configure:           cota.Configure,
-					Characteristic:      cota.Characteristic,
-					ReceiverLockHash:    cota.ReceiverLockHash,
-					ReceiverLockHashCrc: cota.ReceiverLockHashCrc,
-					LockHash:            cota.LockHash,
-					LockHashCrc:         cota.LockHashCrc,
+					BlockNumber:          cota.BlockNumber,
+					CotaId:               cota.CotaId,
+					CotaIdCRC:            cota.CotaIdCRC,
+					TokenIndex:           cota.TokenIndex,
+					OutPoint:             cota.OutPoint,
+					OutPointCrc:          cota.OutPointCrc,
+					State:                cota.State,
+					Configure:            cota.Configure,
+					Characteristic:       cota.Characteristic,
+					ReceiverLockScriptId: cota.ReceiverLockScriptId,
+					LockHash:             cota.LockHash,
+					LockHashCrc:          cota.LockHashCrc,
 				}
 			}
 			if err := tx.Model(WithdrawCotaNftKvPair{}).WithContext(ctx).Create(withdrawCotas).Error; err != nil {
