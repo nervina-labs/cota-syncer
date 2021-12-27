@@ -6,7 +6,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.15.1
 	github.com/google/uuid v1.3.0
 	github.com/google/wire v0.5.0
-	github.com/nervina-labs/cota-smt-go v0.3.0
+	github.com/nervina-labs/cota-smt-go v0.4.0
 	github.com/nervosnetwork/ckb-sdk-go v0.101.3
 	github.com/spf13/viper v1.10.0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
