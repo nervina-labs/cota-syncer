@@ -12,5 +12,3 @@ app:
 ckb_node:
   rpc_url: http://localhost:8114
   mode: testnet
-
-
