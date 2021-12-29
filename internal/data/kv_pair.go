@@ -150,32 +150,38 @@ func (rp kvPairRepo) CreateKvPairs(ctx context.Context, checkInfo biz.CheckInfo,
 				if err := tx.Model(HoldCotaNftKvPair{}).WithContext(ctx).Select("id").Where("cota_id = ? and token_index = ?", withdrawCota.CotaId, withdrawCota.TokenIndex).Find(&holdCota).Error; err != nil {
 					return err
 				}
+				// 上面把对象初始化出来了，所以需要通过具体值来判断是否存在
+				if holdCota.CotaId == "" {
+					continue
+				}
 				removedHoldCotas[i] = holdCota
 				removedHoldCotaIds[i] = holdCota.ID
 			}
-			removedHoldCotaVersions := make([]HoldCotaNftKvPairVersion, holdCotasSize)
-			blockNumber := kvPair.WithdrawCotas[0].BlockNumber
-			for i, cota := range removedHoldCotas {
-				removedHoldCotaVersions[i] = HoldCotaNftKvPairVersion{
-					OldBlockNumber:    cota.BlockNumber,
-					BlockNumber:       blockNumber,
-					CotaId:            cota.CotaId,
-					TokenIndex:        cota.TokenIndex,
-					OldState:          cota.State,
-					Configure:         cota.Configure,
-					OldCharacteristic: cota.Characteristic,
-					OldLockHash:       cota.LockHash,
-					TxIndex:           cota.TxIndex,
-					ActionType:        2,
+			if removedHoldCotas[0].CotaId != "" {
+				removedHoldCotaVersions := make([]HoldCotaNftKvPairVersion, holdCotasSize)
+				blockNumber := kvPair.WithdrawCotas[0].BlockNumber
+				for i, cota := range removedHoldCotas {
+					removedHoldCotaVersions[i] = HoldCotaNftKvPairVersion{
+						OldBlockNumber:    cota.BlockNumber,
+						BlockNumber:       blockNumber,
+						CotaId:            cota.CotaId,
+						TokenIndex:        cota.TokenIndex,
+						OldState:          cota.State,
+						Configure:         cota.Configure,
+						OldCharacteristic: cota.Characteristic,
+						OldLockHash:       cota.LockHash,
+						TxIndex:           cota.TxIndex,
+						ActionType:        2,
+					}
 				}
-			}
-			// create removed hold cota versions
-			if err := tx.Model(HoldCotaNftKvPairVersion{}).WithContext(ctx).Create(removedHoldCotaVersions).Error; err != nil {
-				return err
-			}
-			// remove those hold cotas that are equal with withdraw cotas
-			if err := tx.Model(HoldCotaNftKvPair{}).WithContext(ctx).Delete(&removedHoldCotas, removedHoldCotaIds).Error; err != nil {
-				return err
+				// create removed hold cota versions
+				if err := tx.Model(HoldCotaNftKvPairVersion{}).WithContext(ctx).Create(removedHoldCotaVersions).Error; err != nil {
+					return err
+				}
+				// remove those hold cotas that are equal with withdraw cotas
+				if err := tx.Model(HoldCotaNftKvPair{}).WithContext(ctx).Delete(&removedHoldCotas, removedHoldCotaIds).Error; err != nil {
+					return err
+				}
 			}
 		}
 		if kvPair.HasHoldCotas() {
