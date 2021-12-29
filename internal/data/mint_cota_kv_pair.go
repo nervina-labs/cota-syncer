@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"encoding/binary"
 	"encoding/hex"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
@@ -53,6 +54,10 @@ func (rp mintCotaKvPairRepo) ParseMintCotaEntries(blockNumber uint64, entry biz.
 			HashType: hex.EncodeToString(receiverLock.HashType().AsSlice()),
 			Args:     hex.EncodeToString(receiverLock.Args().RawData()),
 		}
+		err = rp.FindOrCreateScript(context.TODO(), script)
+		if err != nil {
+			return
+		}
 		withdrawCotas = append(withdrawCotas, biz.WithdrawCotaNftKvPair{
 			BlockNumber:          blockNumber,
 			CotaId:               cotaId,
@@ -70,6 +75,25 @@ func (rp mintCotaKvPairRepo) ParseMintCotaEntries(blockNumber uint64, entry biz.
 
 	}
 	return
+}
+
+func (rp mintCotaKvPairRepo) FindOrCreateScript(ctx context.Context, script biz.Script) error {
+	ht, err := hashType(script.HashType)
+	if err != nil {
+		return err
+	}
+	s := Script{}
+	if err = rp.data.db.WithContext(ctx).FirstOrCreate(&s, Script{
+		CodeHash:    script.CodeHash,
+		CodeHashCrc: crc32.ChecksumIEEE([]byte(script.CodeHash)),
+		HashType:    ht,
+		Args:        script.Args,
+		ArgsCrc:     crc32.ChecksumIEEE([]byte(script.Args)),
+	}).Error; err != nil {
+		return err
+	}
+	script.ID = s.ID
+	return nil
 }
 
 func NewMintCotaKvPairRepo(data *Data, logger *logger.Logger) biz.MintCotaKvPairRepo {
