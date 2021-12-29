@@ -4,12 +4,12 @@ import (
 	"context"
 	"encoding/binary"
 	"encoding/hex"
-	"errors"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/data/blockchain"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
 	"github.com/nervina-labs/cota-smt-go/smt"
 	"hash/crc32"
+	"strconv"
 	"time"
 )
 
@@ -37,7 +37,7 @@ type Script struct {
 	ID          uint `gorm:"primaryKey"`
 	CodeHash    string
 	CodeHashCrc uint32
-	HashType    int
+	HashType    int64
 	Args        string
 	ArgsCrc     uint32
 	CreatedAt   time.Time
@@ -132,14 +132,6 @@ func (rp withdrawCotaNftKvPairRepo) FindOrCreateScript(ctx context.Context, scri
 	return nil
 }
 
-func hashType(hashTypeStr string) (int, error) {
-	switch hashTypeStr {
-	case "data":
-		return 0, nil
-	case "type":
-		return 1, nil
-	case "data1":
-		return 2, nil
-	}
-	return -1, errors.New("invalid hash type")
+func hashType(hashTypeStr string) (int64, error) {
+	return strconv.ParseInt(hashTypeStr, 16, 32)
 }
