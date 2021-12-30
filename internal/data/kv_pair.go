@@ -147,7 +147,7 @@ func (rp kvPairRepo) CreateKvPairs(ctx context.Context, checkInfo biz.CheckInfo,
 			removedHoldCotaIds := make([]uint, holdCotasSize)
 			for i, withdrawCota := range kvPair.WithdrawCotas {
 				var holdCota biz.HoldCotaNftKvPair
-				if err := tx.Model(HoldCotaNftKvPair{}).WithContext(ctx).Select("id").Where("cota_id = ? and token_index = ?", withdrawCota.CotaId, withdrawCota.TokenIndex).Find(&holdCota).Error; err != nil {
+				if err := tx.Model(HoldCotaNftKvPair{}).WithContext(ctx).Select("*").Where("cota_id = ? and token_index = ?", withdrawCota.CotaId, withdrawCota.TokenIndex).Find(&holdCota).Error; err != nil {
 					return err
 				}
 				// 上面把对象初始化出来了，所以需要通过具体值来判断是否存在
