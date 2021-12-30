@@ -289,9 +289,14 @@ func (rp kvPairRepo) CreateKvPairs(ctx context.Context, checkInfo biz.CheckInfo,
 			}
 		}
 		// update check info
-		if err := tx.Model(CheckInfo{}).WithContext(ctx).Select("block_number", "block_hash").Where("id = ?", checkInfo.Id).Updates(CheckInfo{
+		if err := tx.Debug().Model(CheckInfo{}).WithContext(ctx).Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "id"}},
+			DoUpdates: clause.AssignmentColumns([]string{"block_number", "block_hash"}),
+		}).Create(&CheckInfo{
+			ID:          uint(checkInfo.Id),
 			BlockNumber: checkInfo.BlockNumber,
 			BlockHash:   checkInfo.BlockHash,
+			CheckType:   checkInfo.CheckType,
 		}).Error; err != nil {
 			return err
 		}

@@ -31,9 +31,13 @@ func NewCheckInfoRepo(data *Data, logger *logger.Logger) biz.CheckInfoRepo {
 }
 
 func (rp checkInfoRepo) FindOrCreateCheckInfo(ctx context.Context, info *biz.CheckInfo) error {
-	if err := rp.data.db.WithContext(ctx).FirstOrCreate(info, CheckInfo{BlockNumber: info.BlockNumber, CheckType: info.CheckType}).Error; err != nil {
+	c := &CheckInfo{}
+	if err := rp.data.db.WithContext(ctx).FirstOrCreate(&c, CheckInfo{CheckType: info.CheckType}).Error; err != nil {
 		return err
 	}
+	info.Id = uint64(c.ID)
+	info.BlockNumber = c.BlockNumber
+	info.BlockHash = c.BlockHash
 	return nil
 }
 

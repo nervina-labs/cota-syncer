@@ -59,7 +59,7 @@ func (s *SyncService) sync(ctx context.Context) {
 	}
 	targetBlock, err := s.client.Rpc.GetBlockByNumber(ctx, targetBlockNumber)
 	// rollback
-	if checkInfo.BlockHash != targetBlock.Header.ParentHash.String()[2:] {
+	if isForked(checkInfo, targetBlock) {
 		s.logger.Info(ctx, "forked")
 		err = s.rollback(ctx, checkInfo.BlockNumber)
 		if err != nil {
@@ -74,6 +74,13 @@ func (s *SyncService) sync(ctx context.Context) {
 	if err != nil {
 		s.logger.Errorf(ctx, "save kv pairs error: %v", err)
 	}
+}
+
+func isForked(checkInfo biz.CheckInfo, targetBlock *ckbTypes.Block) bool {
+	if checkInfo.BlockHash == "" {
+		return false
+	}
+	return checkInfo.BlockHash != targetBlock.Header.ParentHash.String()[2:]
 }
 
 func (s *SyncService) syncBlock(ctx context.Context, block *ckbTypes.Block, checkInfo biz.CheckInfo) error {
