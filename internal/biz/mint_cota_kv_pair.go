@@ -9,7 +9,7 @@ type MintCotaKvPair struct{}
 
 type MintCotaKvPairRepo interface {
 	ParseMintCotaEntries(blockNumber uint64, entry Entry) ([]DefineCotaNftKvPair, []WithdrawCotaNftKvPair, error)
-	FindOrCreateScript(ctx context.Context, script Script) error
+	FindOrCreateScript(ctx context.Context, script *Script) error
 }
 
 type MintCotaKvPairUsecase struct {
@@ -28,6 +28,6 @@ func (uc *MintCotaKvPairUsecase) ParseMintCotaEntries(blockNumber uint64, entry 
 	return uc.repo.ParseMintCotaEntries(blockNumber, entry)
 }
 
-func (uc *MintCotaKvPairUsecase) FindOrCreateScript(ctx context.Context, script Script) error {
+func (uc *MintCotaKvPairUsecase) FindOrCreateScript(ctx context.Context, script *Script) error {
 	return uc.repo.FindOrCreateScript(ctx, script)
 }

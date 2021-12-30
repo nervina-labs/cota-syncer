@@ -91,7 +91,7 @@ func (rp withdrawCotaNftKvPairRepo) ParseWithdrawCotaEntries(blockNumber uint64,
 			HashType: hex.EncodeToString(receiverLock.HashType().AsSlice()),
 			Args:     hex.EncodeToString(receiverLock.Args().RawData()),
 		}
-		err = rp.FindOrCreateScript(context.TODO(), script)
+		err = rp.FindOrCreateScript(context.TODO(), &script)
 		if err != nil {
 			return nil, err
 		}
@@ -113,7 +113,7 @@ func (rp withdrawCotaNftKvPairRepo) ParseWithdrawCotaEntries(blockNumber uint64,
 	return
 }
 
-func (rp withdrawCotaNftKvPairRepo) FindOrCreateScript(ctx context.Context, script biz.Script) error {
+func (rp withdrawCotaNftKvPairRepo) FindOrCreateScript(ctx context.Context, script *biz.Script) error {
 	ht, err := hashType(script.HashType)
 	if err != nil {
 		return err

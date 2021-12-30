@@ -54,7 +54,7 @@ func (rp mintCotaKvPairRepo) ParseMintCotaEntries(blockNumber uint64, entry biz.
 			HashType: hex.EncodeToString(receiverLock.HashType().AsSlice()),
 			Args:     hex.EncodeToString(receiverLock.Args().RawData()),
 		}
-		err = rp.FindOrCreateScript(context.TODO(), script)
+		err = rp.FindOrCreateScript(context.TODO(), &script)
 		if err != nil {
 			return
 		}
@@ -77,7 +77,7 @@ func (rp mintCotaKvPairRepo) ParseMintCotaEntries(blockNumber uint64, entry biz.
 	return
 }
 
-func (rp mintCotaKvPairRepo) FindOrCreateScript(ctx context.Context, script biz.Script) error {
+func (rp mintCotaKvPairRepo) FindOrCreateScript(ctx context.Context, script *biz.Script) error {
 	ht, err := hashType(script.HashType)
 	if err != nil {
 		return err
