@@ -245,7 +245,7 @@ func (rp kvPairRepo) CreateKvPairs(ctx context.Context, checkInfo biz.CheckInfo,
 				}
 			}
 			// create updated hold cotas versions
-			if err := tx.Model(HoldCotaNftKvPair{}).WithContext(ctx).Create(updatedHoldCotaVersions).Error; err != nil {
+			if err := tx.Model(HoldCotaNftKvPairVersion{}).WithContext(ctx).Create(updatedHoldCotaVersions).Error; err != nil {
 				return err
 			}
 			// update hold cotas
@@ -262,7 +262,10 @@ func (rp kvPairRepo) CreateKvPairs(ctx context.Context, checkInfo biz.CheckInfo,
 					LockHashCRC:    cota.LockHashCRC,
 				}
 			}
-			if err := tx.Model(HoldCotaNftKvPair{}).WithContext(ctx).Select("state", "characteristic", "block_number").Updates(updatedHoldCotas).Error; err != nil {
+			if err := tx.Debug().Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "cota_id"}, {Name: "token_index"}},
+				DoUpdates: clause.AssignmentColumns([]string{"block_number", "state", "characteristic", "lock_hash", "lock_hash_crc"}),
+			}).Create(updatedHoldCotas).Error; err != nil {
 				return err
 			}
 		}
