@@ -21,7 +21,7 @@ type SyncService struct {
 	blockSyncer      data.BlockSyncer
 }
 
-func (s *SyncService) Start(ctx context.Context) error {
+func (s *SyncService) Start(ctx context.Context, mode string) error {
 	s.logger.Info(ctx, "Successfully started the sync service~")
 	go func() {
 		for {
@@ -32,7 +32,9 @@ func (s *SyncService) Start(ctx context.Context) error {
 				return
 			default:
 				s.sync(ctx)
-				time.Sleep(1 * time.Second)
+				if mode == "normal" {
+					time.Sleep(1 * time.Second)
+				}
 			}
 		}
 	}()
@@ -116,6 +118,6 @@ func NewSyncService(checkInfoUsecase *biz.CheckInfoUsecase, logger *logger.Logge
 }
 
 type Service interface {
-	Start(context.Context) error
+	Start(context.Context, string) error
 	Stop(context.Context) error
 }

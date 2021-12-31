@@ -51,7 +51,7 @@ func main() {
 	}
 	defer cleanup()
 	fmt.Printf("pid: %v", os.Getpid())
-	if err := app.Run(); err != nil {
+	if err := app.Run(appConf.Mode); err != nil {
 		panic(err)
 	}
 }

@@ -21,6 +21,7 @@ type App struct {
 	LogSavePath string `mapstructure:"log_save_path"`
 	LogFileName string `mapstructure:"log_file_name"`
 	LogFileExt  string `mapstructure:"log_file_ext"`
+	Mode        string `mapstructure:"mode"`
 }
 
 type CkbNode struct {

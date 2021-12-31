@@ -9,6 +9,7 @@ app:
   log_save_path: storage/logs
   log_file_name: app
   log_file_ext: .logger
+  mode: normal # [normal, wild]
 ckb_node:
   rpc_url: http://localhost:8114
   mode: testnet

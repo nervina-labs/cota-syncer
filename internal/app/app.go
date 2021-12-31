@@ -59,7 +59,7 @@ func (a *App) Name() string { return a.options.name }
 // Version returns app version.
 func (a *App) Version() string { return a.options.version }
 
-func (a *App) Run() error {
+func (a *App) Run(mode string) error {
 	ctx := NewContext(a.ctx, a)
 	eg, ctx := errgroup.WithContext(ctx)
 	wg := sync.WaitGroup{}
@@ -78,7 +78,7 @@ func (a *App) Run() error {
 		wg.Add(1)
 		eg.Go(func() error {
 			wg.Done()
-			return srv.Start(ctx)
+			return srv.Start(ctx, mode)
 		})
 	}
 	wg.Wait()
