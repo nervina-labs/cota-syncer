@@ -23,8 +23,8 @@ type CheckInfo struct {
 }
 
 type CheckInfoRepo interface {
-	FindOrCreateCheckInfo(ctx context.Context, info *CheckInfo) error
-	UpdateCheckInfo(ctx context.Context, info CheckInfo) error
+	FindLastCheckInfo(ctx context.Context, info *CheckInfo) error
+	CreateCheckInfo(ctx context.Context, info *CheckInfo) error
 }
 
 type CheckInfoUsecase struct {
@@ -39,10 +39,10 @@ func NewCheckInfoUsecase(repo CheckInfoRepo, logger *logger.Logger) *CheckInfoUs
 	}
 }
 
-func (uc *CheckInfoUsecase) FindOrCreate(ctx context.Context, checkInfo *CheckInfo) error {
-	return uc.repo.FindOrCreateCheckInfo(ctx, checkInfo)
+func (uc *CheckInfoUsecase) LastCheckInfo(ctx context.Context, checkInfo *CheckInfo) error {
+	return uc.repo.FindLastCheckInfo(ctx, checkInfo)
 }
 
-func (uc *CheckInfoUsecase) Update(ctx context.Context, checkInfo *CheckInfo) error {
-	return uc.Update(ctx, checkInfo)
+func (uc *CheckInfoUsecase) Create(ctx context.Context, checkInfo *CheckInfo) error {
+	return uc.Create(ctx, checkInfo)
 }

@@ -30,9 +30,9 @@ func NewCheckInfoRepo(data *Data, logger *logger.Logger) biz.CheckInfoRepo {
 	}
 }
 
-func (rp checkInfoRepo) FindOrCreateCheckInfo(ctx context.Context, info *biz.CheckInfo) error {
+func (rp checkInfoRepo) FindLastCheckInfo(ctx context.Context, info *biz.CheckInfo) error {
 	c := &CheckInfo{}
-	if err := rp.data.db.WithContext(ctx).FirstOrCreate(&c, CheckInfo{CheckType: info.CheckType}).Error; err != nil {
+	if err := rp.data.db.WithContext(ctx).Last(&c).Error; err != nil {
 		return err
 	}
 	info.Id = uint64(c.ID)
@@ -41,8 +41,12 @@ func (rp checkInfoRepo) FindOrCreateCheckInfo(ctx context.Context, info *biz.Che
 	return nil
 }
 
-func (rp checkInfoRepo) UpdateCheckInfo(ctx context.Context, info biz.CheckInfo) error {
-	if err := rp.data.db.WithContext(ctx).Save(info).Error; err != nil {
+func (rp checkInfoRepo) CreateCheckInfo(ctx context.Context, info *biz.CheckInfo) error {
+	if err := rp.data.db.WithContext(ctx).Create(CheckInfo{
+		BlockNumber: info.BlockNumber,
+		BlockHash:   info.BlockHash,
+		CheckType:   info.CheckType,
+	}).Error; err != nil {
 		return err
 	}
 	return nil

@@ -288,12 +288,8 @@ func (rp kvPairRepo) CreateKvPairs(ctx context.Context, checkInfo biz.CheckInfo,
 				return err
 			}
 		}
-		// update check info
-		if err := tx.Debug().Model(CheckInfo{}).WithContext(ctx).Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "id"}},
-			DoUpdates: clause.AssignmentColumns([]string{"block_number", "block_hash"}),
-		}).Create(&CheckInfo{
-			ID:          uint(checkInfo.Id),
+		// create check info
+		if err := tx.Debug().Model(CheckInfo{}).WithContext(ctx).Create(&CheckInfo{
 			BlockNumber: checkInfo.BlockNumber,
 			BlockHash:   checkInfo.BlockHash,
 			CheckType:   checkInfo.CheckType,
@@ -414,6 +410,12 @@ func (rp kvPairRepo) RestoreKvPairs(ctx context.Context, blockNumber uint64) err
 		if err := tx.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(ClaimedCotaNftKvPair{}).Error; err != nil {
 			return err
 		}
+
+		// delete check info
+		if err := tx.WithContext(ctx).Where("block_number = ?, and check_type = ?", blockNumber, 0).Delete(CheckInfo{}).Error; err != nil {
+			return err
+		}
+
 		return nil
 	})
 }
