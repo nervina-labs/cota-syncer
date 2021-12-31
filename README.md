@@ -21,6 +21,8 @@ Second you need to start a ckb node, You can refer to the following tutorial [Ru
 ## Configure Service
 Update the [configuration file](configs/config.yaml) according to your specific situation.
 
+app section in the config file has a mode config, can be configured as `wild` to turn on chase mode. 
+
 ## Local build
 Enter this project directory and execute `make`.
 
