@@ -412,7 +412,7 @@ func (rp kvPairRepo) RestoreKvPairs(ctx context.Context, blockNumber uint64) err
 		}
 
 		// delete check info
-		if err := tx.Debug().WithContext(ctx).Where("block_number = ? and check_type = ?", blockNumber, 0).Delete(CheckInfo{BlockNumber: blockNumber}).Error; err != nil {
+		if err := tx.Debug().WithContext(ctx).Where("block_number = ? and check_type = ?", blockNumber, 0).Delete(CheckInfo{}).Error; err != nil {
 			return err
 		}
 
