@@ -40,7 +40,9 @@ func (bp BlockSyncer) Sync(ctx context.Context, block *ckbTypes.Block, checkInfo
 		// ParseRegistryEntries TODO 拆到独立到 repo 中
 		if bp.hasCotaRegistryCell(tx.Outputs, systemScripts.CotaRegistryType) {
 			registers, err := bp.registerCotaUsecase.ParseRegistryEntries(ctx, block.Header.Number, tx)
-			if err != nil {
+			if err != nil && err.Error() == "No data" {
+				continue
+			} else if err != nil {
 				return err
 			}
 			kvPair.Registers = append(kvPair.Registers, registers...)
