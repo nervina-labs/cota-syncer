@@ -14,6 +14,7 @@ import (
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"os"
 )
 
 // ProviderSet is data providers
@@ -28,7 +29,11 @@ type Data struct {
 type Option func(*Data)
 
 func NewData(conf *config.Database, logger *logger.Logger) (*Data, func(), error) {
-	db, err := gorm.Open(mysql.Open(conf.Dsn), &gorm.Config{})
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		dsn = conf.Dsn
+	}
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		logger.Errorf(context.TODO(), "failed opening connection to mysql: %v", err)
 		return nil, nil, err
