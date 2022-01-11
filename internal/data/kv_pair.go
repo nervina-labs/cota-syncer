@@ -381,7 +381,7 @@ func (rp kvPairRepo) RestoreKvPairs(ctx context.Context, blockNumber uint64) err
 		}
 		// restore all updated hold cotas by the block number
 		var updatedHoldCotaVersions []HoldCotaNftKvPairVersion
-		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Group("cota_id, token_index").Order("tx_index").Find(&deletedHoldCotaVersions).Error; err != nil {
+		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Group("cota_id, token_index").Order("tx_index").Find(&updatedHoldCotaVersions).Error; err != nil {
 			return err
 		}
 		var updatedHoldCotas []HoldCotaNftKvPair
