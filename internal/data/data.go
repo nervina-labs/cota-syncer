@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"github.com/golang-migrate/migrate/v4"
 	mMsql "github.com/golang-migrate/migrate/v4/database/mysql"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -30,6 +31,8 @@ type Option func(*Data)
 
 func NewData(conf *config.Database, logger *logger.Logger) (*Data, func(), error) {
 	dsn := os.Getenv("DATABASE_URL")
+	logger.Error(context.TODO(), "dsn", dsn)
+	fmt.Println("dsn", dsn)
 	if dsn == "" {
 		dsn = conf.Dsn
 	}
