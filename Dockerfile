@@ -25,6 +25,7 @@ FROM alpine:3.14
 
 COPY --from=builder /app/syncer /syncer
 COPY --from=builder /app/configs/config.yaml /configs/config.yaml
+COPY --from=builder /app/internal/db/migrations/ /internal/db/migrations/
 RUN chmod +x /syncer
 
 CMD ["/syncer"]
