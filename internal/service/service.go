@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-var ProviderSet = wire.NewSet(NewSyncService)
+var ProviderSet = wire.NewSet(NewSyncService, NewCheckInfoService)
 
 type SyncService struct {
 	checkInfoUsecase *biz.CheckInfoUsecase

@@ -12,12 +12,12 @@ import (
 	"os"
 )
 
-func newApp(logger *logger.Logger, service *service.SyncService, m *data.DBMigration) *app.App {
+func newApp(logger *logger.Logger, syncSvc *service.SyncService, checkInfoCleanerSvc *service.CheckInfoCleanerService, m *data.DBMigration) *app.App {
 	return app.NewApp(
 		app.Name("cota-nft-entries-syncer"),
 		app.Version("0.0.1"),
 		app.Logger(logger),
-		app.Services(service), app.Migration(m))
+		app.Services(syncSvc, checkInfoCleanerSvc), app.Migration(m))
 }
 
 func main() {

@@ -25,6 +25,7 @@ type CheckInfo struct {
 type CheckInfoRepo interface {
 	FindLastCheckInfo(ctx context.Context, info *CheckInfo) error
 	CreateCheckInfo(ctx context.Context, info *CheckInfo) error
+	CleanCheckInfo(ctx context.Context) error
 }
 
 type CheckInfoUsecase struct {
@@ -44,5 +45,9 @@ func (uc *CheckInfoUsecase) LastCheckInfo(ctx context.Context, checkInfo *CheckI
 }
 
 func (uc *CheckInfoUsecase) Create(ctx context.Context, checkInfo *CheckInfo) error {
-	return uc.Create(ctx, checkInfo)
+	return uc.repo.CreateCheckInfo(ctx, checkInfo)
+}
+
+func (uc *CheckInfoUsecase) Clean(ctx context.Context) error {
+	return uc.repo.CleanCheckInfo(ctx)
 }

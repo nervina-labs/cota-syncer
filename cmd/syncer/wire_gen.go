@@ -47,8 +47,9 @@ func initApp(database *config.Database, ckbNode *config.CkbNode, loggerLogger *l
 	mintCotaKvPairUsecase := biz.NewMintCotaKvPairUsecase(mintCotaKvPairRepo, loggerLogger)
 	blockSyncer := data.NewBlockParser(claimedCotaNftKvPairUsecase, defineCotaNftKvPairUsecase, holdCotaNftKvPairUsecase, registerCotaKvPairUsecase, withdrawCotaNftKvPairUsecase, cotaWitnessArgsParser, syncKvPairUsecase, mintCotaKvPairUsecase)
 	syncService := service.NewSyncService(checkInfoUsecase, loggerLogger, ckbNodeClient, systemScripts, blockSyncer)
+	checkInfoCleanerService := service.NewCheckInfoService(checkInfoUsecase, loggerLogger, ckbNodeClient)
 	dbMigration := data.NewDBMigration(dataData, loggerLogger)
-	appApp := newApp(loggerLogger, syncService, dbMigration)
+	appApp := newApp(loggerLogger, syncService, checkInfoCleanerService, dbMigration)
 	return appApp, func() {
 		cleanup()
 	}, nil
