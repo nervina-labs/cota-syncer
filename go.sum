@@ -870,6 +870,8 @@ github.com/ncw/swift v1.0.47/go.mod h1:23YIA4yWVnGwv2dQlN4bB7egfYX6YLn0Yo/S6zZO/
 github.com/neo4j/neo4j-go-driver v1.8.1-0.20200803113522-b626aa943eba/go.mod h1:ncO5VaFWh0Nrt+4KT4mOZboaczBZcLuHrG+/sUeP8gI=
 github.com/nervina-labs/cota-smt-go v0.4.0 h1:pwgPGM/y8trR712Q4g+UHFY8i7xfSwZbyFCitOzjBI8=
 github.com/nervina-labs/cota-smt-go v0.4.0/go.mod h1:FipjtQG3qTqvQzKrnKk3IiSNXAqHjYHQ+m9x1tY7IYE=
+github.com/nervina-labs/cota-smt-go v0.5.0 h1:bPF87+tZnjsimJjNx3pnBZ5RivbUXnHvc8V3esSo5i0=
+github.com/nervina-labs/cota-smt-go v0.5.0/go.mod h1:FipjtQG3qTqvQzKrnKk3IiSNXAqHjYHQ+m9x1tY7IYE=
 github.com/nervosnetwork/ckb-sdk-go v0.101.3 h1:kQALiNByKtTi4r9WWUKH2LKViLDF+bF31P5lWt2IgA4=
 github.com/nervosnetwork/ckb-sdk-go v0.101.3/go.mod h1:68U+dmWvkMxhvNkaXrtyfTn7QQsmJTY9tNBbiASGtpY=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
