@@ -6,7 +6,7 @@ import (
 )
 
 var ProviderSet = wire.NewSet(NewCheckInfoUsecase, NewRegisterCotaKvPairUsecase, NewDefineCotaNftKvPairUsecase,
-	NewHoldCotaNftKvPairUsecase, NewWithdrawCotaNftKvPairUsecase, NewClaimedCotaNftKvPairUsecase, NewSyncKvPairUsecase, NewMintCotaKvPairUsecase)
+	NewHoldCotaNftKvPairUsecase, NewWithdrawCotaNftKvPairUsecase, NewClaimedCotaNftKvPairUsecase, NewSyncKvPairUsecase, NewMintCotaKvPairUsecase, NewTransferCotaKvPairUsecase)
 
 type Entry struct {
 	Witness    []byte
