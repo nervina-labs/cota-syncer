@@ -38,7 +38,7 @@ func (bp BlockSyncer) Sync(ctx context.Context, block *ckbTypes.Block, checkInfo
 	kvPair := biz.KvPair{}
 	for index, tx := range block.Transactions {
 		// ParseRegistryEntries TODO 拆到独立到 repo 中
-		if bp.hasCotaRegistryCell(tx.Outputs, systemScripts.CotaRegistryType) {
+		if bp.hasCotaRegistryCell(tx.Outputs, systemScripts.CotaRegistryType) && bp.isUpdateCotaRegistryTx(tx.Witnesses[0]) {
 			registers, err := bp.registerCotaUsecase.ParseRegistryEntries(ctx, block.Header.Number, tx)
 			if err != nil && err.Error() == "No data" {
 				continue
@@ -60,6 +60,10 @@ func (bp BlockSyncer) Sync(ctx context.Context, block *ckbTypes.Block, checkInfo
 		return err
 	}
 	return nil
+}
+
+func (bp BlockSyncer) isUpdateCotaRegistryTx(firstWitness []byte) bool {
+	return len(firstWitness) != 0
 }
 
 func (bp BlockSyncer) isCotaRegistryCell(output *ckbTypes.CellOutput, registryType SystemScript) bool {
