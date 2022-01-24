@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 )
@@ -15,12 +16,13 @@ type BlockSyncer struct {
 	cotaWitnessArgsParser CotaWitnessArgsParser
 	kvPairUsecase         *biz.SyncKvPairUsecase
 	mintCotaUsecase       *biz.MintCotaKvPairUsecase
+	transferCotaUsecase   *biz.TransferCotaKvPairUsecase
 }
 
 func NewBlockParser(claimedCotaUsecase *biz.ClaimedCotaNftKvPairUsecase, defineCotaUsecase *biz.DefineCotaNftKvPairUsecase,
 	holdCotaUsecase *biz.HoldCotaNftKvPairUsecase, registerCotaUsecase *biz.RegisterCotaKvPairUsecase,
 	withdrawCotaUsecase *biz.WithdrawCotaNftKvPairUsecase, cotaWitnessArgsParser CotaWitnessArgsParser,
-	kvPairUsecase *biz.SyncKvPairUsecase, mintCotaUsecase *biz.MintCotaKvPairUsecase) BlockSyncer {
+	kvPairUsecase *biz.SyncKvPairUsecase, mintCotaUsecase *biz.MintCotaKvPairUsecase, transferCotaUsecase *biz.TransferCotaKvPairUsecase) BlockSyncer {
 	return BlockSyncer{
 		claimedCotaUsecase:    claimedCotaUsecase,
 		defineCotaUsecase:     defineCotaUsecase,
@@ -30,6 +32,7 @@ func NewBlockParser(claimedCotaUsecase *biz.ClaimedCotaNftKvPairUsecase, defineC
 		cotaWitnessArgsParser: cotaWitnessArgsParser,
 		kvPairUsecase:         kvPairUsecase,
 		mintCotaUsecase:       mintCotaUsecase,
+		transferCotaUsecase:   transferCotaUsecase,
 	}
 }
 
@@ -127,6 +130,14 @@ func (bp BlockSyncer) parseCotaEntries(blockNumber uint64, entries []biz.Entry) 
 				return kvPair, err
 			}
 			kvPair.UpdatedHoldCotas = append(kvPair.HoldCotas, holdCotas...)
+		//	创建 claimedCota kv pairs 与 withdrawCota kv pairs
+		case 6:
+			claimedCotas, withdrawCotas, err := bp.transferCotaUsecase.ParseTransferCotaEntries(blockNumber, entry)
+			if err != nil {
+				return kvPair, err
+			}
+			kvPair.ClaimedCotas = append(kvPair.ClaimedCotas, claimedCotas...)
+			kvPair.WithdrawCotas = append(kvPair.WithdrawCotas, withdrawCotas...)
 		}
 	}
 	return kvPair, nil

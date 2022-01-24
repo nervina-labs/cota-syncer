@@ -5,6 +5,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"os"
+
 	"github.com/golang-migrate/migrate/v4"
 	mMsql "github.com/golang-migrate/migrate/v4/database/mysql"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -15,13 +17,12 @@ import (
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"os"
 )
 
 // ProviderSet is data providers
 var ProviderSet = wire.NewSet(NewData, NewDBMigration, NewCheckInfoRepo, NewRegisterCotaKvPairRepo,
 	NewDefineCotaNftKvPairRepo, NewHoldCotaNftKvPairRepo, NewWithdrawCotaNftKvPairRepo, NewClaimedCotaNftKvPairRepo,
-	NewKvPairRepo, NewSystemScripts, NewCkbNodeClient, NewBlockParser, NewCotaWitnessArgsParser, NewMintCotaKvPairRepo)
+	NewKvPairRepo, NewSystemScripts, NewCkbNodeClient, NewBlockParser, NewCotaWitnessArgsParser, NewMintCotaKvPairRepo, NewTransferCotaKvPairRepo)
 
 type Data struct {
 	db *gorm.DB
