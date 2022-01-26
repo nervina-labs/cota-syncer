@@ -2,8 +2,8 @@ data:
   database:
     driver: mysql
     dsn: root@tcp(127.0.0.1:3306)/cota_entries?charset=utf8mb4&parseTime=True&multiStatements=true
-    max_idle_conns: 100
-    max_open_conns: 100
+    max_idle_conns: 10
+    max_open_conns: 20
     conn_max_lifetime: 10s
 app:
   log_save_path: storage/logs
