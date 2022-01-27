@@ -51,7 +51,9 @@ func (bp BlockSyncer) Sync(ctx context.Context, block *ckbTypes.Block, checkInfo
 			kvPair.Registers = append(kvPair.Registers, registers...)
 		}
 		entries, err := bp.cotaWitnessArgsParser.Parse(tx, uint32(index), systemScripts.CotaType)
-		if err != nil {
+		if err != nil && err.Error() == "No data" {
+			continue
+		} else if err != nil {
 			return err
 		}
 		entryVec = append(entryVec, entries...)

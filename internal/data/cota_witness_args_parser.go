@@ -48,16 +48,14 @@ func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, txIndex uin
 		return nil, err
 	}
 	cotaCells := make([]cotaCell, len(inputCotaCellGroups))
-	var index int
-	for typeHash := range inputCotaCellGroups {
+	for typeHash, inputCota := range inputCotaCellGroups {
 		cotaCell := outputCotaCellGroups[typeHash]
-		cotaCells[index] = cotaCell
-		index += 1
+		cotaCells[inputCota.index] = cotaCell
 	}
 
 	var entries []biz.Entry
-	for _, cotaCell := range cotaCells {
-		witness := tx.Witnesses[cotaCell.index]
+	for index, cotaCell := range cotaCells {
+		witness := tx.Witnesses[index]
 		bytes, err := blockchain.WitnessArgsFromSliceUnchecked(witness).InputType().IntoBytes()
 		if err != nil {
 			return nil, err
