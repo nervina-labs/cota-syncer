@@ -1,5 +1,5 @@
 # cota-nft-entries-syncer
-The data syncer of [CoTA Script](https://github.com/nervina-labs/ckb-cota-scripts). 
+The data syncer of [CoTA Script](https://talk.nervos.org/t/rfc-cota-a-compact-token-aggregator-standard-for-extremely-low-cost-nfts-and-fts/6338). 
 
 # Prerequisites
 * [MySQL](https://www.mysql.com/) 8.0 and above
