@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"os"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -33,11 +32,9 @@ type Option func(*Data)
 func NewData(conf *config.Database, logger *logger.Logger) (*Data, func(), error) {
 	dsn := os.Getenv("DATABASE_URL")
 	logger.Error(context.TODO(), "dsn", dsn)
-	fmt.Println("dsn env", dsn)
 	if dsn == "" {
 		dsn = conf.Dsn
 	}
-	fmt.Println("dsn", dsn)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		logger.Errorf(context.TODO(), "failed opening connection to mysql: %v", err)
@@ -68,7 +65,6 @@ type CkbNodeClient struct {
 
 func NewCkbNodeClient(conf *config.CkbNode, logger *logger.Logger) (*CkbNodeClient, error) {
 	rpcURL := os.Getenv("RPC_URL")
-	fmt.Println("rpc_url env", rpcURL)
 	if rpcURL == "" {
 		rpcURL = conf.RpcUrl
 	}
