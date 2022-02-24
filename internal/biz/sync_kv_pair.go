@@ -15,6 +15,7 @@ type KvPair struct {
 	WithdrawCotas      []WithdrawCotaNftKvPair
 	ClaimedCotas       []ClaimedCotaNftKvPair
 	IssuerInfos        []IssuerInfo
+	ClassInfos         []ClassInfo
 }
 
 func (p KvPair) HasRegisters() bool {
@@ -64,6 +65,13 @@ func (p KvPair) HasClaimedCotas() bool {
 
 func (p KvPair) HasIssuerInfos() bool {
 	if len(p.IssuerInfos) > 0 {
+		return true
+	}
+	return false
+}
+
+func (p KvPair) HasClassInfos() bool {
+	if len(p.ClassInfos) > 0 {
 		return true
 	}
 	return false

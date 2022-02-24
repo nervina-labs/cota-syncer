@@ -2,9 +2,9 @@ package data
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
+	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 	"hash/crc32"
 	"time"
 )
@@ -23,14 +23,6 @@ type IssuerInfo struct {
 	Localization string
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
-}
-
-type IssuerInfoJson struct {
-	Version      string
-	Name         string
-	Avatar       string
-	Description  string
-	Localization string
 }
 
 type issuerInfoRepo struct {
@@ -65,13 +57,8 @@ func (repo issuerInfoRepo) DeleteIssuerInfo(ctx context.Context, blockNumber uin
 	return nil
 }
 
-func (repo issuerInfoRepo) ParseIssuerInfo(blockNumber uint64, entry biz.Entry) (issuer biz.IssuerInfo, err error) {
-	var issuerJson IssuerInfoJson
-	err = json.Unmarshal(entry.OutputType, &issuerJson)
-	if err != nil {
-		return
-	}
-	lockHash, err := entry.LockScript.Hash()
+func (repo issuerInfoRepo) ParseIssuerInfo(blockNumber uint64, lockScript *ckbTypes.Script, issuerJson biz.IssuerInfoJson) (issuer biz.IssuerInfo, err error) {
+	lockHash, err := lockScript.Hash()
 	if err != nil {
 		return
 	}

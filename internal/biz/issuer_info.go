@@ -3,10 +3,10 @@ package biz
 import (
 	"context"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
+	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 )
 
 type IssuerInfo struct {
-	ID           uint
 	BlockNumber  uint64
 	LockHash     string
 	LockHashCRC  uint32
@@ -20,7 +20,7 @@ type IssuerInfo struct {
 type IssuerInfoRepo interface {
 	CreateIssuerInfo(ctx context.Context, issuer *IssuerInfo) error
 	DeleteIssuerInfo(ctx context.Context, blockNumber uint64) error
-	ParseIssuerInfo(blockNumber uint64, entry Entry) (IssuerInfo, error)
+	ParseIssuerInfo(blockNumber uint64, lockScript *ckbTypes.Script, issuerJson IssuerInfoJson) (IssuerInfo, error)
 }
 
 type IssuerInfoUsecase struct {
@@ -43,6 +43,6 @@ func (uc *IssuerInfoUsecase) DeleteByBlockNumber(ctx context.Context, blockNumbe
 	return uc.repo.DeleteIssuerInfo(ctx, blockNumber)
 }
 
-func (uc IssuerInfoUsecase) ParseIssuerMetadata(blockNumber uint64, entry Entry) (IssuerInfo, error) {
-	return uc.repo.ParseIssuerInfo(blockNumber, entry)
+func (uc IssuerInfoUsecase) ParseIssuerMetadata(blockNumber uint64, lockScript *ckbTypes.Script, issuerJson IssuerInfoJson) (IssuerInfo, error) {
+	return uc.repo.ParseIssuerInfo(blockNumber, lockScript, issuerJson)
 }
