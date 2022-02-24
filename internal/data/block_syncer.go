@@ -94,7 +94,10 @@ func (bp BlockSyncer) Rollback(ctx context.Context, blockNumber uint64) error {
 func (bp BlockSyncer) parseCotaEntries(blockNumber uint64, entries []biz.Entry) (biz.KvPair, error) {
 	var kvPair biz.KvPair
 	for _, entry := range entries {
-		switch entry.Witness[0] {
+		if len(entry.InputType) == 0 {
+			continue
+		}
+		switch entry.InputType[0] {
 		//	Define 创建 DefineCota Kv pairs
 		case 1:
 			defineCotas, err := bp.defineCotaUsecase.ParseDefineCotaEntries(blockNumber, entry)

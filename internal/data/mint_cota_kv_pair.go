@@ -26,7 +26,7 @@ func (rp mintCotaKvPairRepo) ParseMintCotaEntries(blockNumber uint64, entry biz.
 }
 
 func generateDefineWithdrawV1KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPairRepo) (updatedDefineCotas []biz.DefineCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
-	entries := smt.MintCotaNFTV1EntriesFromSliceUnchecked(entry.Witness[1:])
+	entries := smt.MintCotaNFTV1EntriesFromSliceUnchecked(entry.InputType[1:])
 	defineCotaKeyVec := entries.DefineKeys()
 	defineCotaValueVec := entries.DefineNewValues()
 	lockHash, err := entry.LockScript.Hash()
@@ -85,7 +85,7 @@ func generateDefineWithdrawV1KvPairs(blockNumber uint64, entry biz.Entry, rp min
 }
 
 func generateDefineWithdrawV0KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPairRepo) (updatedDefineCotas []biz.DefineCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
-	entries := smt.MintCotaNFTEntriesFromSliceUnchecked(entry.Witness[1:])
+	entries := smt.MintCotaNFTEntriesFromSliceUnchecked(entry.InputType[1:])
 	defineCotaKeyVec := entries.DefineKeys()
 	defineCotaValueVec := entries.DefineNewValues()
 	lockHash, err := entry.LockScript.Hash()

@@ -54,7 +54,7 @@ func (rp claimedCotaNftKvPairRepo) DeleteClaimedCotaNftKvPairs(ctx context.Conte
 }
 
 func (rp claimedCotaNftKvPairRepo) ParseClaimedCotaEntries(blockNumber uint64, entry biz.Entry) (holdCotas []biz.HoldCotaNftKvPair, claimedCotas []biz.ClaimedCotaNftKvPair, err error) {
-	entries := smt.ClaimCotaNFTEntriesFromSliceUnchecked(entry.Witness[1:])
+	entries := smt.ClaimCotaNFTEntriesFromSliceUnchecked(entry.InputType[1:])
 	holdCotaKeyVec := entries.HoldKeys()
 	holdCotaValueVec := entries.HoldValues()
 	lockHash, err := entry.LockScript.Hash()

@@ -69,7 +69,7 @@ func (rp defineCotaNftKvPairRepo) DeleteDefineCotaNftKvPairs(ctx context.Context
 }
 
 func (rp defineCotaNftKvPairRepo) ParseDefineCotaEntries(blockNumber uint64, entry biz.Entry) (defineCotas []biz.DefineCotaNftKvPair, err error) {
-	entries := smt.DefineCotaNFTEntriesFromSliceUnchecked(entry.Witness[1:])
+	entries := smt.DefineCotaNFTEntriesFromSliceUnchecked(entry.InputType[1:])
 	defineCotaKeyVec := entries.DefineKeys()
 	defineCotaValueVec := entries.DefineValues()
 	lockHash, err := entry.LockScript.Hash()

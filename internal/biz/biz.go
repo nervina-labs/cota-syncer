@@ -6,10 +6,11 @@ import (
 )
 
 var ProviderSet = wire.NewSet(NewCheckInfoUsecase, NewRegisterCotaKvPairUsecase, NewDefineCotaNftKvPairUsecase,
-	NewHoldCotaNftKvPairUsecase, NewWithdrawCotaNftKvPairUsecase, NewClaimedCotaNftKvPairUsecase, NewSyncKvPairUsecase, NewMintCotaKvPairUsecase, NewTransferCotaKvPairUsecase)
+	NewHoldCotaNftKvPairUsecase, NewWithdrawCotaNftKvPairUsecase, NewClaimedCotaNftKvPairUsecase, NewSyncKvPairUsecase, NewMintCotaKvPairUsecase, NewTransferCotaKvPairUsecase, NewIssuerInfoUsecase)
 
 type Entry struct {
-	Witness    []byte
+	InputType  []byte
+	OutputType []byte
 	LockScript *ckbTypes.Script
 	TxIndex    uint32
 	Version    uint8
