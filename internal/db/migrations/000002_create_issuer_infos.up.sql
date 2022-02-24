@@ -1,7 +1,8 @@
 CREATE TABLE IF NOT EXISTS issuer_infos (
     id bigint NOT NULL AUTO_INCREMENT,
     block_number bigint unsigned NOT NULL,
-    cota_id char(40) NOT NULL,
+    lock_hash char(64) NOT NULL,
+    lock_hash_crc int unsigned NOT NULL,
     version varchar(40) NOT NULL,
     `name` varchar(255) NOT NULL,
     avatar varchar(500) NOT NULL,
