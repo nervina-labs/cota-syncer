@@ -138,13 +138,13 @@ func NewSystemScripts(client *CkbNodeClient, logger *logger.Logger) SystemScript
 
 func cotaRegistryScript(chain string) SystemScript {
 	if chain == "ckb" {
-		args, _ := hex.DecodeString("")
+		args, _ := hex.DecodeString("563631b49cee549f3585ab4dde5f9d590f507f1f")
 		return SystemScript{
-			CodeHash: ckbTypes.HexToHash("0x"),
+			CodeHash: ckbTypes.HexToHash("0x90ca618be6c15f5857d3cbd09f9f24ca6770af047ba9ee70989ec3b229419ac7"),
 			HashType: ckbTypes.HashTypeType,
 			Args:     args,
 			OutPoint: ckbTypes.OutPoint{
-				TxHash: ckbTypes.HexToHash("0x"),
+				TxHash: ckbTypes.HexToHash("0xae2d5838730fc096e68fe839aea50d294493e10054513c10ca35e77e82e9243b"),
 				Index:  0,
 			},
 			DepType: ckbTypes.DepTypeDepGroup,
@@ -166,10 +166,10 @@ func cotaRegistryScript(chain string) SystemScript {
 func cotaTypeScript(chain string) SystemScript {
 	if chain == "ckb" {
 		return SystemScript{
-			CodeHash: ckbTypes.HexToHash("0x"),
+			CodeHash: ckbTypes.HexToHash("0x1122a4fb54697cf2e6e3a96c9d80fd398a936559b90954c6e88eb7ba0cf652df"),
 			HashType: ckbTypes.HashTypeType,
 			OutPoint: ckbTypes.OutPoint{
-				TxHash: ckbTypes.HexToHash("0x"),
+				TxHash: ckbTypes.HexToHash("0xae2d5838730fc096e68fe839aea50d294493e10054513c10ca35e77e82e9243b"),
 				Index:  0,
 			},
 			DepType: ckbTypes.DepTypeDepGroup,
