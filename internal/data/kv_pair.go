@@ -332,7 +332,10 @@ func (rp kvPairRepo) RestoreKvPairs(ctx context.Context, blockNumber uint64) err
 			})
 		}
 		if len(updatedDefineCotas) > 0 {
-			if err := tx.Model(DefineCotaNftKvPair{}).WithContext(ctx).Create(updatedDefineCotas).Error; err != nil {
+			if err := tx.Debug().WithContext(ctx).Clauses(clause.OnConflict{
+				Columns: []clause.Column{{Name: "cota_id"}},
+				UpdateAll: true,
+			}).Create(updatedDefineCotas).Error; err != nil {
 				return err
 			}
 		}
