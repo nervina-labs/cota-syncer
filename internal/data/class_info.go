@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
 	"time"
@@ -60,7 +61,12 @@ func (repo classInfoRepo) DeleteClassInfo(ctx context.Context, blockNumber uint6
 	return nil
 }
 
-func (repo classInfoRepo) ParseClassInfo(blockNumber uint64, classJson biz.ClassInfoJson) (class biz.ClassInfo, err error) {
+func (repo classInfoRepo) ParseClassInfo(blockNumber uint64, classMeta []byte) (class biz.ClassInfo, err error) {
+	var classJson biz.ClassInfoJson
+	err = json.Unmarshal(classMeta, &classJson)
+	if err != nil {
+		return
+	}
 	class = biz.ClassInfo{
 		BlockNumber:  blockNumber,
 		CotaId:       classJson.CotaId,

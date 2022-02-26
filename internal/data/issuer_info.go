@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
@@ -57,13 +58,18 @@ func (repo issuerInfoRepo) DeleteIssuerInfo(ctx context.Context, blockNumber uin
 	return nil
 }
 
-func (repo issuerInfoRepo) ParseIssuerInfo(blockNumber uint64, lockScript *ckbTypes.Script, issuerJson biz.IssuerInfoJson) (issuer biz.IssuerInfo, err error) {
+func (repo issuerInfoRepo) ParseIssuerInfo(blockNumber uint64, lockScript *ckbTypes.Script, issuerMeta []byte) (issuer biz.IssuerInfo, err error) {
 	lockHash, err := lockScript.Hash()
 	if err != nil {
 		return
 	}
 	lockHashStr := lockHash.String()[2:]
 	lockHashCRC32 := crc32.ChecksumIEEE([]byte(lockHashStr))
+	var issuerJson biz.IssuerInfoJson
+	err = json.Unmarshal(issuerMeta, &issuerJson)
+	if err != nil {
+		return
+	}
 	issuer = biz.IssuerInfo{
 		BlockNumber:  blockNumber,
 		LockHash:     lockHashStr,

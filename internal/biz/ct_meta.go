@@ -39,20 +39,13 @@ type IssuerInfoJson struct {
 	Localization string
 }
 
-func ParseMetadata(meta []byte) (isIssuer bool, issuerJson IssuerInfoJson, classJson ClassInfoJson, err error) {
+func ParseMetadata(meta []byte) (isIssuer bool, metadata []byte, err error) {
 	var ctMeta CTMeta
 	err = json.Unmarshal(meta, &ctMeta)
 	if err != nil {
 		return
 	}
-	data := []byte(ctMeta.metadata.Data)
-	err = json.Unmarshal(data, &issuerJson)
-	if err == nil {
-		return true, issuerJson, classJson, err
-	}
-	err = json.Unmarshal(data, &classJson)
-	if err == nil {
-		return false, issuerJson, classJson, err
-	}
+	metadata = []byte(ctMeta.metadata.Data)
+	isIssuer = ctMeta.metadata.Type == "issuer"
 	return
 }

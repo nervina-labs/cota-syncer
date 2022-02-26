@@ -24,7 +24,7 @@ type ClassInfo struct {
 type ClassInfoRepo interface {
 	CreateClassInfo(ctx context.Context, class *ClassInfo) error
 	DeleteClassInfo(ctx context.Context, blockNumber uint64) error
-	ParseClassInfo(blockNumber uint64, classJson ClassInfoJson) (ClassInfo, error)
+	ParseClassInfo(blockNumber uint64, classMeta []byte) (ClassInfo, error)
 }
 
 type ClassInfoUsecase struct {
@@ -47,6 +47,6 @@ func (uc *ClassInfoUsecase) DeleteByBlockNumber(ctx context.Context, blockNumber
 	return uc.repo.DeleteClassInfo(ctx, blockNumber)
 }
 
-func (uc ClassInfoUsecase) ParseClassMetadata(blockNumber uint64, classJson ClassInfoJson) (ClassInfo, error) {
-	return uc.repo.ParseClassInfo(blockNumber, classJson)
+func (uc ClassInfoUsecase) ParseClassMetadata(blockNumber uint64, classMeta []byte) (ClassInfo, error) {
+	return uc.repo.ParseClassInfo(blockNumber, classMeta)
 }

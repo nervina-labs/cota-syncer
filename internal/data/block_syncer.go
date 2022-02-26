@@ -99,26 +99,25 @@ func (bp BlockSyncer) Rollback(ctx context.Context, blockNumber uint64) error {
 func (bp BlockSyncer) parseCotaEntries(blockNumber uint64, entries []biz.Entry) (biz.KvPair, error) {
 	var kvPair biz.KvPair
 	for _, entry := range entries {
-		// Issuer/Class Metadata
-		if len(entry.InputType) == 0 {
-			isIssuer, issuerJson, classJson, err := biz.ParseMetadata(entry.OutputType)
+		// Parse Issuer/Class Metadata
+		if len(entry.OutputType) != 0 {
+			isIssuer, metadata, err := biz.ParseMetadata(entry.OutputType)
 			if err != nil {
 				return kvPair, err
 			}
 			if isIssuer {
-				issuerInfo, err := bp.issuerInfoUsecase.ParseIssuerMetadata(blockNumber, entry.LockScript, issuerJson)
+				issuerInfo, err := bp.issuerInfoUsecase.ParseIssuerMetadata(blockNumber, entry.LockScript, metadata)
 				if err != nil {
 					return kvPair, err
 				}
 				kvPair.IssuerInfos = append(kvPair.IssuerInfos, issuerInfo)
 			} else {
-				classInfo, err := bp.classInfoUsecase.ParseClassMetadata(blockNumber, classJson)
+				classInfo, err := bp.classInfoUsecase.ParseClassMetadata(blockNumber, metadata)
 				if err != nil {
 					return kvPair, err
 				}
 				kvPair.ClassInfos = append(kvPair.ClassInfos, classInfo)
 			}
-			continue
 		}
 		switch entry.InputType[0] {
 		//	Define 创建 DefineCota Kv pairs
