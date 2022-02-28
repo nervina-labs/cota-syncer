@@ -6,7 +6,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.15.1
 	github.com/google/uuid v1.3.0
 	github.com/google/wire v0.5.0
-	github.com/nervina-labs/cota-smt-go v0.5.0
+	github.com/nervina-labs/cota-smt-go v0.6.0
 	github.com/nervosnetwork/ckb-sdk-go v0.101.3
 	github.com/spf13/viper v1.10.0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
@@ -33,7 +33,6 @@ require (
 	github.com/minio/blake2b-simd v0.0.0-20160723061019-3f5f724cb5b1 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
 	github.com/spf13/afero v1.6.0 // indirect
 	github.com/spf13/cast v1.4.1 // indirect

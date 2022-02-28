@@ -140,6 +140,15 @@ func (bp BlockSyncer) parseCotaEntries(blockNumber uint64, entries []biz.Entry) 
 			}
 			kvPair.ClaimedCotas = append(kvPair.ClaimedCotas, claimedCotas...)
 			kvPair.WithdrawCotas = append(kvPair.WithdrawCotas, withdrawCotas...)
+		//	创建 HoldCota kv pairs 与 claimedCota kv pairs
+		case 7:
+			holdCotas, claimedCotas, err := bp.claimedCotaUsecase.ParseClaimedUpdateCotaEntries(blockNumber, entry)
+			if err != nil {
+				return kvPair, err
+			}
+			kvPair.ClaimedCotas = append(kvPair.ClaimedCotas, claimedCotas...)
+			kvPair.HoldCotas = append(kvPair.HoldCotas, holdCotas...)
+			//	更新 HoldCota kv pairs
 		}
 	}
 	return kvPair, nil
