@@ -148,7 +148,13 @@ func (bp BlockSyncer) parseCotaEntries(blockNumber uint64, entries []biz.Entry) 
 			}
 			kvPair.ClaimedCotas = append(kvPair.ClaimedCotas, claimedCotas...)
 			kvPair.HoldCotas = append(kvPair.HoldCotas, holdCotas...)
-			//	更新 HoldCota kv pairs
+		case 8:
+			claimedCotas, withdrawCotas, err := bp.transferCotaUsecase.ParseTransferUpdateCotaEntries(blockNumber, entry)
+			if err != nil {
+				return kvPair, err
+			}
+			kvPair.ClaimedCotas = append(kvPair.ClaimedCotas, claimedCotas...)
+			kvPair.WithdrawCotas = append(kvPair.WithdrawCotas, withdrawCotas...)
 		}
 	}
 	return kvPair, nil

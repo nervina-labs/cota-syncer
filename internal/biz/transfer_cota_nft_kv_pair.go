@@ -10,6 +10,7 @@ type TransferCotaKvPair struct{}
 
 type TransferCotaKvPairRepo interface {
 	ParseTransferCotaEntries(blockNumber uint64, entry Entry) ([]ClaimedCotaNftKvPair, []WithdrawCotaNftKvPair, error)
+	ParseTransferUpdateCotaEntries(blockNumber uint64, entry Entry) ([]ClaimedCotaNftKvPair, []WithdrawCotaNftKvPair, error)
 	FindOrCreateScript(ctx context.Context, script *Script) error
 }
 
@@ -27,6 +28,10 @@ func NewTransferCotaKvPairUsecase(repo TransferCotaKvPairRepo, logger *logger.Lo
 
 func (uc *TransferCotaKvPairUsecase) ParseTransferCotaEntries(blockNumber uint64, entry Entry) ([]ClaimedCotaNftKvPair, []WithdrawCotaNftKvPair, error) {
 	return uc.repo.ParseTransferCotaEntries(blockNumber, entry)
+}
+
+func (uc *TransferCotaKvPairUsecase) ParseTransferUpdateCotaEntries(blockNumber uint64, entry Entry) ([]ClaimedCotaNftKvPair, []WithdrawCotaNftKvPair, error) {
+	return uc.repo.ParseTransferUpdateCotaEntries(blockNumber, entry)
 }
 
 func (uc *TransferCotaKvPairUsecase) FindOrCreateScript(ctx context.Context, script *Script) error {
