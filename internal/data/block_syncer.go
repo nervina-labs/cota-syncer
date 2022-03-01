@@ -118,6 +118,10 @@ func (bp BlockSyncer) parseCotaEntries(blockNumber uint64, entries []biz.Entry) 
 				}
 				kvPair.ClassInfos = append(kvPair.ClassInfos, classInfo)
 			}
+			continue
+		}
+		if len(entry.InputType) == 0 {
+			return kvPair, nil
 		}
 		switch entry.InputType[0] {
 		//	Define 创建 DefineCota Kv pairs

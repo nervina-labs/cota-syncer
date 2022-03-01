@@ -2,6 +2,7 @@ package biz
 
 import (
 	"encoding/json"
+	"github.com/pkg/errors"
 )
 
 type CTMeta struct {
@@ -41,11 +42,15 @@ type IssuerInfoJson struct {
 
 func ParseMetadata(meta []byte) (isIssuer bool, metadata []byte, err error) {
 	var ctMeta CTMeta
-	err = json.Unmarshal(meta, &ctMeta)
-	if err != nil {
+	if err = json.Unmarshal(meta, &ctMeta); err != nil {
 		return
 	}
 	metadata = []byte(ctMeta.metadata.Data)
-	isIssuer = ctMeta.metadata.Type == "issuer"
+	metaType := ctMeta.metadata.Type
+	if metaType != "issuer" && metaType != "class" {
+		err = errors.New("Cota metadata type error")
+	} else {
+		isIssuer = metaType == "issuer"
+	}
 	return
 }

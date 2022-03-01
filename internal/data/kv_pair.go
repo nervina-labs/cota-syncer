@@ -289,6 +289,49 @@ func (rp kvPairRepo) CreateKvPairs(ctx context.Context, checkInfo biz.CheckInfo,
 				return err
 			}
 		}
+		if kvPair.HasIssuerInfos() {
+			// create issuer info
+			issuerInfos := make([]IssuerInfo, len(kvPair.IssuerInfos))
+			for i, issuer := range kvPair.IssuerInfos {
+				issuerInfos[i] = IssuerInfo{
+					BlockNumber:  issuer.BlockNumber,
+					LockHash:     issuer.LockHash,
+					LockHashCRC:  issuer.LockHashCRC,
+					Version:      issuer.Version,
+					Name:         issuer.Name,
+					Avatar:       issuer.Avatar,
+					Description:  issuer.Description,
+					Localization: issuer.Localization,
+				}
+			}
+			if err := tx.Model(IssuerInfo{}).WithContext(ctx).Create(issuerInfos).Error; err != nil {
+				return err
+			}
+		}
+		if kvPair.HasClassInfos() {
+			// create class info
+			classInfos := make([]ClassInfo, len(kvPair.ClassInfos))
+			for i, class := range kvPair.ClassInfos {
+				classInfos[i] = ClassInfo{
+					BlockNumber:  class.BlockNumber,
+					CotaId:       class.CotaId,
+					Version:      class.Version,
+					Name:         class.Name,
+					Symbol:       class.Symbol,
+					Description:  class.Description,
+					Image:        class.Image,
+					Audio:        class.Audio,
+					Video:        class.Video,
+					Model:        class.Model,
+					Schema:       class.Schema,
+					Properties:   class.Properties,
+					Localization: class.Localization,
+				}
+			}
+			if err := tx.Model(ClassInfo{}).WithContext(ctx).Create(classInfos).Error; err != nil {
+				return err
+			}
+		}
 		// create check info
 		if err := tx.Debug().Model(CheckInfo{}).WithContext(ctx).Create(&CheckInfo{
 			BlockNumber: checkInfo.BlockNumber,
@@ -412,6 +455,14 @@ func (rp kvPairRepo) RestoreKvPairs(ctx context.Context, blockNumber uint64) err
 		}
 		// delete all claimed cotas by the block number
 		if err := tx.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(ClaimedCotaNftKvPair{}).Error; err != nil {
+			return err
+		}
+		// delete all issuer info by the block number
+		if err := tx.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(IssuerInfo{}).Error; err != nil {
+			return err
+		}
+		// delete all class info by the block number
+		if err := tx.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(ClassInfo{}).Error; err != nil {
 			return err
 		}
 
