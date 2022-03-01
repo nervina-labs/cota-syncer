@@ -20,6 +20,7 @@ type ClaimedCotaNftKvPairRepo interface {
 	CreateClaimedCotaNftKvPair(ctx context.Context, w *ClaimedCotaNftKvPair) error
 	DeleteClaimedCotaNftKvPairs(ctx context.Context, blockNumber uint64) error
 	ParseClaimedCotaEntries(blockNumber uint64, entry Entry) ([]HoldCotaNftKvPair, []ClaimedCotaNftKvPair, error)
+	ParseClaimedUpdateCotaEntries(blockNumber uint64, entry Entry) ([]HoldCotaNftKvPair, []ClaimedCotaNftKvPair, error)
 }
 
 type ClaimedCotaNftKvPairUsecase struct {
@@ -44,4 +45,8 @@ func (uc *ClaimedCotaNftKvPairUsecase) DeleteByBlockNumber(ctx context.Context, 
 
 func (uc ClaimedCotaNftKvPairUsecase) ParseClaimedCotaEntries(blockNumber uint64, entry Entry) ([]HoldCotaNftKvPair, []ClaimedCotaNftKvPair, error) {
 	return uc.repo.ParseClaimedCotaEntries(blockNumber, entry)
+}
+
+func (uc ClaimedCotaNftKvPairUsecase) ParseClaimedUpdateCotaEntries(blockNumber uint64, entry Entry) ([]HoldCotaNftKvPair, []ClaimedCotaNftKvPair, error) {
+	return uc.repo.ParseClaimedUpdateCotaEntries(blockNumber, entry)
 }

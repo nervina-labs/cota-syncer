@@ -868,10 +868,8 @@ github.com/naoina/go-stringutil v0.1.0/go.mod h1:XJ2SJL9jCtBh+P9q5btrd/Ylo8XwT/h
 github.com/naoina/toml v0.1.2-0.20170918210437-9fafd6967416/go.mod h1:NBIhNtsFMo3G2szEBne+bO4gS192HuIYRqfvOWb4i1E=
 github.com/ncw/swift v1.0.47/go.mod h1:23YIA4yWVnGwv2dQlN4bB7egfYX6YLn0Yo/S6zZO/ZM=
 github.com/neo4j/neo4j-go-driver v1.8.1-0.20200803113522-b626aa943eba/go.mod h1:ncO5VaFWh0Nrt+4KT4mOZboaczBZcLuHrG+/sUeP8gI=
-github.com/nervina-labs/cota-smt-go v0.4.0 h1:pwgPGM/y8trR712Q4g+UHFY8i7xfSwZbyFCitOzjBI8=
-github.com/nervina-labs/cota-smt-go v0.4.0/go.mod h1:FipjtQG3qTqvQzKrnKk3IiSNXAqHjYHQ+m9x1tY7IYE=
-github.com/nervina-labs/cota-smt-go v0.5.0 h1:bPF87+tZnjsimJjNx3pnBZ5RivbUXnHvc8V3esSo5i0=
-github.com/nervina-labs/cota-smt-go v0.5.0/go.mod h1:FipjtQG3qTqvQzKrnKk3IiSNXAqHjYHQ+m9x1tY7IYE=
+github.com/nervina-labs/cota-smt-go v0.6.0 h1:3gOyB16Ny8rcHz30ccOys/L9hd31QhnDWWgv0f/iABY=
+github.com/nervina-labs/cota-smt-go v0.6.0/go.mod h1:FipjtQG3qTqvQzKrnKk3IiSNXAqHjYHQ+m9x1tY7IYE=
 github.com/nervosnetwork/ckb-sdk-go v0.101.3 h1:kQALiNByKtTi4r9WWUKH2LKViLDF+bF31P5lWt2IgA4=
 github.com/nervosnetwork/ckb-sdk-go v0.101.3/go.mod h1:68U+dmWvkMxhvNkaXrtyfTn7QQsmJTY9tNBbiASGtpY=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
@@ -1057,7 +1055,6 @@ github.com/stefanberger/go-pkcs11uri v0.0.0-20201008174630-78d3cae3a980/go.mod h
 github.com/stretchr/objx v0.0.0-20180129172003-8a3f7159479f/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
-github.com/stretchr/objx v0.2.0 h1:Hbg2NidpLE8veEBkEZTL3CvlkUIVzuU9jDplZO54c48=
 github.com/stretchr/objx v0.2.0/go.mod h1:qt09Ya8vawLte6SNmTgCsAVtYtaKzEcn8ATUoHMkEqE=
 github.com/stretchr/testify v0.0.0-20180303142811-b89eecf5ca5d/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/stretchr/testify v1.2.0/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
