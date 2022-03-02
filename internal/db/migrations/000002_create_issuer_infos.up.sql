@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS issuer_infos (
     updated_at datetime(6) NOT NULL,
     PRIMARY KEY (id),
     KEY index_issuer_infos_on_block_number (block_number),
-    CONSTRAINT uc_issuer_infos_on_cota_id UNIQUE (cota_id)
+    CONSTRAINT uc_issuer_infos_on_lock_hash UNIQUE (lock_hash)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE IF NOT EXISTS class_infos (
