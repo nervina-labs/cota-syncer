@@ -6,47 +6,48 @@ import (
 )
 
 type CTMeta struct {
-	Id       string
-	ver      string
-	metadata Metadata
+	Id       string   `json:"id"`
+	Ver      string   `json:"ver"`
+	Metadata MetaData `json:"metadata"`
 }
 
-type Metadata struct {
-	Target string
-	Type   string
-	Data   string
+type MetaData struct {
+	Target string `json:"target"`
+	Type   string `json:"type"`
+	Data   string `json:"data"`
 }
 
 type ClassInfoJson struct {
-	CotaId       string
-	Version      string
-	Name         string
-	Symbol       string
-	Description  string
-	Image        string
-	Audio        string
-	Video        string
-	Model        string
-	Schema       string
-	Properties   string
-	Localization string
+	CotaId       string `json:"cota_id"`
+	Version      string `json:"version"`
+	Name         string `json:"name"`
+	Symbol       string `json:"symbol"`
+	Description  string `json:"description"`
+	Image        string `json:"image"`
+	Audio        string `json:"audio"`
+	Video        string `json:"video"`
+	Model        string `json:"model"`
+	Schema       string `json:"schema"`
+	Properties   string `json:"properties"`
+	Localization string `json:"localization"`
 }
 
 type IssuerInfoJson struct {
-	Version      string
-	Name         string
-	Avatar       string
-	Description  string
-	Localization string
+	Version      string `json:"version"`
+	Name         string `json:"name"`
+	Avatar       string `json:"avatar"`
+	Description  string `json:"description"`
+	Localization string `json:"localization"`
 }
 
 func ParseMetadata(meta []byte) (isIssuer bool, metadata []byte, err error) {
 	var ctMeta CTMeta
 	if err = json.Unmarshal(meta, &ctMeta); err != nil {
+		err = errors.New("Parse CTMeta to json error")
 		return
 	}
-	metadata = []byte(ctMeta.metadata.Data)
-	metaType := ctMeta.metadata.Type
+	metadata = []byte(ctMeta.Metadata.Data)
+	metaType := ctMeta.Metadata.Type
 	if metaType != "issuer" && metaType != "class" {
 		err = errors.New("Cota metadata type error")
 	} else {
