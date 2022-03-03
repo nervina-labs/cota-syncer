@@ -100,28 +100,20 @@ func (bp BlockSyncer) parseCotaEntries(blockNumber uint64, entries []biz.Entry) 
 	var kvPair biz.KvPair
 	for _, entry := range entries {
 		// Parse Issuer/Class Metadata
-		if len(entry.OutputType) != 0 {
-			isIssuer, metadata, err := biz.ParseMetadata(entry.OutputType)
-			if err != nil {
-				return kvPair, err
-			}
-			if isIssuer {
+		if len(entry.OutputType) > 0 {
+			result, metadata := biz.ParseMetadata(entry.OutputType)
+			switch result {
+			case biz.Issuer:
 				issuerInfo, err := bp.issuerInfoUsecase.ParseIssuerMetadata(blockNumber, entry.LockScript, metadata)
-				if err != nil {
-					return kvPair, err
+				if err == nil {
+					kvPair.IssuerInfos = append(kvPair.IssuerInfos, issuerInfo)
 				}
-				kvPair.IssuerInfos = append(kvPair.IssuerInfos, issuerInfo)
-			} else {
+			case biz.Class:
 				classInfo, err := bp.classInfoUsecase.ParseClassMetadata(blockNumber, metadata)
-				if err != nil {
-					return kvPair, err
+				if err == nil {
+					kvPair.ClassInfos = append(kvPair.ClassInfos, classInfo)
 				}
-				kvPair.ClassInfos = append(kvPair.ClassInfos, classInfo)
 			}
-			continue
-		}
-		if len(entry.InputType) == 0 {
-			return kvPair, nil
 		}
 		switch entry.InputType[0] {
 		//	Define 创建 DefineCota Kv pairs
