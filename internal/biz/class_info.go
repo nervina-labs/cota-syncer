@@ -47,6 +47,6 @@ func (uc *ClassInfoUsecase) DeleteByBlockNumber(ctx context.Context, blockNumber
 	return uc.repo.DeleteClassInfo(ctx, blockNumber)
 }
 
-func (uc ClassInfoUsecase) ParseClassMetadata(blockNumber uint64, classMeta []byte) (ClassInfo, error) {
+func (uc ClassInfoUsecase) ParseMetadata(blockNumber uint64, classMeta []byte) (ClassInfo, error) {
 	return uc.repo.ParseClassInfo(blockNumber, classMeta)
 }

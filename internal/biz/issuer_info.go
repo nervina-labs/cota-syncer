@@ -43,6 +43,6 @@ func (uc *IssuerInfoUsecase) DeleteByBlockNumber(ctx context.Context, blockNumbe
 	return uc.repo.DeleteIssuerInfo(ctx, blockNumber)
 }
 
-func (uc IssuerInfoUsecase) ParseIssuerMetadata(blockNumber uint64, lockScript *ckbTypes.Script, issuerMeta []byte) (IssuerInfo, error) {
+func (uc IssuerInfoUsecase) ParseMetadata(blockNumber uint64, lockScript *ckbTypes.Script, issuerMeta []byte) (IssuerInfo, error) {
 	return uc.repo.ParseIssuerInfo(blockNumber, lockScript, issuerMeta)
 }
