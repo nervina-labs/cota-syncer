@@ -67,6 +67,7 @@ func (s *SyncService) sync(ctx context.Context) {
 			s.logger.Errorf(ctx, "get local node_info err: %v", err)
 		}
 		s.logger.Errorf(ctx, "targetBlock %d, is nil, chain info is: %v", targetBlockNumber, info)
+		return
 	}
 	if isForked(checkInfo, targetBlock) {
 		s.logger.Info(ctx, "forked")
