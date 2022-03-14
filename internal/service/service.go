@@ -61,6 +61,13 @@ func (s *SyncService) sync(ctx context.Context) {
 	}
 	targetBlock, err := s.client.Rpc.GetBlockByNumber(ctx, targetBlockNumber)
 	// rollback
+	if targetBlock == nil {
+		info, err := s.client.Rpc.GetBlockchainInfo(ctx)
+		if err != nil {
+			s.logger.Errorf(ctx, "get local node_info err: %v", err)
+		}
+		s.logger.Errorf(ctx, "targetBlock %d, is nil, chain info is: %v", targetBlockNumber, info)
+	}
 	if isForked(checkInfo, targetBlock) {
 		s.logger.Info(ctx, "forked")
 		err = s.rollback(ctx, checkInfo.BlockNumber)
