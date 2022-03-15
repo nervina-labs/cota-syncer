@@ -20,14 +20,14 @@ type mintCotaKvPairRepo struct {
 
 func (rp mintCotaKvPairRepo) ParseMintCotaEntries(blockNumber uint64, entry biz.Entry) (updatedDefineCotas []biz.DefineCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
 	if entry.Version == 0 {
-		err = generateV0KvPairs(blockNumber, entry, updatedDefineCotas, rp, withdrawCotas)
+		err = generateDefineWithdrawV0KvPairs(blockNumber, entry, rp, updatedDefineCotas, withdrawCotas)
 		return
 	}
-	err = generateV1KvPairs(blockNumber, entry, updatedDefineCotas, rp, withdrawCotas)
+	err = generateDefineWithdrawV1KvPairs(blockNumber, entry, rp, updatedDefineCotas, withdrawCotas)
 	return
 }
 
-func generateV1KvPairs(blockNumber uint64, entry biz.Entry, updatedDefineCotas []biz.DefineCotaNftKvPair, rp mintCotaKvPairRepo, withdrawCotas []biz.WithdrawCotaNftKvPair) error {
+func generateDefineWithdrawV1KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPairRepo, updatedDefineCotas []biz.DefineCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair) error {
 	entries := smt.MintCotaNFTV1EntriesFromSliceUnchecked(entry.Witness[1:])
 	defineCotaKeyVec := entries.DefineKeys()
 	defineCotaValueVec := entries.DefineNewValues()
@@ -86,7 +86,7 @@ func generateV1KvPairs(blockNumber uint64, entry biz.Entry, updatedDefineCotas [
 	return nil
 }
 
-func generateV0KvPairs(blockNumber uint64, entry biz.Entry, updatedDefineCotas []biz.DefineCotaNftKvPair, rp mintCotaKvPairRepo, withdrawCotas []biz.WithdrawCotaNftKvPair) error {
+func generateDefineWithdrawV0KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPairRepo, updatedDefineCotas []biz.DefineCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair) error {
 	entries := smt.MintCotaNFTEntriesFromSliceUnchecked(entry.Witness[1:])
 	defineCotaKeyVec := entries.DefineKeys()
 	defineCotaValueVec := entries.DefineNewValues()
