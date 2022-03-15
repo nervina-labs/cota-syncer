@@ -72,45 +72,11 @@ func (rp withdrawCotaNftKvPairRepo) DeleteWithdrawCotaNftKvPairs(ctx context.Con
 }
 
 func (rp withdrawCotaNftKvPairRepo) ParseWithdrawCotaEntries(blockNumber uint64, entry biz.Entry) (withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
-	entries := smt.WithdrawalCotaNFTEntriesFromSliceUnchecked(entry.Witness[1:])
-	withdrawKeyVec := entries.WithdrawalKeys()
-	withdrawValueVec := entries.WithdrawalValues()
-	lockHash, err := entry.LockScript.Hash()
-	if err != nil {
+	if entry.Version == 0 {
+		err = generateV0WithdrawKvPair(blockNumber, entry, rp, withdrawCotas)
 		return
 	}
-	lockHashStr := lockHash.String()[2:]
-	lockHashCRC32 := crc32.ChecksumIEEE([]byte(lockHashStr))
-	for i := uint(0); i < withdrawKeyVec.Len(); i++ {
-		key := withdrawKeyVec.Get(i)
-		value := withdrawValueVec.Get(i)
-		cotaId := hex.EncodeToString(key.CotaId().RawData())
-		outpointStr := hex.EncodeToString(value.OutPoint().RawData())
-		receiverLock := blockchain.ScriptFromSliceUnchecked(value.ToLock().RawData())
-		script := biz.Script{
-			CodeHash: hex.EncodeToString(receiverLock.CodeHash().RawData()),
-			HashType: hex.EncodeToString(receiverLock.HashType().AsSlice()),
-			Args:     hex.EncodeToString(receiverLock.Args().RawData()),
-		}
-		err = rp.FindOrCreateScript(context.TODO(), &script)
-		if err != nil {
-			return nil, err
-		}
-		withdrawCotas = append(withdrawCotas, biz.WithdrawCotaNftKvPair{
-			BlockNumber:          blockNumber,
-			CotaId:               cotaId,
-			CotaIdCRC:            crc32.ChecksumIEEE([]byte(cotaId)),
-			TokenIndex:           binary.BigEndian.Uint32(key.Index().RawData()),
-			OutPoint:             outpointStr,
-			OutPointCrc:          crc32.ChecksumIEEE([]byte(outpointStr)),
-			State:                value.NftInfo().State().AsSlice()[0],
-			Configure:            value.NftInfo().Configure().AsSlice()[0],
-			Characteristic:       hex.EncodeToString(value.NftInfo().Characteristic().RawData()),
-			ReceiverLockScriptId: script.ID,
-			LockHash:             lockHashStr,
-			LockHashCrc:          lockHashCRC32,
-		})
-	}
+	err = generateV1WithdrawKvPair(blockNumber, entry, rp, withdrawCotas)
 	return
 }
 
@@ -135,4 +101,91 @@ func (rp withdrawCotaNftKvPairRepo) FindOrCreateScript(ctx context.Context, scri
 
 func hashType(hashTypeStr string) (int64, error) {
 	return strconv.ParseInt(hashTypeStr, 16, 32)
+}
+
+func generateV0WithdrawKvPair(blockNumber uint64, entry biz.Entry, rp withdrawCotaNftKvPairRepo, withdrawCotas []biz.WithdrawCotaNftKvPair) error {
+	entries := smt.WithdrawalCotaNFTEntriesFromSliceUnchecked(entry.Witness[1:])
+	withdrawKeyVec := entries.WithdrawalKeys()
+	withdrawValueVec := entries.WithdrawalValues()
+	lockHash, err := entry.LockScript.Hash()
+	if err != nil {
+		return err
+	}
+	lockHashStr := lockHash.String()[2:]
+	lockHashCRC32 := crc32.ChecksumIEEE([]byte(lockHashStr))
+	for i := uint(0); i < withdrawKeyVec.Len(); i++ {
+		key := withdrawKeyVec.Get(i)
+		value := withdrawValueVec.Get(i)
+		cotaId := hex.EncodeToString(key.CotaId().RawData())
+		outpointStr := hex.EncodeToString(value.OutPoint().RawData())
+		receiverLock := blockchain.ScriptFromSliceUnchecked(value.ToLock().RawData())
+		script := biz.Script{
+			CodeHash: hex.EncodeToString(receiverLock.CodeHash().RawData()),
+			HashType: hex.EncodeToString(receiverLock.HashType().AsSlice()),
+			Args:     hex.EncodeToString(receiverLock.Args().RawData()),
+		}
+		err = rp.FindOrCreateScript(context.TODO(), &script)
+		if err != nil {
+			return err
+		}
+		withdrawCotas = append(withdrawCotas, biz.WithdrawCotaNftKvPair{
+			BlockNumber:          blockNumber,
+			CotaId:               cotaId,
+			CotaIdCRC:            crc32.ChecksumIEEE([]byte(cotaId)),
+			TokenIndex:           binary.BigEndian.Uint32(key.Index().RawData()),
+			OutPoint:             outpointStr,
+			OutPointCrc:          crc32.ChecksumIEEE([]byte(outpointStr)),
+			State:                value.NftInfo().State().AsSlice()[0],
+			Configure:            value.NftInfo().Configure().AsSlice()[0],
+			Characteristic:       hex.EncodeToString(value.NftInfo().Characteristic().RawData()),
+			ReceiverLockScriptId: script.ID,
+			LockHash:             lockHashStr,
+			LockHashCrc:          lockHashCRC32,
+			Version:              entry.Version,
+		})
+	}
+	return nil
+}
+
+func generateV1WithdrawKvPair(blockNumber uint64, entry biz.Entry, rp withdrawCotaNftKvPairRepo, withdrawCotas []biz.WithdrawCotaNftKvPair) error {
+	entries := smt.WithdrawalCotaNFTV1EntriesFromSliceUnchecked(entry.Witness[1:])
+	withdrawKeyVec := entries.WithdrawalKeys()
+	withdrawValueVec := entries.WithdrawalValues()
+	lockHash, err := entry.LockScript.Hash()
+	if err != nil {
+		return err
+	}
+	lockHashStr := lockHash.String()[2:]
+	lockHashCRC32 := crc32.ChecksumIEEE([]byte(lockHashStr))
+	for i := uint(0); i < withdrawKeyVec.Len(); i++ {
+		key := withdrawKeyVec.Get(i)
+		value := withdrawValueVec.Get(i)
+		cotaId := hex.EncodeToString(key.NftId().CotaId().RawData())
+		outpointStr := hex.EncodeToString(key.OutPoint().RawData())
+		receiverLock := blockchain.ScriptFromSliceUnchecked(value.ToLock().RawData())
+		script := biz.Script{
+			CodeHash: hex.EncodeToString(receiverLock.CodeHash().RawData()),
+			HashType: hex.EncodeToString(receiverLock.HashType().AsSlice()),
+			Args:     hex.EncodeToString(receiverLock.Args().RawData()),
+		}
+		err = rp.FindOrCreateScript(context.TODO(), &script)
+		if err != nil {
+			return err
+		}
+		withdrawCotas = append(withdrawCotas, biz.WithdrawCotaNftKvPair{
+			BlockNumber:          blockNumber,
+			CotaId:               cotaId,
+			CotaIdCRC:            crc32.ChecksumIEEE([]byte(cotaId)),
+			TokenIndex:           binary.BigEndian.Uint32(key.NftId().Index().RawData()),
+			OutPoint:             outpointStr,
+			OutPointCrc:          crc32.ChecksumIEEE([]byte(outpointStr)),
+			State:                value.NftInfo().State().AsSlice()[0],
+			Configure:            value.NftInfo().Configure().AsSlice()[0],
+			Characteristic:       hex.EncodeToString(value.NftInfo().Characteristic().RawData()),
+			ReceiverLockScriptId: script.ID,
+			LockHash:             lockHashStr,
+			LockHashCrc:          lockHashCRC32,
+		})
+	}
+	return nil
 }
