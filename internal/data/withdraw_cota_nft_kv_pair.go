@@ -29,6 +29,7 @@ type WithdrawCotaNftKvPair struct {
 	ReceiverLockScriptId uint
 	LockHash             string
 	LockHashCrc          uint32
+	Version              uint8
 	CreatedAt            time.Time
 	UpdatedAt            time.Time
 }
