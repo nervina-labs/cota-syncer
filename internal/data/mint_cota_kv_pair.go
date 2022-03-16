@@ -20,20 +20,18 @@ type mintCotaKvPairRepo struct {
 
 func (rp mintCotaKvPairRepo) ParseMintCotaEntries(blockNumber uint64, entry biz.Entry) (updatedDefineCotas []biz.DefineCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
 	if entry.Version == 0 {
-		err = generateDefineWithdrawV0KvPairs(blockNumber, entry, rp, updatedDefineCotas, withdrawCotas)
-		return
+		return generateDefineWithdrawV0KvPairs(blockNumber, entry, rp)
 	}
-	err = generateDefineWithdrawV1KvPairs(blockNumber, entry, rp, updatedDefineCotas, withdrawCotas)
-	return
+	return generateDefineWithdrawV1KvPairs(blockNumber, entry, rp)
 }
 
-func generateDefineWithdrawV1KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPairRepo, updatedDefineCotas []biz.DefineCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair) error {
+func generateDefineWithdrawV1KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPairRepo) (updatedDefineCotas []biz.DefineCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
 	entries := smt.MintCotaNFTV1EntriesFromSliceUnchecked(entry.Witness[1:])
 	defineCotaKeyVec := entries.DefineKeys()
 	defineCotaValueVec := entries.DefineNewValues()
 	lockHash, err := entry.LockScript.Hash()
 	if err != nil {
-		return err
+		return
 	}
 	lockHashStr := lockHash.String()[2:]
 	lockHashCRC32 := crc32.ChecksumIEEE([]byte(lockHashStr))
@@ -65,7 +63,7 @@ func generateDefineWithdrawV1KvPairs(blockNumber uint64, entry biz.Entry, rp min
 		}
 		err = rp.FindOrCreateScript(context.TODO(), &script)
 		if err != nil {
-			return err
+			return
 		}
 		withdrawCotas = append(withdrawCotas, biz.WithdrawCotaNftKvPair{
 			BlockNumber:          blockNumber,
@@ -83,16 +81,16 @@ func generateDefineWithdrawV1KvPairs(blockNumber uint64, entry biz.Entry, rp min
 			Version:              entry.Version,
 		})
 	}
-	return nil
+	return
 }
 
-func generateDefineWithdrawV0KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPairRepo, updatedDefineCotas []biz.DefineCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair) error {
+func generateDefineWithdrawV0KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPairRepo) (updatedDefineCotas []biz.DefineCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
 	entries := smt.MintCotaNFTEntriesFromSliceUnchecked(entry.Witness[1:])
 	defineCotaKeyVec := entries.DefineKeys()
 	defineCotaValueVec := entries.DefineNewValues()
 	lockHash, err := entry.LockScript.Hash()
 	if err != nil {
-		return err
+		return
 	}
 	lockHashStr := lockHash.String()[2:]
 	lockHashCRC32 := crc32.ChecksumIEEE([]byte(lockHashStr))
@@ -124,7 +122,7 @@ func generateDefineWithdrawV0KvPairs(blockNumber uint64, entry biz.Entry, rp min
 		}
 		err = rp.FindOrCreateScript(context.TODO(), &script)
 		if err != nil {
-			return err
+			return
 		}
 		withdrawCotas = append(withdrawCotas, biz.WithdrawCotaNftKvPair{
 			BlockNumber:          blockNumber,
@@ -142,7 +140,7 @@ func generateDefineWithdrawV0KvPairs(blockNumber uint64, entry biz.Entry, rp min
 			Version:              entry.Version,
 		})
 	}
-	return nil
+	return
 }
 
 func (rp mintCotaKvPairRepo) FindOrCreateScript(ctx context.Context, script *biz.Script) error {
