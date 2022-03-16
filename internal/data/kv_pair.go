@@ -137,6 +137,7 @@ func (rp kvPairRepo) CreateKvPairs(ctx context.Context, checkInfo biz.CheckInfo,
 					ReceiverLockScriptId: cota.ReceiverLockScriptId,
 					LockHash:             cota.LockHash,
 					LockHashCrc:          cota.LockHashCrc,
+					Version:              cota.Version,
 				}
 			}
 			if err := tx.Model(WithdrawCotaNftKvPair{}).WithContext(ctx).Create(withdrawCotas).Error; err != nil {
@@ -333,7 +334,7 @@ func (rp kvPairRepo) RestoreKvPairs(ctx context.Context, blockNumber uint64) err
 		}
 		if len(updatedDefineCotas) > 0 {
 			if err := tx.Debug().WithContext(ctx).Clauses(clause.OnConflict{
-				Columns: []clause.Column{{Name: "cota_id"}},
+				Columns:   []clause.Column{{Name: "cota_id"}},
 				UpdateAll: true,
 			}).Create(updatedDefineCotas).Error; err != nil {
 				return err

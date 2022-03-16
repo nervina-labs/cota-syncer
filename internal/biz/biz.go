@@ -12,4 +12,5 @@ type Entry struct {
 	Witness    []byte
 	LockScript *ckbTypes.Script
 	TxIndex    uint32
+	Version    uint8
 }

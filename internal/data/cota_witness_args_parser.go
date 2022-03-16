@@ -18,8 +18,9 @@ func NewCotaWitnessArgsParser(client *CkbNodeClient) CotaWitnessArgsParser {
 }
 
 type cotaCell struct {
-	output *ckbTypes.CellOutput
-	index  int
+	output     *ckbTypes.CellOutput
+	index      int
+	outputData []byte
 }
 
 func (c CotaWitnessArgsParser) Parse(tx *ckbTypes.Transaction, txIndex uint32, cotaType SystemScript) ([]biz.Entry, error) {
@@ -43,7 +44,7 @@ func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, txIndex uin
 	if err != nil {
 		return nil, err
 	}
-	outputCotaCellGroups, err := c.outputCotaCellGroups(tx.Outputs, cotaType)
+	outputCotaCellGroups, err := c.outputCotaCellGroups(tx.Outputs, tx.OutputsData, cotaType)
 	if err != nil {
 		return nil, err
 	}
@@ -64,6 +65,7 @@ func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, txIndex uin
 			Witness:    bytes.RawData(),
 			LockScript: cotaCell.output.Lock,
 			TxIndex:    txIndex,
+			Version:    cotaCell.outputData[0],
 		})
 	}
 	return entries, nil
@@ -116,22 +118,23 @@ func (c CotaWitnessArgsParser) inputCotaCells(inputs []*ckbTypes.CellInput, cota
 	return cotaCells, nil
 }
 
-func (c CotaWitnessArgsParser) outputCotaCells(outputs []*ckbTypes.CellOutput, cotaType SystemScript) ([]cotaCell, error) {
+func (c CotaWitnessArgsParser) outputCotaCells(outputs []*ckbTypes.CellOutput, outputsData [][]byte, cotaType SystemScript) ([]cotaCell, error) {
 	var cotaCells []cotaCell
 	for i := 0; i < len(outputs); i++ {
 		if c.isCotaCell(outputs[i], cotaType) {
 			cotaCells = append(cotaCells, cotaCell{
-				output: outputs[i],
-				index:  i,
+				output:     outputs[i],
+				index:      i,
+				outputData: outputsData[i],
 			})
 		}
 	}
 	return cotaCells, nil
 }
 
-func (c CotaWitnessArgsParser) outputCotaCellGroups(outputs []*ckbTypes.CellOutput, cotaType SystemScript) (map[string]cotaCell, error) {
+func (c CotaWitnessArgsParser) outputCotaCellGroups(outputs []*ckbTypes.CellOutput, outputsData [][]byte, cotaType SystemScript) (map[string]cotaCell, error) {
 	group := make(map[string]cotaCell)
-	cotaCells, err := c.outputCotaCells(outputs, cotaType)
+	cotaCells, err := c.outputCotaCells(outputs, outputsData, cotaType)
 	if err != nil {
 		return group, err
 	}

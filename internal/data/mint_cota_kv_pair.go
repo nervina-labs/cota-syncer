@@ -19,12 +19,80 @@ type mintCotaKvPairRepo struct {
 }
 
 func (rp mintCotaKvPairRepo) ParseMintCotaEntries(blockNumber uint64, entry biz.Entry) (updatedDefineCotas []biz.DefineCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
+	if entry.Version == 0 {
+		err = generateDefineWithdrawV0KvPairs(blockNumber, entry, rp, updatedDefineCotas, withdrawCotas)
+		return
+	}
+	err = generateDefineWithdrawV1KvPairs(blockNumber, entry, rp, updatedDefineCotas, withdrawCotas)
+	return
+}
+
+func generateDefineWithdrawV1KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPairRepo, updatedDefineCotas []biz.DefineCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair) error {
+	entries := smt.MintCotaNFTV1EntriesFromSliceUnchecked(entry.Witness[1:])
+	defineCotaKeyVec := entries.DefineKeys()
+	defineCotaValueVec := entries.DefineNewValues()
+	lockHash, err := entry.LockScript.Hash()
+	if err != nil {
+		return err
+	}
+	lockHashStr := lockHash.String()[2:]
+	lockHashCRC32 := crc32.ChecksumIEEE([]byte(lockHashStr))
+	for i := uint(0); i < defineCotaKeyVec.Len(); i++ {
+		key := defineCotaKeyVec.Get(i)
+		value := defineCotaValueVec.Get(i)
+		updatedDefineCotas = append(updatedDefineCotas, biz.DefineCotaNftKvPair{
+			BlockNumber: blockNumber,
+			CotaId:      hex.EncodeToString(key.CotaId().RawData()),
+			Total:       binary.BigEndian.Uint32(value.Total().RawData()),
+			Issued:      binary.BigEndian.Uint32(value.Issued().RawData()),
+			Configure:   value.Configure().AsSlice()[0],
+			LockHash:    lockHashStr,
+			LockHashCRC: lockHashCRC32,
+		})
+	}
+	withdrawKeyVec := entries.WithdrawalKeys()
+	withdrawValueVec := entries.WithdrawalValues()
+	for i := uint(0); i < withdrawKeyVec.Len(); i++ {
+		key := withdrawKeyVec.Get(i)
+		value := withdrawValueVec.Get(i)
+		cotaId := hex.EncodeToString(key.NftId().CotaId().RawData())
+		outpointStr := hex.EncodeToString(key.OutPoint().RawData())
+		receiverLock := blockchain.ScriptFromSliceUnchecked(value.ToLock().RawData())
+		script := biz.Script{
+			CodeHash: hex.EncodeToString(receiverLock.CodeHash().RawData()),
+			HashType: hex.EncodeToString(receiverLock.HashType().AsSlice()),
+			Args:     hex.EncodeToString(receiverLock.Args().RawData()),
+		}
+		err = rp.FindOrCreateScript(context.TODO(), &script)
+		if err != nil {
+			return err
+		}
+		withdrawCotas = append(withdrawCotas, biz.WithdrawCotaNftKvPair{
+			BlockNumber:          blockNumber,
+			CotaId:               cotaId,
+			CotaIdCRC:            crc32.ChecksumIEEE([]byte(cotaId)),
+			TokenIndex:           binary.BigEndian.Uint32(key.NftId().Index().RawData()),
+			OutPoint:             outpointStr,
+			OutPointCrc:          crc32.ChecksumIEEE([]byte(outpointStr)),
+			State:                value.NftInfo().State().AsSlice()[0],
+			Configure:            value.NftInfo().Configure().AsSlice()[0],
+			Characteristic:       hex.EncodeToString(value.NftInfo().Characteristic().RawData()),
+			ReceiverLockScriptId: script.ID,
+			LockHash:             lockHashStr,
+			LockHashCrc:          lockHashCRC32,
+			Version:              entry.Version,
+		})
+	}
+	return nil
+}
+
+func generateDefineWithdrawV0KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPairRepo, updatedDefineCotas []biz.DefineCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair) error {
 	entries := smt.MintCotaNFTEntriesFromSliceUnchecked(entry.Witness[1:])
 	defineCotaKeyVec := entries.DefineKeys()
 	defineCotaValueVec := entries.DefineNewValues()
 	lockHash, err := entry.LockScript.Hash()
 	if err != nil {
-		return
+		return err
 	}
 	lockHashStr := lockHash.String()[2:]
 	lockHashCRC32 := crc32.ChecksumIEEE([]byte(lockHashStr))
@@ -56,7 +124,7 @@ func (rp mintCotaKvPairRepo) ParseMintCotaEntries(blockNumber uint64, entry biz.
 		}
 		err = rp.FindOrCreateScript(context.TODO(), &script)
 		if err != nil {
-			return
+			return err
 		}
 		withdrawCotas = append(withdrawCotas, biz.WithdrawCotaNftKvPair{
 			BlockNumber:          blockNumber,
@@ -71,10 +139,10 @@ func (rp mintCotaKvPairRepo) ParseMintCotaEntries(blockNumber uint64, entry biz.
 			ReceiverLockScriptId: script.ID,
 			LockHash:             lockHashStr,
 			LockHashCrc:          lockHashCRC32,
+			Version:              entry.Version,
 		})
-
 	}
-	return
+	return nil
 }
 
 func (rp mintCotaKvPairRepo) FindOrCreateScript(ctx context.Context, script *biz.Script) error {
