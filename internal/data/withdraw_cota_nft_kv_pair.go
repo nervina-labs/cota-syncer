@@ -183,6 +183,7 @@ func generateV1WithdrawKvPair(blockNumber uint64, entry biz.Entry, rp withdrawCo
 			ReceiverLockScriptId: script.ID,
 			LockHash:             lockHashStr,
 			LockHashCrc:          lockHashCRC32,
+			Version:              entry.Version,
 		})
 	}
 	return
