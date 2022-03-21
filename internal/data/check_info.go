@@ -61,7 +61,7 @@ func (rp checkInfoRepo) CleanCheckInfo(ctx context.Context) error {
 		return nil
 	}
 	lastCheckInfo := checkInfos[len(checkInfos)-1]
-	if err := rp.data.db.Debug().WithContext(ctx).Delete(CheckInfo{}, "id < ?", lastCheckInfo.ID).Error; err != nil {
+	if err := rp.data.db.Debug().WithContext(ctx).Delete(CheckInfo{}, "block_number < ?", lastCheckInfo.BlockNumber).Error; err != nil {
 		return err
 	}
 	return nil
