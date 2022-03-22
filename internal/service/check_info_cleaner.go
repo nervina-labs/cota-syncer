@@ -5,6 +5,7 @@ import (
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/data"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
+	"golang.org/x/sync/errgroup"
 	"time"
 )
 
@@ -24,8 +25,8 @@ func NewCheckInfoService(checkInfoUsecase *biz.CheckInfoUsecase, logger *logger.
 	}
 }
 
-func (scv CheckInfoCleanerService) clean(ctx context.Context) error {
-	return scv.checkInfoUsecase.Clean(ctx)
+func (scv CheckInfoCleanerService) clean(ctx context.Context, checkType biz.CheckType) error {
+	return scv.checkInfoUsecase.Clean(ctx, checkType)
 }
 
 func (scv CheckInfoCleanerService) Start(ctx context.Context, _ string) error {
@@ -36,8 +37,14 @@ func (scv CheckInfoCleanerService) Start(ctx context.Context, _ string) error {
 			case <-ctx.Done():
 				scv.logger.Infof(ctx, "cleaner received cancel signal %v", ctx.Err())
 			default:
-				err := scv.clean(ctx)
-				if err != nil {
+				eg, ctx := errgroup.WithContext(ctx)
+				checkTypes := []biz.CheckType{biz.SyncBlock, biz.SyncMetadata}
+				for _, checkType := range checkTypes {
+					eg.Go(func() error {
+						return scv.clean(ctx, checkType)
+					})
+				}
+				if err := eg.Wait(); err != nil {
 					scv.logger.Errorf(ctx, "clean check info failed, %v", err)
 				}
 				time.Sleep(1 * time.Hour)

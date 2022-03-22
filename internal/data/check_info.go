@@ -52,16 +52,16 @@ func (rp checkInfoRepo) CreateCheckInfo(ctx context.Context, info *biz.CheckInfo
 	return nil
 }
 
-func (rp checkInfoRepo) CleanCheckInfo(ctx context.Context) error {
+func (rp checkInfoRepo) CleanCheckInfo(ctx context.Context, checkType biz.CheckType) error {
 	var checkInfos []CheckInfo
-	if err := rp.data.db.Debug().WithContext(ctx).Order("block_number desc").Limit(1000).Find(&checkInfos).Error; err != nil {
+	if err := rp.data.db.Debug().WithContext(ctx).Where("check_type = ?", checkType).Order("block_number desc").Limit(1000).Find(&checkInfos).Error; err != nil {
 		return err
 	}
 	if len(checkInfos) == 0 {
 		return nil
 	}
 	lastCheckInfo := checkInfos[len(checkInfos)-1]
-	if err := rp.data.db.Debug().WithContext(ctx).Delete(CheckInfo{}, "block_number < ?", lastCheckInfo.BlockNumber).Error; err != nil {
+	if err := rp.data.db.Debug().WithContext(ctx).Where("check_type = ? and block_number < ?", checkType, lastCheckInfo.BlockNumber).Delete(CheckInfo{}).Error; err != nil {
 		return err
 	}
 	return nil

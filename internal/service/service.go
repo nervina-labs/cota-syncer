@@ -42,7 +42,7 @@ func (s *SyncService) Start(ctx context.Context, mode string) error {
 }
 
 func (s *SyncService) sync(ctx context.Context) {
-	checkInfo := biz.CheckInfo{CheckType: biz.SyncEvent}
+	checkInfo := biz.CheckInfo{CheckType: biz.SyncBlock}
 	err := s.checkInfoUsecase.LastCheckInfo(ctx, &checkInfo)
 	if err != nil {
 		s.logger.Errorf(ctx, "get check info error: %v", err)

@@ -8,7 +8,8 @@ import (
 type CheckType uint8
 
 const (
-	SyncEvent CheckType = iota // SyncEvent = 0
+	SyncBlock    CheckType = iota // SyncBlock = 0
+	SyncMetadata                  // SyncMetadata = 1
 )
 
 func (t CheckType) String() string {
@@ -25,7 +26,7 @@ type CheckInfo struct {
 type CheckInfoRepo interface {
 	FindLastCheckInfo(ctx context.Context, info *CheckInfo) error
 	CreateCheckInfo(ctx context.Context, info *CheckInfo) error
-	CleanCheckInfo(ctx context.Context) error
+	CleanCheckInfo(ctx context.Context, checkType CheckType) error
 }
 
 type CheckInfoUsecase struct {
@@ -48,6 +49,6 @@ func (uc *CheckInfoUsecase) Create(ctx context.Context, checkInfo *CheckInfo) er
 	return uc.repo.CreateCheckInfo(ctx, checkInfo)
 }
 
-func (uc *CheckInfoUsecase) Clean(ctx context.Context) error {
-	return uc.repo.CleanCheckInfo(ctx)
+func (uc *CheckInfoUsecase) Clean(ctx context.Context, checkType CheckType) error {
+	return uc.repo.CleanCheckInfo(ctx, checkType)
 }
