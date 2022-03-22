@@ -2,6 +2,7 @@ package biz
 
 import (
 	"encoding/json"
+	"errors"
 )
 
 type CTMeta struct {
@@ -41,27 +42,14 @@ type IssuerInfoJson struct {
 
 type MetaType int
 
-const (
-	NotMeta MetaType = iota
-	Issuer
-	Class
-)
-
-func ParseMetadata(meta []byte) (result MetaType, metadata []byte) {
+func ParseMetadata(meta []byte) (CTMeta, error) {
 	var ctMeta CTMeta
-	result = NotMeta
 	if err := json.Unmarshal(meta, &ctMeta); err != nil {
-		return
+		return ctMeta, err
 	}
 	metaType := ctMeta.Metadata.Type
 	if metaType != "issuer" && metaType != "cota" {
-		return
+		return ctMeta, errors.New("invalid meta type")
 	}
-	if metaType == "issuer" {
-		result = Issuer
-	} else if metaType == "cota" {
-		result = Class
-	}
-	metadata = []byte(ctMeta.Metadata.Data)
-	return
+	return ctMeta, nil
 }

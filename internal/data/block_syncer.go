@@ -165,15 +165,18 @@ func (bp BlockSyncer) parseCotaEntries(blockNumber uint64, entries []biz.Entry) 
 		}
 		// Parse Issuer/Class Metadata
 		if len(entry.OutputType) > 0 {
-			result, metadata := biz.ParseMetadata(entry.OutputType)
-			switch result {
-			case biz.Issuer:
-				issuerInfo, err := bp.issuerInfoUsecase.ParseMetadata(blockNumber, entry.LockScript, metadata)
+			ctMeta, err := biz.ParseMetadata(entry.OutputType)
+			if err != nil {
+				continue
+			}
+			switch ctMeta.Metadata.Type {
+			case "issuer":
+				issuerInfo, err := bp.issuerInfoUsecase.ParseMetadata(blockNumber, entry.LockScript, []byte(ctMeta.Metadata.Data))
 				if err == nil {
 					kvPair.IssuerInfos = append(kvPair.IssuerInfos, issuerInfo)
 				}
-			case biz.Class:
-				classInfo, err := bp.classInfoUsecase.ParseMetadata(blockNumber, metadata)
+			case "cota":
+				classInfo, err := bp.classInfoUsecase.ParseMetadata(blockNumber, []byte(ctMeta.Metadata.Data))
 				if err == nil {
 					kvPair.ClassInfos = append(kvPair.ClassInfos, classInfo)
 				}

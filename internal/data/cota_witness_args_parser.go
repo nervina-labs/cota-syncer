@@ -18,8 +18,8 @@ func NewCotaWitnessArgsParser(client *CkbNodeClient) CotaWitnessArgsParser {
 }
 
 type cotaCell struct {
-	output *ckbTypes.CellOutput
-	index  int
+	output     *ckbTypes.CellOutput
+	index      int
 	outputData []byte
 }
 
@@ -69,7 +69,8 @@ func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, txIndex uin
 				TxIndex:    txIndex,
 				Version:    cotaCell.outputData[0],
 			})
-		} else {
+		}
+		if witnessArgs.InputType().IsSome() {
 			inputType, err := witnessArgs.InputType().IntoBytes()
 			if err != nil {
 				return nil, err
@@ -137,8 +138,8 @@ func (c CotaWitnessArgsParser) outputCotaCells(outputs []*ckbTypes.CellOutput, o
 	for i := 0; i < len(outputs); i++ {
 		if c.isCotaCell(outputs[i], cotaType) {
 			cotaCells = append(cotaCells, cotaCell{
-				output: outputs[i],
-				index:  i,
+				output:     outputs[i],
+				index:      i,
 				outputData: outputsData[i],
 			})
 		}
