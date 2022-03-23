@@ -6,6 +6,7 @@ import (
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
+	"gorm.io/gorm/clause"
 	"hash/crc32"
 	"time"
 )
@@ -16,7 +17,6 @@ type IssuerInfo struct {
 	ID           uint `gorm:"primaryKey"`
 	BlockNumber  uint64
 	LockHash     string
-	LockHashCRC  uint32
 	Version      string
 	Name         string
 	Avatar       string
@@ -38,14 +38,11 @@ func NewIssuerInfoRepo(data *Data, logger *logger.Logger) biz.IssuerInfoRepo {
 	}
 }
 
-func (repo issuerInfoRepo) CreateIssuerInfo(ctx context.Context, issuer *biz.IssuerInfo) error {
-	db := repo.data.db.WithContext(ctx)
-	var dest biz.IssuerInfo
-	rows := db.First(dest, "lock_hash_crc = ? AND lock_hash = ?", issuer.LockHashCRC, issuer.LockHash)
-	if rows.RowsAffected > 0 {
-		return nil
-	}
-	if err := repo.data.db.WithContext(ctx).Create(issuer).Error; err != nil {
+func (repo issuerInfoRepo) CreateIssuerInfo(ctx context.Context, issuerInfo *biz.IssuerInfo) error {
+	if err := repo.data.db.WithContext(ctx).Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "lock_hash"}},
+		UpdateAll: true,
+	}).Create(issuerInfo).Error; err != nil {
 		return err
 	}
 	return nil

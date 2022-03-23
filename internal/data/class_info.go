@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
+	"gorm.io/gorm/clause"
 	"time"
 )
 
@@ -41,14 +42,11 @@ func NewClassInfoRepo(data *Data, logger *logger.Logger) biz.ClassInfoRepo {
 	}
 }
 
-func (repo classInfoRepo) CreateClassInfo(ctx context.Context, class *biz.ClassInfo) error {
-	db := repo.data.db.WithContext(ctx)
-	var dest biz.ClassInfo
-	rows := db.First(dest, "cota_id = ?", class.CotaId)
-	if rows.RowsAffected > 0 {
-		return nil
-	}
-	if err := repo.data.db.WithContext(ctx).Create(class).Error; err != nil {
+func (repo classInfoRepo) CreateClassInfo(ctx context.Context, classInfo *biz.ClassInfo) error {
+	if err := repo.data.db.WithContext(ctx).Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "cota_id"}},
+		UpdateAll: true,
+	}).Create(classInfo).Error; err != nil {
 		return err
 	}
 	return nil

@@ -19,62 +19,35 @@ type KvPair struct {
 }
 
 func (p KvPair) HasRegisters() bool {
-	if len(p.Registers) > 0 {
-		return true
-	}
-	return false
+	return len(p.Registers) > 0
 }
 
 func (p KvPair) HasDefineCotas() bool {
-	if len(p.DefineCotas) > 0 {
-		return true
-	}
-	return false
+	return len(p.DefineCotas) > 0
 }
 
 func (p KvPair) HasUpdatedDefineCotas() bool {
-	if len(p.UpdatedDefineCotas) > 0 {
-		return true
-	}
-	return false
+	return len(p.UpdatedDefineCotas) > 0
 }
 func (p KvPair) HasHoldCotas() bool {
-	if len(p.HoldCotas) > 0 {
-		return true
-	}
-	return false
+	return len(p.HoldCotas) > 0
 }
 func (p KvPair) HasUpdatedHoldCotas() bool {
-	if len(p.UpdatedHoldCotas) > 0 {
-		return true
-	}
-	return false
+	return len(p.UpdatedHoldCotas) > 0
 }
 func (p KvPair) HasWithdrawCotas() bool {
-	if len(p.WithdrawCotas) > 0 {
-		return true
-	}
-	return false
+	return len(p.WithdrawCotas) > 0
 }
 func (p KvPair) HasClaimedCotas() bool {
-	if len(p.ClaimedCotas) > 0 {
-		return true
-	}
-	return false
+	return len(p.ClaimedCotas) > 0
 }
 
 func (p KvPair) HasIssuerInfos() bool {
-	if len(p.IssuerInfos) > 0 {
-		return true
-	}
-	return false
+	return len(p.IssuerInfos) > 0
 }
 
 func (p KvPair) HasClassInfos() bool {
-	if len(p.ClassInfos) > 0 {
-		return true
-	}
-	return false
+	return len(p.ClassInfos) > 0
 }
 
 type KvPairRepo interface {
