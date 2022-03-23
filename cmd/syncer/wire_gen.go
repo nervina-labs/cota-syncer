@@ -51,11 +51,13 @@ func initApp(database *config.Database, ckbNode *config.CkbNode, loggerLogger *l
 	issuerInfoUsecase := biz.NewIssuerInfoUsecase(issuerInfoRepo, loggerLogger)
 	classInfoRepo := data.NewClassInfoRepo(dataData, loggerLogger)
 	classInfoUsecase := biz.NewClassInfoUsecase(classInfoRepo, loggerLogger)
-	blockSyncer := data.NewBlockParser(claimedCotaNftKvPairUsecase, defineCotaNftKvPairUsecase, holdCotaNftKvPairUsecase, registerCotaKvPairUsecase, withdrawCotaNftKvPairUsecase, cotaWitnessArgsParser, syncKvPairUsecase, mintCotaKvPairUsecase, transferCotaKvPairUsecase, issuerInfoUsecase, classInfoUsecase)
-	syncService := service.NewSyncService(checkInfoUsecase, loggerLogger, ckbNodeClient, systemScripts, blockSyncer)
+	blockSyncer := data.NewBlockSyncer(claimedCotaNftKvPairUsecase, defineCotaNftKvPairUsecase, holdCotaNftKvPairUsecase, registerCotaKvPairUsecase, withdrawCotaNftKvPairUsecase, cotaWitnessArgsParser, syncKvPairUsecase, mintCotaKvPairUsecase, transferCotaKvPairUsecase, issuerInfoUsecase, classInfoUsecase)
+	blockSyncService := service.NewBlockSyncService(checkInfoUsecase, loggerLogger, ckbNodeClient, systemScripts, blockSyncer)
 	checkInfoCleanerService := service.NewCheckInfoService(checkInfoUsecase, loggerLogger, ckbNodeClient)
+	metadataSyncer := data.NewMetadataSyncer(syncKvPairUsecase, issuerInfoUsecase, classInfoUsecase)
+	metadataSyncService := service.NewMetadataSyncService(checkInfoUsecase, loggerLogger, ckbNodeClient, systemScripts, metadataSyncer)
 	dbMigration := data.NewDBMigration(dataData, loggerLogger)
-	appApp := newApp(loggerLogger, syncService, checkInfoCleanerService, dbMigration)
+	appApp := newApp(loggerLogger, blockSyncService, checkInfoCleanerService, metadataSyncService, dbMigration)
 	return appApp, func() {
 		cleanup()
 	}, nil

@@ -32,7 +32,7 @@ func NewCheckInfoRepo(data *Data, logger *logger.Logger) biz.CheckInfoRepo {
 
 func (rp checkInfoRepo) FindLastCheckInfo(ctx context.Context, info *biz.CheckInfo) error {
 	c := &CheckInfo{}
-	if err := rp.data.db.WithContext(ctx).Order("block_number desc").Limit(1).Find(&c).Error; err != nil {
+	if err := rp.data.db.WithContext(ctx).Where("check_type = ?", info.CheckType).Order("block_number desc").Limit(1).Find(&c).Error; err != nil {
 		return err
 	}
 	info.Id = uint64(c.ID)

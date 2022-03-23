@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS class_infos (
     audio varchar(500) NOT NULL,
     video varchar(500) NOT NULL,
     model varchar(500) NOT NULL,
-    `schema` varchar(1000) NOT NULL,
+    characteristic varchar(1000) NOT NULL,
     properties varchar(1000) NOT NULL,
     localization varchar(1000) NOT NULL,
     created_at datetime(6) NOT NULL,

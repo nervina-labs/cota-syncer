@@ -51,8 +51,10 @@ func (p KvPair) HasClassInfos() bool {
 }
 
 type KvPairRepo interface {
-	CreateKvPairs(ctx context.Context, checkInfo CheckInfo, kvPair *KvPair) error
-	RestoreKvPairs(ctx context.Context, blockNumber uint64) error
+	CreateCotaEntryKvPairs(ctx context.Context, checkInfo CheckInfo, kvPair *KvPair) error
+	RestoreCotaEntryKvPairs(ctx context.Context, blockNumber uint64) error
+	CreateMetadataKvPairs(ctx context.Context, checkInfo CheckInfo, kvPair *KvPair) error
+	RestoreMetadataKvPairs(ctx context.Context, blockNumber uint64) error
 }
 
 type SyncKvPairUsecase struct {
@@ -67,10 +69,18 @@ func NewSyncKvPairUsecase(repo KvPairRepo, logger *logger.Logger) *SyncKvPairUse
 	}
 }
 
-func (uc SyncKvPairUsecase) CreateKvPairs(ctx context.Context, checkInfo CheckInfo, kvPair *KvPair) error {
-	return uc.repo.CreateKvPairs(ctx, checkInfo, kvPair)
+func (uc SyncKvPairUsecase) CreateCotaEntryKvPairs(ctx context.Context, checkInfo CheckInfo, kvPair *KvPair) error {
+	return uc.repo.CreateCotaEntryKvPairs(ctx, checkInfo, kvPair)
 }
 
-func (uc SyncKvPairUsecase) RestoreKvPairs(ctx context.Context, blockNumber uint64) error {
-	return uc.repo.RestoreKvPairs(ctx, blockNumber)
+func (uc SyncKvPairUsecase) RestoreCotaEntryKvPairs(ctx context.Context, blockNumber uint64) error {
+	return uc.repo.RestoreCotaEntryKvPairs(ctx, blockNumber)
+}
+
+func (uc SyncKvPairUsecase) CreateMetadataKvPairs(ctx context.Context, checkInfo CheckInfo, kvPair *KvPair) error {
+	return uc.repo.CreateMetadataKvPairs(ctx, checkInfo, kvPair)
+}
+
+func (uc SyncKvPairUsecase) RestoreMetadataKvPairs(ctx context.Context, blockNumber uint64) error {
+	return uc.repo.RestoreMetadataKvPairs(ctx, blockNumber)
 }

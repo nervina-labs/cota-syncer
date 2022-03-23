@@ -9,6 +9,7 @@ import (
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
 	"github.com/nervina-labs/cota-smt-go/smt"
 	"hash/crc32"
+	"time"
 )
 
 var _ biz.MintCotaKvPairRepo = (*mintCotaKvPairRepo)(nil)
@@ -46,6 +47,7 @@ func generateDefineWithdrawV1KvPairs(blockNumber uint64, entry biz.Entry, rp min
 			Configure:   value.Configure().AsSlice()[0],
 			LockHash:    lockHashStr,
 			LockHashCRC: lockHashCRC32,
+			UpdatedAt:   time.Now(),
 		})
 	}
 	withdrawKeyVec := entries.WithdrawalKeys()
@@ -105,6 +107,7 @@ func generateDefineWithdrawV0KvPairs(blockNumber uint64, entry biz.Entry, rp min
 			Configure:   value.Configure().AsSlice()[0],
 			LockHash:    lockHashStr,
 			LockHashCRC: lockHashCRC32,
+			UpdatedAt:   time.Now().UTC(),
 		})
 	}
 	withdrawKeyVec := entries.WithdrawalKeys()

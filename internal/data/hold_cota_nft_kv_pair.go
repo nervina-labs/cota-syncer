@@ -95,6 +95,7 @@ func (rp holdCotaNftKvPairRepo) ParseHoldCotaEntries(blockNumber uint64, entry b
 			LockHash:       lockHashStr,
 			LockHashCRC:    lockHashCRC32,
 			TxIndex:        entry.TxIndex,
+			UpdatedAt:      time.Now().UTC(),
 		})
 	}
 	return

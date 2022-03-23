@@ -3,6 +3,7 @@ package biz
 import (
 	"context"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
+	"time"
 )
 
 type HoldCotaNftKvPair struct {
@@ -16,6 +17,7 @@ type HoldCotaNftKvPair struct {
 	LockHash       string
 	LockHashCRC    uint32
 	TxIndex        uint32
+	UpdatedAt      time.Time
 }
 
 type HoldCotaNftKvPairRepo interface {

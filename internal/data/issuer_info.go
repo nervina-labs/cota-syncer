@@ -7,7 +7,6 @@ import (
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 	"gorm.io/gorm/clause"
-	"hash/crc32"
 	"time"
 )
 
@@ -24,6 +23,27 @@ type IssuerInfo struct {
 	Localization string
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
+}
+
+type IssuerInfoVersion struct {
+	ID              uint `gorm:"primaryKey"`
+	OldBlockNumber  uint64
+	BlockNumber     uint64
+	LockHash        string
+	OldVersion      string
+	Version         string
+	OldName         string
+	Name            string
+	OldAvatar       string
+	Avatar          string
+	OldDescription  string
+	Description     string
+	OldLocalization string
+	Localization    string
+	ActionType      uint8 //	0-create 1-update 2-delete
+	TxIndex         uint32
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
 type issuerInfoRepo struct {
@@ -55,13 +75,12 @@ func (repo issuerInfoRepo) DeleteIssuerInfo(ctx context.Context, blockNumber uin
 	return nil
 }
 
-func (repo issuerInfoRepo) ParseIssuerInfo(blockNumber uint64, lockScript *ckbTypes.Script, issuerMeta []byte) (issuer biz.IssuerInfo, err error) {
+func (repo issuerInfoRepo) ParseIssuerInfo(blockNumber uint64, txIndex uint32, lockScript *ckbTypes.Script, issuerMeta []byte) (issuer biz.IssuerInfo, err error) {
 	lockHash, err := lockScript.Hash()
 	if err != nil {
 		return
 	}
 	lockHashStr := lockHash.String()[2:]
-	lockHashCRC32 := crc32.ChecksumIEEE([]byte(lockHashStr))
 	var issuerJson biz.IssuerInfoJson
 	err = json.Unmarshal(issuerMeta, &issuerJson)
 	if err != nil {
@@ -70,12 +89,12 @@ func (repo issuerInfoRepo) ParseIssuerInfo(blockNumber uint64, lockScript *ckbTy
 	issuer = biz.IssuerInfo{
 		BlockNumber:  blockNumber,
 		LockHash:     lockHashStr,
-		LockHashCRC:  lockHashCRC32,
 		Version:      issuerJson.Version,
 		Name:         issuerJson.Name,
 		Avatar:       issuerJson.Avatar,
 		Description:  issuerJson.Description,
 		Localization: issuerJson.Localization,
+		TxIndex:      txIndex,
 	}
 	return
 }

@@ -19,12 +19,13 @@ type ClassInfo struct {
 	Schema       string
 	Properties   string
 	Localization string
+	TxIndex      uint32
 }
 
 type ClassInfoRepo interface {
 	CreateClassInfo(ctx context.Context, class *ClassInfo) error
 	DeleteClassInfo(ctx context.Context, blockNumber uint64) error
-	ParseClassInfo(blockNumber uint64, classMeta []byte) (ClassInfo, error)
+	ParseClassInfo(blockNumber uint64, txIndex uint32, classMeta []byte) (ClassInfo, error)
 }
 
 type ClassInfoUsecase struct {
@@ -47,6 +48,6 @@ func (uc *ClassInfoUsecase) DeleteByBlockNumber(ctx context.Context, blockNumber
 	return uc.repo.DeleteClassInfo(ctx, blockNumber)
 }
 
-func (uc ClassInfoUsecase) ParseMetadata(blockNumber uint64, classMeta []byte) (ClassInfo, error) {
-	return uc.repo.ParseClassInfo(blockNumber, classMeta)
+func (uc ClassInfoUsecase) ParseMetadata(blockNumber uint64, txIndex uint32, classMeta []byte) (ClassInfo, error) {
+	return uc.repo.ParseClassInfo(blockNumber, txIndex, classMeta)
 }

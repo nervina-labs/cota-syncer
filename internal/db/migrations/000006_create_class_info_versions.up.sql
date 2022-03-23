@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS class_infos (
+CREATE TABLE IF NOT EXISTS class_info_versions (
     id bigint NOT NULL AUTO_INCREMENT,
     old_block_number bigint unsigned NOT NULL,
     block_number bigint unsigned NOT NULL,
@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS class_infos (
     video varchar(500) NOT NULL,
     old_model varchar(500) NOT NULL,
     model varchar(500) NOT NULL,
-    old_schema varchar(1000) NOT NULL,
-    `schema` varchar(1000) NOT NULL,
+    old_characteristic varchar(1000) NOT NULL,
+    characteristic varchar(1000) NOT NULL,
     old_properties varchar(1000) NOT NULL,
     properties varchar(1000) NOT NULL,
     old_localization varchar(1000) NOT NULL,

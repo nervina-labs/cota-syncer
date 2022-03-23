@@ -30,6 +30,39 @@ type ClassInfo struct {
 	UpdatedAt    time.Time
 }
 
+type ClassInfoVersion struct {
+	ID              uint `gorm:"primaryKey"`
+	OldBlockNumber  uint64
+	BlockNumber     uint64
+	CotaId          string
+	OldVersion      string
+	Version         string
+	OldName         string
+	Name            string
+	OldSymbol       string
+	Symbol          string
+	OldDescription  string
+	Description     string
+	OldImage        string
+	Image           string
+	OldAudio        string
+	Audio           string
+	OldVideo        string
+	Video           string
+	OldModel        string
+	Model           string
+	OldSchema       string
+	Schema          string
+	OldProperties   string
+	Properties      string
+	OldLocalization string
+	Localization    string
+	ActionType      uint8 //	0-create 1-update 2-delete
+	TxIndex         uint32
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+}
+
 type classInfoRepo struct {
 	data   *Data
 	logger *logger.Logger
@@ -59,7 +92,7 @@ func (repo classInfoRepo) DeleteClassInfo(ctx context.Context, blockNumber uint6
 	return nil
 }
 
-func (repo classInfoRepo) ParseClassInfo(blockNumber uint64, classMeta []byte) (class biz.ClassInfo, err error) {
+func (repo classInfoRepo) ParseClassInfo(blockNumber uint64, txIndex uint32, classMeta []byte) (class biz.ClassInfo, err error) {
 	var classJson biz.ClassInfoJson
 	err = json.Unmarshal(classMeta, &classJson)
 	if err != nil {
@@ -78,6 +111,7 @@ func (repo classInfoRepo) ParseClassInfo(blockNumber uint64, classMeta []byte) (
 		Model:        classJson.Model,
 		Properties:   classJson.Properties,
 		Localization: classJson.Localization,
+		TxIndex:      txIndex,
 	}
 	return
 }

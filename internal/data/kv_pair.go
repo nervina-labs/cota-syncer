@@ -2,11 +2,13 @@ package data
 
 import (
 	"context"
+	"errors"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"hash/crc32"
+	"time"
 )
 
 var _ biz.KvPairRepo = (*kvPairRepo)(nil)
@@ -23,7 +25,7 @@ func NewKvPairRepo(data *Data, logger *logger.Logger) biz.KvPairRepo {
 	}
 }
 
-func (rp kvPairRepo) CreateKvPairs(ctx context.Context, checkInfo biz.CheckInfo, kvPair *biz.KvPair) error {
+func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.CheckInfo, kvPair *biz.KvPair) error {
 	return rp.data.db.Transaction(func(tx *gorm.DB) error {
 		// create register cotas
 		if kvPair.HasRegisters() {
@@ -111,11 +113,12 @@ func (rp kvPairRepo) CreateKvPairs(ctx context.Context, checkInfo biz.CheckInfo,
 					Configure:   cota.Configure,
 					LockHash:    cota.LockHash,
 					LockHashCRC: cota.LockHashCRC,
+					UpdatedAt:   cota.UpdatedAt,
 				}
 			}
 			if err := tx.Model(DefineCotaNftKvPair{}).WithContext(ctx).Clauses(clause.OnConflict{
 				Columns:   []clause.Column{{Name: "cota_id"}},
-				DoUpdates: clause.AssignmentColumns([]string{"issued"}),
+				DoUpdates: clause.AssignmentColumns([]string{"issued", "block_number", "updated_at"}),
 			}).Create(updatedDefineCotas).Error; err != nil {
 				return err
 			}
@@ -261,11 +264,12 @@ func (rp kvPairRepo) CreateKvPairs(ctx context.Context, checkInfo biz.CheckInfo,
 					Characteristic: cota.Characteristic,
 					LockHash:       cota.LockHash,
 					LockHashCRC:    cota.LockHashCRC,
+					UpdatedAt:      cota.UpdatedAt,
 				}
 			}
 			if err := tx.Debug().Clauses(clause.OnConflict{
 				Columns:   []clause.Column{{Name: "cota_id"}, {Name: "token_index"}},
-				DoUpdates: clause.AssignmentColumns([]string{"block_number", "state", "characteristic", "lock_hash", "lock_hash_crc"}),
+				DoUpdates: clause.AssignmentColumns([]string{"block_number", "state", "characteristic", "lock_hash", "lock_hash_crc", "updated_at"}),
 			}).Create(updatedHoldCotas).Error; err != nil {
 				return err
 			}
@@ -289,49 +293,6 @@ func (rp kvPairRepo) CreateKvPairs(ctx context.Context, checkInfo biz.CheckInfo,
 				return err
 			}
 		}
-		if kvPair.HasIssuerInfos() {
-			// create issuer info
-			issuerInfos := make([]IssuerInfo, len(kvPair.IssuerInfos))
-			for i, issuer := range kvPair.IssuerInfos {
-				issuerInfos[i] = IssuerInfo{
-					BlockNumber:  issuer.BlockNumber,
-					LockHash:     issuer.LockHash,
-					LockHashCRC:  issuer.LockHashCRC,
-					Version:      issuer.Version,
-					Name:         issuer.Name,
-					Avatar:       issuer.Avatar,
-					Description:  issuer.Description,
-					Localization: issuer.Localization,
-				}
-			}
-			if err := tx.Model(IssuerInfo{}).WithContext(ctx).Create(issuerInfos).Error; err != nil {
-				return err
-			}
-		}
-		if kvPair.HasClassInfos() {
-			// create class info
-			classInfos := make([]ClassInfo, len(kvPair.ClassInfos))
-			for i, class := range kvPair.ClassInfos {
-				classInfos[i] = ClassInfo{
-					BlockNumber:  class.BlockNumber,
-					CotaId:       class.CotaId,
-					Version:      class.Version,
-					Name:         class.Name,
-					Symbol:       class.Symbol,
-					Description:  class.Description,
-					Image:        class.Image,
-					Audio:        class.Audio,
-					Video:        class.Video,
-					Model:        class.Model,
-					Schema:       class.Schema,
-					Properties:   class.Properties,
-					Localization: class.Localization,
-				}
-			}
-			if err := tx.Model(ClassInfo{}).WithContext(ctx).Create(classInfos).Error; err != nil {
-				return err
-			}
-		}
 		// create check info
 		if err := tx.Debug().Model(CheckInfo{}).WithContext(ctx).Create(&CheckInfo{
 			BlockNumber: checkInfo.BlockNumber,
@@ -344,7 +305,7 @@ func (rp kvPairRepo) CreateKvPairs(ctx context.Context, checkInfo biz.CheckInfo,
 	})
 }
 
-func (rp kvPairRepo) RestoreKvPairs(ctx context.Context, blockNumber uint64) error {
+func (rp kvPairRepo) RestoreCotaEntryKvPairs(ctx context.Context, blockNumber uint64) error {
 	return rp.data.db.Transaction(func(tx *gorm.DB) error {
 		// delete all register cotas by the block number
 		if err := tx.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(RegisterCotaKvPair{}).Error; err != nil {
@@ -358,7 +319,7 @@ func (rp kvPairRepo) RestoreKvPairs(ctx context.Context, blockNumber uint64) err
 		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 0).Delete(DefineCotaNftKvPairVersion{}).Error; err != nil {
 			return err
 		}
-		// 把需要回滚的 block 更新过的 define 恢复到更新前的状态
+		// 把需要回滚的 block 更新过的 define 恢复到更新前的状态，这里按 cota_id 分组取出回滚 block 下第一条
 		var updatedDefineCotaVersions []DefineCotaNftKvPairVersion
 		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Group("cota_id").Order("tx_index").Find(&updatedDefineCotaVersions).Error; err != nil {
 			return err
@@ -373,6 +334,7 @@ func (rp kvPairRepo) RestoreKvPairs(ctx context.Context, blockNumber uint64) err
 				Configure:   version.Configure,
 				LockHash:    version.LockHash,
 				LockHashCRC: crc32.ChecksumIEEE([]byte(version.LockHash)),
+				UpdatedAt:   time.Now().UTC(),
 			})
 		}
 		if len(updatedDefineCotas) > 0 {
@@ -457,20 +419,252 @@ func (rp kvPairRepo) RestoreKvPairs(ctx context.Context, blockNumber uint64) err
 		if err := tx.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(ClaimedCotaNftKvPair{}).Error; err != nil {
 			return err
 		}
-		// delete all issuer info by the block number
+		// delete check info
+		if err := tx.Debug().WithContext(ctx).Where("block_number = ? and check_type = ?", blockNumber, biz.SyncBlock).Delete(CheckInfo{}).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.CheckInfo, kvPair *biz.KvPair) error {
+	return rp.data.db.Transaction(func(tx *gorm.DB) error {
+		if kvPair.HasIssuerInfos() {
+			// save issuer info versions
+			issuerInfoVersions := make([]IssuerInfoVersion, len(kvPair.IssuerInfos))
+			for i, info := range kvPair.IssuerInfos {
+				var oldInfo IssuerInfo
+				err := tx.Model(IssuerInfo{}).WithContext(ctx).Where("lock_hash = ?", info.LockHash).First(&oldInfo).Error
+				if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+					return err
+				}
+				if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+					issuerInfoVersions[i] = IssuerInfoVersion{
+						BlockNumber:  info.BlockNumber,
+						LockHash:     info.LockHash,
+						Version:      info.Version,
+						Name:         info.Name,
+						Avatar:       info.Avatar,
+						Description:  info.Description,
+						Localization: info.Localization,
+						ActionType:   0,
+						TxIndex:      info.TxIndex,
+					}
+				} else {
+					issuerInfoVersions[i] = IssuerInfoVersion{
+						OldBlockNumber:  oldInfo.BlockNumber,
+						BlockNumber:     info.BlockNumber,
+						LockHash:        info.LockHash,
+						OldVersion:      oldInfo.Version,
+						Version:         info.Version,
+						OldName:         oldInfo.Name,
+						Name:            info.Name,
+						OldAvatar:       oldInfo.Avatar,
+						Avatar:          info.Avatar,
+						OldDescription:  oldInfo.Description,
+						Description:     info.Description,
+						OldLocalization: oldInfo.Localization,
+						Localization:    info.Localization,
+						ActionType:      1,
+						TxIndex:         info.TxIndex,
+					}
+				}
+			}
+			if err := tx.Model(IssuerInfoVersion{}).WithContext(ctx).Create(issuerInfoVersions).Error; err != nil {
+				return err
+			}
+			// upsert issuer info
+			issuerInfos := make([]IssuerInfo, len(kvPair.IssuerInfos))
+			for i, issuer := range kvPair.IssuerInfos {
+				issuerInfos[i] = IssuerInfo{
+					BlockNumber:  issuer.BlockNumber,
+					LockHash:     issuer.LockHash,
+					Version:      issuer.Version,
+					Name:         issuer.Name,
+					Avatar:       issuer.Avatar,
+					Description:  issuer.Description,
+					Localization: issuer.Localization,
+				}
+			}
+			if err := tx.Model(IssuerInfo{}).WithContext(ctx).Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "lock_hash"}},
+				UpdateAll: true,
+			}).Create(issuerInfos).Error; err != nil {
+				return err
+			}
+		}
+		if kvPair.HasClassInfos() {
+			// save class info versions
+			classInfoVersions := make([]ClassInfoVersion, len(kvPair.ClassInfos))
+			for i, info := range kvPair.ClassInfos {
+				var oldInfo ClassInfo
+				err := tx.Model(ClassInfo{}).WithContext(ctx).Where("cota_id = ?", info.CotaId).First(&oldInfo).Error
+				if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+					return err
+				}
+				if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+					classInfoVersions[i] = ClassInfoVersion{
+						BlockNumber:  0,
+						CotaId:       info.CotaId,
+						Version:      info.Version,
+						Name:         info.Name,
+						Symbol:       info.Symbol,
+						Description:  info.Description,
+						Image:        info.Image,
+						Audio:        info.Audio,
+						Video:        info.Video,
+						Model:        info.Model,
+						Schema:       info.Schema,
+						Properties:   info.Properties,
+						Localization: info.Localization,
+						ActionType:   0,
+						TxIndex:      info.TxIndex,
+					}
+				} else {
+					classInfoVersions[i] = ClassInfoVersion{
+						OldBlockNumber:  oldInfo.BlockNumber,
+						BlockNumber:     info.BlockNumber,
+						CotaId:          info.CotaId,
+						OldVersion:      oldInfo.Version,
+						Version:         info.Version,
+						OldName:         oldInfo.Name,
+						Name:            info.Name,
+						OldSymbol:       oldInfo.Symbol,
+						Symbol:          info.Symbol,
+						OldDescription:  oldInfo.Description,
+						Description:     info.Description,
+						OldImage:        oldInfo.Image,
+						Image:           info.Image,
+						OldAudio:        oldInfo.Audio,
+						Audio:           info.Audio,
+						OldVideo:        oldInfo.Video,
+						Video:           info.Video,
+						OldModel:        oldInfo.Model,
+						Model:           info.Model,
+						OldSchema:       oldInfo.Schema,
+						Schema:          info.Schema,
+						OldProperties:   oldInfo.Properties,
+						Properties:      info.Properties,
+						OldLocalization: oldInfo.Localization,
+						Localization:    info.Localization,
+						ActionType:      1,
+						TxIndex:         info.TxIndex,
+					}
+				}
+			}
+
+			if err := tx.Model(ClassInfoVersion{}).WithContext(ctx).Create(classInfoVersions).Error; err != nil {
+				return err
+			}
+			// upsert class info
+			classInfos := make([]ClassInfo, len(kvPair.ClassInfos))
+			for i, class := range kvPair.ClassInfos {
+				classInfos[i] = ClassInfo{
+					BlockNumber:  class.BlockNumber,
+					CotaId:       class.CotaId,
+					Version:      class.Version,
+					Name:         class.Name,
+					Symbol:       class.Symbol,
+					Description:  class.Description,
+					Image:        class.Image,
+					Audio:        class.Audio,
+					Video:        class.Video,
+					Model:        class.Model,
+					Schema:       class.Schema,
+					Properties:   class.Properties,
+					Localization: class.Localization,
+				}
+			}
+			if err := tx.Model(ClassInfo{}).WithContext(ctx).Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "cota_id"}},
+				UpdateAll: true,
+			}).Create(classInfos).Error; err != nil {
+				return err
+			}
+		}
+		// create check info
+		if err := tx.Debug().Model(CheckInfo{}).WithContext(ctx).Create(&CheckInfo{
+			BlockNumber: checkInfo.BlockNumber,
+			BlockHash:   checkInfo.BlockHash,
+			CheckType:   checkInfo.CheckType,
+		}).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+func (rp kvPairRepo) RestoreMetadataKvPairs(ctx context.Context, blockNumber uint64) error {
+	return rp.data.db.Transaction(func(tx *gorm.DB) error {
+		// 删掉所有新建的 issuer info
 		if err := tx.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(IssuerInfo{}).Error; err != nil {
 			return err
 		}
+		// 把需要回滚的 block 更新过的 issuerInfo 恢复到更新前的状态
+		var issuerInfoVersions []IssuerInfoVersion
+		if err := tx.Model(IssuerInfoVersion{}).WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Group("lock_hash").Order("tx_index").Find(&issuerInfoVersions).Error; err != nil {
+			return err
+		}
+		var updatedIssuerInfos []IssuerInfo
+		for _, version := range issuerInfoVersions {
+			updatedIssuerInfos = append(updatedIssuerInfos, IssuerInfo{
+				BlockNumber:  version.OldBlockNumber,
+				LockHash:     version.LockHash,
+				Version:      version.OldVersion,
+				Name:         version.OldName,
+				Avatar:       version.OldAvatar,
+				Description:  version.OldDescription,
+				Localization: version.OldLocalization,
+				UpdatedAt:    time.Now().UTC(),
+			})
+		}
+		if len(updatedIssuerInfos) > 0 {
+			if err := tx.Model(IssuerInfo{}).WithContext(ctx).Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "lock_hash"}},
+				UpdateAll: true,
+			}).Create(updatedIssuerInfos).Error; err != nil {
+				return err
+			}
+		}
 		// delete all class info by the block number
-		if err := tx.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(ClassInfo{}).Error; err != nil {
+		if err := tx.Debug().WithContext(ctx).Where("block_number = ?", blockNumber).Delete(ClassInfo{}).Error; err != nil {
 			return err
 		}
-
+		var classInfoVersions []ClassInfoVersion
+		if err := tx.Model(ClassInfoVersion{}).WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Group("cota_id").Order("tx_index").Find(&classInfoVersions).Error; err != nil {
+			return err
+		}
+		var updatedClassInfos []ClassInfo
+		for _, version := range classInfoVersions {
+			updatedClassInfos = append(updatedClassInfos, ClassInfo{
+				BlockNumber:  version.OldBlockNumber,
+				CotaId:       version.CotaId,
+				Version:      version.OldVersion,
+				Name:         version.OldName,
+				Symbol:       version.OldSymbol,
+				Description:  version.OldDescription,
+				Image:        version.OldImage,
+				Audio:        version.OldAudio,
+				Video:        version.OldVideo,
+				Model:        version.OldModel,
+				Schema:       version.OldSchema,
+				Properties:   version.OldProperties,
+				Localization: version.OldLocalization,
+				UpdatedAt:    time.Now().UTC(),
+			})
+		}
+		if len(updatedClassInfos) > 0 {
+			if err := tx.Model(ClassInfo{}).WithContext(ctx).Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "cota_id"}},
+				UpdateAll: true,
+			}).Create(updatedClassInfos).Error; err != nil {
+				return err
+			}
+		}
 		// delete check info
-		if err := tx.Debug().WithContext(ctx).Where("block_number = ? and check_type = ?", blockNumber, 0).Delete(CheckInfo{}).Error; err != nil {
+		if err := tx.Debug().WithContext(ctx).Where("block_number = ? and check_type = ?", blockNumber, biz.SyncMetadata).Delete(CheckInfo{}).Error; err != nil {
 			return err
 		}
-
 		return nil
 	})
 }
