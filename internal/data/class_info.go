@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"encoding/json"
+	"github.com/mitchellh/mapstructure"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
 	"gorm.io/gorm/clause"
@@ -12,55 +13,55 @@ import (
 var _ biz.ClassInfoRepo = (*classInfoRepo)(nil)
 
 type ClassInfo struct {
-	ID           uint `gorm:"primaryKey"`
-	BlockNumber  uint64
-	CotaId       string
-	Version      string
-	Name         string
-	Symbol       string
-	Description  string
-	Image        string
-	Audio        string
-	Video        string
-	Model        string
-	Schema       string
-	Properties   string
-	Localization string
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	ID             uint `gorm:"primaryKey"`
+	BlockNumber    uint64
+	CotaId         string
+	Version        string
+	Name           string
+	Symbol         string
+	Description    string
+	Image          string
+	Audio          string
+	Video          string
+	Model          string
+	Characteristic string
+	Properties     string
+	Localization   string
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
 }
 
 type ClassInfoVersion struct {
-	ID              uint `gorm:"primaryKey"`
-	OldBlockNumber  uint64
-	BlockNumber     uint64
-	CotaId          string
-	OldVersion      string
-	Version         string
-	OldName         string
-	Name            string
-	OldSymbol       string
-	Symbol          string
-	OldDescription  string
-	Description     string
-	OldImage        string
-	Image           string
-	OldAudio        string
-	Audio           string
-	OldVideo        string
-	Video           string
-	OldModel        string
-	Model           string
-	OldSchema       string
-	Schema          string
-	OldProperties   string
-	Properties      string
-	OldLocalization string
-	Localization    string
-	ActionType      uint8 //	0-create 1-update 2-delete
-	TxIndex         uint32
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
+	ID                uint `gorm:"primaryKey"`
+	OldBlockNumber    uint64
+	BlockNumber       uint64
+	CotaId            string
+	OldVersion        string
+	Version           string
+	OldName           string
+	Name              string
+	OldSymbol         string
+	Symbol            string
+	OldDescription    string
+	Description       string
+	OldImage          string
+	Image             string
+	OldAudio          string
+	Audio             string
+	OldVideo          string
+	Video             string
+	OldModel          string
+	Model             string
+	OldCharacteristic string
+	Characteristic    string
+	OldProperties     string
+	Properties        string
+	OldLocalization   string
+	Localization      string
+	ActionType        uint8 //	0-create 1-update 2-delete
+	TxIndex           uint32
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
 }
 
 type classInfoRepo struct {
@@ -92,26 +93,51 @@ func (repo classInfoRepo) DeleteClassInfo(ctx context.Context, blockNumber uint6
 	return nil
 }
 
-func (repo classInfoRepo) ParseClassInfo(blockNumber uint64, txIndex uint32, classMeta []byte) (class biz.ClassInfo, err error) {
-	var classJson biz.ClassInfoJson
-	err = json.Unmarshal(classMeta, &classJson)
+func (repo classInfoRepo) ParseClassInfo(blockNumber uint64, txIndex uint32, classMeta map[string]any) (class biz.ClassInfo, err error) {
+	var classInfo biz.ClassInfoJson
+	err = mapstructure.Decode(classMeta, &classInfo)
 	if err != nil {
 		return
 	}
+	characteristic, err := json.Marshal(classInfo.Characteristic)
+	if err != nil {
+		return
+	}
+	characteristicStr := string(characteristic)
+	if characteristicStr == "null" {
+		characteristicStr = ""
+	}
+	properties, err := json.Marshal(classInfo.Properties)
+	if err != nil {
+		return
+	}
+	propertiesStr := string(properties)
+	if propertiesStr == "null" {
+		propertiesStr = ""
+	}
+	localization, err := json.Marshal(classInfo.Localization)
+	if err != nil {
+		return
+	}
+	localizationStr := string(localization)
+	if localizationStr == "{}" {
+		localizationStr = ""
+	}
 	class = biz.ClassInfo{
-		BlockNumber:  blockNumber,
-		CotaId:       classJson.CotaId,
-		Version:      classJson.Version,
-		Name:         classJson.Name,
-		Symbol:       classJson.Symbol,
-		Description:  classJson.Description,
-		Image:        classJson.Image,
-		Audio:        classJson.Audio,
-		Video:        classJson.Video,
-		Model:        classJson.Model,
-		Properties:   classJson.Properties,
-		Localization: classJson.Localization,
-		TxIndex:      txIndex,
+		BlockNumber:    blockNumber,
+		CotaId:         classInfo.CotaId,
+		Version:        classInfo.Version,
+		Name:           classInfo.Name,
+		Symbol:         classInfo.Symbol,
+		Description:    classInfo.Description,
+		Image:          classInfo.Image,
+		Audio:          classInfo.Audio,
+		Video:          classInfo.Video,
+		Model:          classInfo.Model,
+		Properties:     propertiesStr,
+		Localization:   localizationStr,
+		Characteristic: characteristicStr,
+		TxIndex:        txIndex,
 	}
 	return
 }

@@ -20,7 +20,7 @@ type IssuerInfo struct {
 type IssuerInfoRepo interface {
 	CreateIssuerInfo(ctx context.Context, issuer *IssuerInfo) error
 	DeleteIssuerInfo(ctx context.Context, blockNumber uint64) error
-	ParseIssuerInfo(blockNumber uint64, txIndex uint32, lockScript *ckbTypes.Script, issuerMeta []byte) (IssuerInfo, error)
+	ParseIssuerInfo(blockNumber uint64, txIndex uint32, lockScript *ckbTypes.Script, issuerMeta map[string]any) (IssuerInfo, error)
 }
 
 type IssuerInfoUsecase struct {
@@ -43,6 +43,6 @@ func (uc *IssuerInfoUsecase) DeleteByBlockNumber(ctx context.Context, blockNumbe
 	return uc.repo.DeleteIssuerInfo(ctx, blockNumber)
 }
 
-func (uc IssuerInfoUsecase) ParseMetadata(blockNumber uint64, txIndex uint32, lockScript *ckbTypes.Script, issuerMeta []byte) (IssuerInfo, error) {
+func (uc IssuerInfoUsecase) ParseMetadata(blockNumber uint64, txIndex uint32, lockScript *ckbTypes.Script, issuerMeta map[string]any) (IssuerInfo, error) {
 	return uc.repo.ParseIssuerInfo(blockNumber, txIndex, lockScript, issuerMeta)
 }

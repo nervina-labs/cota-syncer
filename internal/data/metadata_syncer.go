@@ -8,26 +8,20 @@ import (
 )
 
 type MetadataSyncer struct {
-	claimedCotaUsecase    *biz.ClaimedCotaNftKvPairUsecase
-	defineCotaUsecase     *biz.DefineCotaNftKvPairUsecase
-	holdCotaUsecase       *biz.HoldCotaNftKvPairUsecase
-	registerCotaUsecase   *biz.RegisterCotaKvPairUsecase
-	withdrawCotaUsecase   *biz.WithdrawCotaNftKvPairUsecase
-	cotaWitnessArgsParser CotaWitnessArgsParser
 	kvPairUsecase         *biz.SyncKvPairUsecase
-	mintCotaUsecase       *biz.MintCotaKvPairUsecase
-	transferCotaUsecase   *biz.TransferCotaKvPairUsecase
+	cotaWitnessArgsParser CotaWitnessArgsParser
 	issuerInfoUsecase     *biz.IssuerInfoUsecase
 	classInfoUsecase      *biz.ClassInfoUsecase
 }
 
 func NewMetadataSyncer(
-	kvPairUsecase *biz.SyncKvPairUsecase, issuerInfoUsecase *biz.IssuerInfoUsecase,
+	kvPairUsecase *biz.SyncKvPairUsecase, cotaWitnessArgsParser CotaWitnessArgsParser, issuerInfoUsecase *biz.IssuerInfoUsecase,
 	classInfoUsecase *biz.ClassInfoUsecase) MetadataSyncer {
 	return MetadataSyncer{
-		kvPairUsecase:     kvPairUsecase,
-		issuerInfoUsecase: issuerInfoUsecase,
-		classInfoUsecase:  classInfoUsecase,
+		kvPairUsecase:         kvPairUsecase,
+		cotaWitnessArgsParser: cotaWitnessArgsParser,
+		issuerInfoUsecase:     issuerInfoUsecase,
+		classInfoUsecase:      classInfoUsecase,
 	}
 }
 
@@ -65,13 +59,13 @@ func (bp MetadataSyncer) parseMetadata(blockNumber uint64, entries []biz.Entry) 
 			}
 			switch ctMeta.Metadata.Type {
 			case "issuer":
-				issuerInfo, err := bp.issuerInfoUsecase.ParseMetadata(blockNumber, entry.TxIndex, entry.LockScript, []byte(ctMeta.Metadata.Data))
+				issuerInfo, err := bp.issuerInfoUsecase.ParseMetadata(blockNumber, entry.TxIndex, entry.LockScript, ctMeta.Metadata.Data)
 				if err != nil {
 					return kvPair, err
 				}
 				kvPair.IssuerInfos = append(kvPair.IssuerInfos, issuerInfo)
 			case "cota":
-				classInfo, err := bp.classInfoUsecase.ParseMetadata(blockNumber, entry.TxIndex, []byte(ctMeta.Metadata.Data))
+				classInfo, err := bp.classInfoUsecase.ParseMetadata(blockNumber, entry.TxIndex, ctMeta.Metadata.Data)
 				if err != nil {
 					return kvPair, err
 				}

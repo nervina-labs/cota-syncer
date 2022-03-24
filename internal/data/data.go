@@ -140,7 +140,7 @@ func cotaRegistryScript(chain string) SystemScript {
 			HashType: ckbTypes.HashTypeType,
 			Args:     args,
 			OutPoint: ckbTypes.OutPoint{
-				TxHash: ckbTypes.HexToHash("0xae2d5838730fc096e68fe839aea50d294493e10054513c10ca35e77e82e9243b"),
+				TxHash: ckbTypes.HexToHash("0x42a5b04df6ff0e2819ec6b814d33a028ed1593bc9e1cca463f679af555dce106"),
 				Index:  0,
 			},
 			DepType: ckbTypes.DepTypeDepGroup,
@@ -152,7 +152,7 @@ func cotaRegistryScript(chain string) SystemScript {
 		HashType: ckbTypes.HashTypeType,
 		Args:     args,
 		OutPoint: ckbTypes.OutPoint{
-			TxHash: ckbTypes.HexToHash("0x678fb90d09e44e1389d71cf1734b3e98c71718b0c2582a1088c27e2aa384895f"),
+			TxHash: ckbTypes.HexToHash("0x2dfcab7790f3cabffe5cb349546dac8918b409481828218cc162f9de5754116f"),
 			Index:  0,
 		},
 		DepType: ckbTypes.DepTypeDepGroup,
@@ -165,7 +165,7 @@ func cotaTypeScript(chain string) SystemScript {
 			CodeHash: ckbTypes.HexToHash("0x1122a4fb54697cf2e6e3a96c9d80fd398a936559b90954c6e88eb7ba0cf652df"),
 			HashType: ckbTypes.HashTypeType,
 			OutPoint: ckbTypes.OutPoint{
-				TxHash: ckbTypes.HexToHash("0xae2d5838730fc096e68fe839aea50d294493e10054513c10ca35e77e82e9243b"),
+				TxHash: ckbTypes.HexToHash("0x42a5b04df6ff0e2819ec6b814d33a028ed1593bc9e1cca463f679af555dce106"),
 				Index:  0,
 			},
 			DepType: ckbTypes.DepTypeDepGroup,
@@ -175,7 +175,7 @@ func cotaTypeScript(chain string) SystemScript {
 		CodeHash: ckbTypes.HexToHash("0x89cd8003a0eaf8e65e0c31525b7d1d5c1becefd2ea75bb4cff87810ae37764d8"),
 		HashType: ckbTypes.HashTypeType,
 		OutPoint: ckbTypes.OutPoint{
-			TxHash: ckbTypes.HexToHash("0x678fb90d09e44e1389d71cf1734b3e98c71718b0c2582a1088c27e2aa384895f"),
+			TxHash: ckbTypes.HexToHash("0x2dfcab7790f3cabffe5cb349546dac8918b409481828218cc162f9de5754116f"),
 			Index:  0,
 		},
 		DepType: ckbTypes.DepTypeDepGroup,

@@ -12,32 +12,38 @@ type CTMeta struct {
 }
 
 type MetaData struct {
-	Target string `json:"target"`
-	Type   string `json:"type"`
-	Data   string `json:"data"`
+	Target string         `json:"target"`
+	Type   string         `json:"type"`
+	Data   map[string]any `json:"data"`
+}
+
+type Localization struct {
+	Uri     string   `json:"uri,omitempty" mapstructure:",omitempty"`
+	Default string   `json:"default,omitempty" mapstructure:",omitempty"`
+	Locales []string `json:"locales,omitempty" mapstructure:",omitempty"`
 }
 
 type ClassInfoJson struct {
-	CotaId       string `json:"cota_id"`
-	Version      string `json:"version"`
-	Name         string `json:"name"`
-	Symbol       string `json:"symbol"`
-	Description  string `json:"description"`
-	Image        string `json:"image"`
-	Audio        string `json:"audio"`
-	Video        string `json:"video"`
-	Model        string `json:"model"`
-	Schema       string `json:"schema"`
-	Properties   string `json:"properties"`
-	Localization string `json:"localization"`
+	CotaId         string         `json:"cota_id" mapstructure:"cota_id,omitempty"`
+	Version        string         `json:"version" mapstructure:",omitempty"`
+	Name           string         `json:"name" mapstructure:",omitempty"`
+	Symbol         string         `json:"symbol" mapstructure:",omitempty"`
+	Description    string         `json:"description" mapstructure:",omitempty"`
+	Image          string         `json:"image" mapstructure:",omitempty"`
+	Audio          string         `json:"audio"`
+	Video          string         `json:"video" mapstructure:",omitempty"`
+	Model          string         `json:"model" mapstructure:",omitempty"`
+	Characteristic [][]any        `json:"characteristic" mapstructure:",omitempty"`
+	Properties     map[string]any `json:"properties" mapstructure:",omitempty"`
+	Localization   Localization   `json:"localization" mapstructure:",omitempty"`
 }
 
 type IssuerInfoJson struct {
-	Version      string `json:"version"`
-	Name         string `json:"name"`
-	Avatar       string `json:"avatar"`
-	Description  string `json:"description"`
-	Localization string `json:"localization"`
+	Version      string       `json:"version" mapstructure:",omitempty"`
+	Name         string       `json:"name" mapstructure:",omitempty"`
+	Avatar       string       `json:"avatar" mapstructure:",omitempty"`
+	Description  string       `json:"description" mapstructure:",omitempty"`
+	Localization Localization `json:"localization" mapstructure:",omitempty"`
 }
 
 type MetaType int

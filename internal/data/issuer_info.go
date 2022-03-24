@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"encoding/json"
+	"github.com/mitchellh/mapstructure"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
@@ -75,25 +76,33 @@ func (repo issuerInfoRepo) DeleteIssuerInfo(ctx context.Context, blockNumber uin
 	return nil
 }
 
-func (repo issuerInfoRepo) ParseIssuerInfo(blockNumber uint64, txIndex uint32, lockScript *ckbTypes.Script, issuerMeta []byte) (issuer biz.IssuerInfo, err error) {
+func (repo issuerInfoRepo) ParseIssuerInfo(blockNumber uint64, txIndex uint32, lockScript *ckbTypes.Script, issuerMeta map[string]any) (issuer biz.IssuerInfo, err error) {
 	lockHash, err := lockScript.Hash()
 	if err != nil {
 		return
 	}
 	lockHashStr := lockHash.String()[2:]
-	var issuerJson biz.IssuerInfoJson
-	err = json.Unmarshal(issuerMeta, &issuerJson)
+	var issuerInfo biz.IssuerInfoJson
+	err = mapstructure.Decode(issuerMeta, &issuerInfo)
 	if err != nil {
 		return
+	}
+	localization, err := json.Marshal(issuerInfo.Localization)
+	if err != nil {
+		return
+	}
+	localizationStr := string(localization)
+	if localizationStr == "{}" {
+		localizationStr = ""
 	}
 	issuer = biz.IssuerInfo{
 		BlockNumber:  blockNumber,
 		LockHash:     lockHashStr,
-		Version:      issuerJson.Version,
-		Name:         issuerJson.Name,
-		Avatar:       issuerJson.Avatar,
-		Description:  issuerJson.Description,
-		Localization: issuerJson.Localization,
+		Version:      issuerInfo.Version,
+		Name:         issuerInfo.Name,
+		Avatar:       issuerInfo.Avatar,
+		Description:  issuerInfo.Description,
+		Localization: localizationStr,
 		TxIndex:      txIndex,
 	}
 	return

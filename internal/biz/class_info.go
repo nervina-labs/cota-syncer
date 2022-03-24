@@ -6,26 +6,26 @@ import (
 )
 
 type ClassInfo struct {
-	BlockNumber  uint64
-	CotaId       string
-	Version      string
-	Name         string
-	Symbol       string
-	Description  string
-	Image        string
-	Audio        string
-	Video        string
-	Model        string
-	Schema       string
-	Properties   string
-	Localization string
-	TxIndex      uint32
+	BlockNumber    uint64
+	CotaId         string
+	Version        string
+	Name           string
+	Symbol         string
+	Description    string
+	Image          string
+	Audio          string
+	Video          string
+	Model          string
+	Characteristic string
+	Properties     string
+	Localization   string
+	TxIndex        uint32
 }
 
 type ClassInfoRepo interface {
 	CreateClassInfo(ctx context.Context, class *ClassInfo) error
 	DeleteClassInfo(ctx context.Context, blockNumber uint64) error
-	ParseClassInfo(blockNumber uint64, txIndex uint32, classMeta []byte) (ClassInfo, error)
+	ParseClassInfo(blockNumber uint64, txIndex uint32, classMeta map[string]any) (ClassInfo, error)
 }
 
 type ClassInfoUsecase struct {
@@ -48,6 +48,6 @@ func (uc *ClassInfoUsecase) DeleteByBlockNumber(ctx context.Context, blockNumber
 	return uc.repo.DeleteClassInfo(ctx, blockNumber)
 }
 
-func (uc ClassInfoUsecase) ParseMetadata(blockNumber uint64, txIndex uint32, classMeta []byte) (ClassInfo, error) {
+func (uc ClassInfoUsecase) ParseMetadata(blockNumber uint64, txIndex uint32, classMeta map[string]any) (ClassInfo, error) {
 	return uc.repo.ParseClassInfo(blockNumber, txIndex, classMeta)
 }

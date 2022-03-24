@@ -54,7 +54,7 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 					LockHashCRC: cota.LockHashCRC,
 				}
 			}
-			if err := tx.Model(DefineCotaNftKvPair{}).WithContext(ctx).Create(defineCotas).Error; err != nil {
+			if err := tx.Debug().Model(DefineCotaNftKvPair{}).WithContext(ctx).Create(defineCotas).Error; err != nil {
 				return err
 			}
 			defineCotaVersions := make([]DefineCotaNftKvPairVersion, len(kvPair.DefineCotas))
@@ -504,51 +504,51 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 				}
 				if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 					classInfoVersions[i] = ClassInfoVersion{
-						BlockNumber:  0,
-						CotaId:       info.CotaId,
-						Version:      info.Version,
-						Name:         info.Name,
-						Symbol:       info.Symbol,
-						Description:  info.Description,
-						Image:        info.Image,
-						Audio:        info.Audio,
-						Video:        info.Video,
-						Model:        info.Model,
-						Schema:       info.Schema,
-						Properties:   info.Properties,
-						Localization: info.Localization,
-						ActionType:   0,
-						TxIndex:      info.TxIndex,
+						BlockNumber:    0,
+						CotaId:         info.CotaId,
+						Version:        info.Version,
+						Name:           info.Name,
+						Symbol:         info.Symbol,
+						Description:    info.Description,
+						Image:          info.Image,
+						Audio:          info.Audio,
+						Video:          info.Video,
+						Model:          info.Model,
+						Characteristic: info.Characteristic,
+						Properties:     info.Properties,
+						Localization:   info.Localization,
+						ActionType:     0,
+						TxIndex:        info.TxIndex,
 					}
 				} else {
 					classInfoVersions[i] = ClassInfoVersion{
-						OldBlockNumber:  oldInfo.BlockNumber,
-						BlockNumber:     info.BlockNumber,
-						CotaId:          info.CotaId,
-						OldVersion:      oldInfo.Version,
-						Version:         info.Version,
-						OldName:         oldInfo.Name,
-						Name:            info.Name,
-						OldSymbol:       oldInfo.Symbol,
-						Symbol:          info.Symbol,
-						OldDescription:  oldInfo.Description,
-						Description:     info.Description,
-						OldImage:        oldInfo.Image,
-						Image:           info.Image,
-						OldAudio:        oldInfo.Audio,
-						Audio:           info.Audio,
-						OldVideo:        oldInfo.Video,
-						Video:           info.Video,
-						OldModel:        oldInfo.Model,
-						Model:           info.Model,
-						OldSchema:       oldInfo.Schema,
-						Schema:          info.Schema,
-						OldProperties:   oldInfo.Properties,
-						Properties:      info.Properties,
-						OldLocalization: oldInfo.Localization,
-						Localization:    info.Localization,
-						ActionType:      1,
-						TxIndex:         info.TxIndex,
+						OldBlockNumber:    oldInfo.BlockNumber,
+						BlockNumber:       info.BlockNumber,
+						CotaId:            info.CotaId,
+						OldVersion:        oldInfo.Version,
+						Version:           info.Version,
+						OldName:           oldInfo.Name,
+						Name:              info.Name,
+						OldSymbol:         oldInfo.Symbol,
+						Symbol:            info.Symbol,
+						OldDescription:    oldInfo.Description,
+						Description:       info.Description,
+						OldImage:          oldInfo.Image,
+						Image:             info.Image,
+						OldAudio:          oldInfo.Audio,
+						Audio:             info.Audio,
+						OldVideo:          oldInfo.Video,
+						Video:             info.Video,
+						OldModel:          oldInfo.Model,
+						Model:             info.Model,
+						OldCharacteristic: oldInfo.Characteristic,
+						Characteristic:    info.Characteristic,
+						OldProperties:     oldInfo.Properties,
+						Properties:        info.Properties,
+						OldLocalization:   oldInfo.Localization,
+						Localization:      info.Localization,
+						ActionType:        1,
+						TxIndex:           info.TxIndex,
 					}
 				}
 			}
@@ -560,19 +560,19 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 			classInfos := make([]ClassInfo, len(kvPair.ClassInfos))
 			for i, class := range kvPair.ClassInfos {
 				classInfos[i] = ClassInfo{
-					BlockNumber:  class.BlockNumber,
-					CotaId:       class.CotaId,
-					Version:      class.Version,
-					Name:         class.Name,
-					Symbol:       class.Symbol,
-					Description:  class.Description,
-					Image:        class.Image,
-					Audio:        class.Audio,
-					Video:        class.Video,
-					Model:        class.Model,
-					Schema:       class.Schema,
-					Properties:   class.Properties,
-					Localization: class.Localization,
+					BlockNumber:    class.BlockNumber,
+					CotaId:         class.CotaId,
+					Version:        class.Version,
+					Name:           class.Name,
+					Symbol:         class.Symbol,
+					Description:    class.Description,
+					Image:          class.Image,
+					Audio:          class.Audio,
+					Video:          class.Video,
+					Model:          class.Model,
+					Characteristic: class.Characteristic,
+					Properties:     class.Properties,
+					Localization:   class.Localization,
 				}
 			}
 			if err := tx.Model(ClassInfo{}).WithContext(ctx).Clauses(clause.OnConflict{
@@ -637,24 +637,24 @@ func (rp kvPairRepo) RestoreMetadataKvPairs(ctx context.Context, blockNumber uin
 		var updatedClassInfos []ClassInfo
 		for _, version := range classInfoVersions {
 			updatedClassInfos = append(updatedClassInfos, ClassInfo{
-				BlockNumber:  version.OldBlockNumber,
-				CotaId:       version.CotaId,
-				Version:      version.OldVersion,
-				Name:         version.OldName,
-				Symbol:       version.OldSymbol,
-				Description:  version.OldDescription,
-				Image:        version.OldImage,
-				Audio:        version.OldAudio,
-				Video:        version.OldVideo,
-				Model:        version.OldModel,
-				Schema:       version.OldSchema,
-				Properties:   version.OldProperties,
-				Localization: version.OldLocalization,
-				UpdatedAt:    time.Now().UTC(),
+				BlockNumber:    version.OldBlockNumber,
+				CotaId:         version.CotaId,
+				Version:        version.OldVersion,
+				Name:           version.OldName,
+				Symbol:         version.OldSymbol,
+				Description:    version.OldDescription,
+				Image:          version.OldImage,
+				Audio:          version.OldAudio,
+				Video:          version.OldVideo,
+				Model:          version.OldModel,
+				Characteristic: version.OldCharacteristic,
+				Properties:     version.OldProperties,
+				Localization:   version.OldLocalization,
+				UpdatedAt:      time.Now().UTC(),
 			})
 		}
 		if len(updatedClassInfos) > 0 {
-			if err := tx.Model(ClassInfo{}).WithContext(ctx).Clauses(clause.OnConflict{
+			if err := tx.Debug().Model(ClassInfo{}).WithContext(ctx).Clauses(clause.OnConflict{
 				Columns:   []clause.Column{{Name: "cota_id"}},
 				UpdateAll: true,
 			}).Create(updatedClassInfos).Error; err != nil {

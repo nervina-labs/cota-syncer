@@ -13,7 +13,7 @@ const (
 )
 
 func (t CheckType) String() string {
-	return []string{"sync_event"}[t]
+	return []string{"sync_block_event", "sync_metadata_event"}[t]
 }
 
 type CheckInfo struct {
