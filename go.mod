@@ -1,11 +1,13 @@
 module github.com/nervina-labs/cota-nft-entries-syncer
 
-go 1.17
+go 1.18
 
 require (
+	github.com/ethereum/go-ethereum v1.10.16
 	github.com/golang-migrate/migrate/v4 v4.15.1
 	github.com/google/uuid v1.3.0
 	github.com/google/wire v0.5.0
+	github.com/mitchellh/mapstructure v1.4.3
 	github.com/nervina-labs/cota-smt-go v0.7.0
 	github.com/nervosnetwork/ckb-sdk-go v0.101.6
 	github.com/spf13/viper v1.10.1
@@ -17,7 +19,6 @@ require (
 
 require (
 	github.com/deckarep/golang-set v1.8.0 // indirect
-	github.com/ethereum/go-ethereum v1.10.16 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
@@ -30,7 +31,6 @@ require (
 	github.com/jinzhu/now v1.1.4 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/minio/blake2b-simd v0.0.0-20160723061019-3f5f724cb5b1 // indirect
-	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
 	github.com/spf13/afero v1.8.1 // indirect
