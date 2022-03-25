@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/mitchellh/mapstructure"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
@@ -11,6 +12,10 @@ import (
 )
 
 var _ biz.ClassInfoRepo = (*classInfoRepo)(nil)
+
+var ErrInvalidClassInfo = errors.New("class info is invalid")
+
+const CotaIdLen = 42
 
 type ClassInfo struct {
 	ID             uint `gorm:"primaryKey"`
@@ -100,6 +105,9 @@ func (repo classInfoRepo) ParseClassInfo(blockNumber uint64, txIndex uint32, cla
 		return
 	}
 	characteristic, err := json.Marshal(classInfo.Characteristic)
+	if len(classInfo.CotaId) != CotaIdLen {
+		err = ErrInvalidClassInfo
+	}
 	if err != nil {
 		return
 	}
@@ -125,7 +133,7 @@ func (repo classInfoRepo) ParseClassInfo(blockNumber uint64, txIndex uint32, cla
 	}
 	class = biz.ClassInfo{
 		BlockNumber:    blockNumber,
-		CotaId:         classInfo.CotaId,
+		CotaId:         classInfo.CotaId[2:],
 		Version:        classInfo.Version,
 		Name:           classInfo.Name,
 		Symbol:         classInfo.Symbol,
