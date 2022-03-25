@@ -13,6 +13,7 @@ First you need to create a database, the default database name is `cota_entries`
 For the testnet, you can execute the following SQL statement to syn from a specific height: 
 ```sql
 insert into check_infos (check_type, block_number, block_hash, created_at, updated_at) values (0, 4163980, 'ab6d9453628ee854062615acf05f899e8c84e4e61d417d0b13bbed128a862e23', now(), now());
+insert into check_infos (check_type, block_number, block_hash, created_at, updated_at) values (1, 4163980, 'ab6d9453628ee854062615acf05f899e8c84e4e61d417d0b13bbed128a862e23', now(), now());
 ```
 
 ## Start Node
