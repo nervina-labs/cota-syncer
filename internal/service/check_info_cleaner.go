@@ -29,7 +29,7 @@ func (scv CheckInfoCleanerService) clean(ctx context.Context, checkType biz.Chec
 	return scv.checkInfoUsecase.Clean(ctx, checkType)
 }
 
-func (scv CheckInfoCleanerService) Start(ctx context.Context, _ string) error {
+func (scv CheckInfoCleanerService) Start(ctx context.Context, mode string) error {
 	scv.logger.Info(ctx, "Successfully started the check info cleaner~")
 	go func() {
 		for {
@@ -40,14 +40,19 @@ func (scv CheckInfoCleanerService) Start(ctx context.Context, _ string) error {
 				eg, ctx := errgroup.WithContext(ctx)
 				checkTypes := []biz.CheckType{biz.SyncBlock, biz.SyncMetadata}
 				for _, checkType := range checkTypes {
+					cType := checkType
 					eg.Go(func() error {
-						return scv.clean(ctx, checkType)
+						return scv.clean(ctx, cType)
 					})
 				}
 				if err := eg.Wait(); err != nil {
 					scv.logger.Errorf(ctx, "clean check info failed, %v", err)
 				}
-				time.Sleep(1 * time.Hour)
+				if mode == "normal" {
+					time.Sleep(30 * time.Minute)
+				} else {
+					time.Sleep(1 * time.Minute)
+				}
 			}
 		}
 	}()
