@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"github.com/google/wire"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/data"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
@@ -10,18 +9,27 @@ import (
 	"time"
 )
 
-var ProviderSet = wire.NewSet(NewBlockSyncService, NewCheckInfoService, NewMetadataSyncService)
-
-type BlockSyncService struct {
+type MetadataSyncService struct {
 	checkInfoUsecase *biz.CheckInfoUsecase
 	logger           *logger.Logger
 	client           *data.CkbNodeClient
 	status           chan struct{}
 	systemScripts    data.SystemScripts
-	blockSyncer      data.BlockSyncer
+	metadataSyncer   data.MetadataSyncer
 }
 
-func (s *BlockSyncService) Start(ctx context.Context, mode string) error {
+func NewMetadataSyncService(checkInfoUsecase *biz.CheckInfoUsecase, logger *logger.Logger, client *data.CkbNodeClient, systemScripts data.SystemScripts, metadataSyncer data.MetadataSyncer) *MetadataSyncService {
+	return &MetadataSyncService{
+		checkInfoUsecase: checkInfoUsecase,
+		logger:           logger,
+		client:           client,
+		status:           make(chan struct{}, 1),
+		systemScripts:    systemScripts,
+		metadataSyncer:   metadataSyncer,
+	}
+}
+
+func (s *MetadataSyncService) Start(ctx context.Context, mode string) error {
 	s.logger.Info(ctx, "Successfully started the sync service~")
 	go func() {
 		for {
@@ -41,8 +49,21 @@ func (s *BlockSyncService) Start(ctx context.Context, mode string) error {
 	return nil
 }
 
-func (s *BlockSyncService) sync(ctx context.Context) {
-	checkInfo := biz.CheckInfo{CheckType: biz.SyncBlock}
+func (s *MetadataSyncService) Stop(ctx context.Context) error {
+	s.client.Rpc.Close()
+	for {
+		select {
+		case <-s.status:
+			s.logger.Info(ctx, "Successfully closed the metadata sync service~")
+			return nil
+		default:
+			time.Sleep(1 * time.Second)
+		}
+	}
+}
+
+func (s *MetadataSyncService) sync(ctx context.Context) {
+	checkInfo := biz.CheckInfo{CheckType: biz.SyncMetadata}
 	err := s.checkInfoUsecase.LastCheckInfo(ctx, &checkInfo)
 	if err != nil {
 		s.logger.Errorf(ctx, "get %s check info error: %v", checkInfo.CheckType.String(), err)
@@ -76,52 +97,16 @@ func (s *BlockSyncService) sync(ctx context.Context) {
 	// save key pairs
 	checkInfo.BlockNumber = targetBlockNumber
 	checkInfo.BlockHash = targetBlock.Header.Hash.String()[2:]
-	err = s.syncBlock(ctx, targetBlock, checkInfo)
+	err = s.syncMetadata(ctx, targetBlock, checkInfo)
 	if err != nil {
 		s.logger.Errorf(ctx, "save %s kv pairs error: %v", checkInfo.CheckType.String(), err)
 	}
 }
 
-func isForked(checkInfo biz.CheckInfo, targetBlock *ckbTypes.Block) bool {
-	if checkInfo.BlockHash == "" {
-		return false
-	}
-	return checkInfo.BlockHash != targetBlock.Header.ParentHash.String()[2:]
+func (s *MetadataSyncService) syncMetadata(ctx context.Context, block *ckbTypes.Block, checkInfo biz.CheckInfo) error {
+	return s.metadataSyncer.Sync(ctx, block, checkInfo, s.systemScripts)
 }
 
-func (s *BlockSyncService) syncBlock(ctx context.Context, block *ckbTypes.Block, checkInfo biz.CheckInfo) error {
-	return s.blockSyncer.Sync(ctx, block, checkInfo, s.systemScripts)
-}
-
-func (s *BlockSyncService) rollback(ctx context.Context, blockNumber uint64) error {
-	return s.blockSyncer.Rollback(ctx, blockNumber)
-}
-
-func (s *BlockSyncService) Stop(ctx context.Context) error {
-	s.client.Rpc.Close()
-	for {
-		select {
-		case <-s.status:
-			s.logger.Info(ctx, "Successfully closed the cota entries sync service~")
-			return nil
-		default:
-			time.Sleep(1 * time.Second)
-		}
-	}
-}
-
-func NewBlockSyncService(checkInfoUsecase *biz.CheckInfoUsecase, logger *logger.Logger, client *data.CkbNodeClient, systemScripts data.SystemScripts, blockSyncer data.BlockSyncer) *BlockSyncService {
-	return &BlockSyncService{
-		checkInfoUsecase: checkInfoUsecase,
-		logger:           logger,
-		client:           client,
-		status:           make(chan struct{}, 1),
-		systemScripts:    systemScripts,
-		blockSyncer:      blockSyncer,
-	}
-}
-
-type Service interface {
-	Start(context.Context, string) error
-	Stop(context.Context) error
+func (s *MetadataSyncService) rollback(ctx context.Context, blockNumber uint64) error {
+	return s.metadataSyncer.Rollback(ctx, blockNumber)
 }

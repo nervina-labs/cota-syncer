@@ -12,7 +12,7 @@ import (
 
 type Level int8
 
-type Fields map[string]interface{}
+type Fields map[string]any
 
 const (
 	LevelDebug Level = iota
@@ -107,7 +107,7 @@ func (l *Logger) WithCallersFrames() *Logger {
 	return ll
 }
 
-func (l *Logger) JSONFormat(level Level, message string) map[string]interface{} {
+func (l *Logger) JSONFormat(level Level, message string) map[string]any {
 	data := make(Fields, len(l.fields)+4)
 	data["level"] = level.String()
 	data["time"] = time.Now().Local().UnixNano()
@@ -143,50 +143,50 @@ func (l *Logger) Output(level Level, message string) {
 	}
 }
 
-func (l *Logger) Debug(ctx context.Context, v ...interface{}) {
+func (l *Logger) Debug(ctx context.Context, v ...any) {
 	l.WithContext(ctx).WithCaller(2).Output(LevelDebug, fmt.Sprint(v...))
 }
 
-func (l *Logger) Debugf(ctx context.Context, format string, v ...interface{}) {
+func (l *Logger) Debugf(ctx context.Context, format string, v ...any) {
 	l.WithContext(ctx).WithCaller(2).Output(LevelDebug, fmt.Sprintf(format, v...))
 }
 
-func (l *Logger) Info(ctx context.Context, v ...interface{}) {
+func (l *Logger) Info(ctx context.Context, v ...any) {
 	l.WithContext(ctx).WithCaller(2).Output(LevelInfo, fmt.Sprint(v...))
 }
 
-func (l *Logger) Infof(ctx context.Context, format string, v ...interface{}) {
+func (l *Logger) Infof(ctx context.Context, format string, v ...any) {
 	l.WithContext(ctx).WithCaller(2).Output(LevelInfo, fmt.Sprintf(format, v...))
 }
 
-func (l *Logger) Warn(ctx context.Context, v ...interface{}) {
+func (l *Logger) Warn(ctx context.Context, v ...any) {
 	l.WithContext(ctx).WithCaller(2).Output(LevelWarn, fmt.Sprint(v...))
 }
 
-func (l *Logger) Warnf(ctx context.Context, format string, v ...interface{}) {
+func (l *Logger) Warnf(ctx context.Context, format string, v ...any) {
 	l.WithContext(ctx).WithCaller(2).Output(LevelWarn, fmt.Sprintf(format, v...))
 }
 
-func (l *Logger) Error(ctx context.Context, v ...interface{}) {
+func (l *Logger) Error(ctx context.Context, v ...any) {
 	l.WithContext(ctx).WithCaller(2).Output(LevelError, fmt.Sprint(v...))
 }
 
-func (l *Logger) Errorf(ctx context.Context, format string, v ...interface{}) {
+func (l *Logger) Errorf(ctx context.Context, format string, v ...any) {
 	l.WithContext(ctx).WithCaller(2).Output(LevelError, fmt.Sprintf(format, v...))
 }
 
-func (l *Logger) Fatal(ctx context.Context, v ...interface{}) {
+func (l *Logger) Fatal(ctx context.Context, v ...any) {
 	l.WithContext(ctx).WithCaller(2).Output(LevelFatal, fmt.Sprint(v...))
 }
 
-func (l *Logger) Fatalf(ctx context.Context, format string, v ...interface{}) {
+func (l *Logger) Fatalf(ctx context.Context, format string, v ...any) {
 	l.WithContext(ctx).WithCaller(2).Output(LevelFatal, fmt.Sprintf(format, v...))
 }
 
-func (l *Logger) Panic(ctx context.Context, v ...interface{}) {
+func (l *Logger) Panic(ctx context.Context, v ...any) {
 	l.WithContext(ctx).WithCaller(2).Output(LevelPanic, fmt.Sprint(v...))
 }
 
-func (l *Logger) Panicf(ctx context.Context, format string, v ...interface{}) {
+func (l *Logger) Panicf(ctx context.Context, format string, v ...any) {
 	l.WithContext(ctx).WithCaller(2).Output(LevelPanic, fmt.Sprintf(format, v...))
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"os"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -22,7 +21,7 @@ import (
 // ProviderSet is data providers
 var ProviderSet = wire.NewSet(NewData, NewDBMigration, NewCheckInfoRepo, NewRegisterCotaKvPairRepo,
 	NewDefineCotaNftKvPairRepo, NewHoldCotaNftKvPairRepo, NewWithdrawCotaNftKvPairRepo, NewClaimedCotaNftKvPairRepo,
-	NewKvPairRepo, NewSystemScripts, NewCkbNodeClient, NewBlockParser, NewCotaWitnessArgsParser, NewMintCotaKvPairRepo, NewTransferCotaKvPairRepo)
+	NewKvPairRepo, NewSystemScripts, NewCkbNodeClient, NewBlockSyncer, NewMetadataSyncer, NewCotaWitnessArgsParser, NewMintCotaKvPairRepo, NewTransferCotaKvPairRepo, NewIssuerInfoRepo, NewClassInfoRepo)
 
 type Data struct {
 	db *gorm.DB
@@ -33,11 +32,9 @@ type Option func(*Data)
 func NewData(conf *config.Database, logger *logger.Logger) (*Data, func(), error) {
 	dsn := os.Getenv("DATABASE_URL")
 	logger.Error(context.TODO(), "dsn", dsn)
-	fmt.Println("dsn env", dsn)
 	if dsn == "" {
 		dsn = conf.Dsn
 	}
-	fmt.Println("dsn", dsn)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		logger.Errorf(context.TODO(), "failed opening connection to mysql: %v", err)
@@ -68,7 +65,6 @@ type CkbNodeClient struct {
 
 func NewCkbNodeClient(conf *config.CkbNode, logger *logger.Logger) (*CkbNodeClient, error) {
 	rpcURL := os.Getenv("RPC_URL")
-	fmt.Println("rpc_url env", rpcURL)
 	if rpcURL == "" {
 		rpcURL = conf.RpcUrl
 	}
@@ -144,7 +140,7 @@ func cotaRegistryScript(chain string) SystemScript {
 			HashType: ckbTypes.HashTypeType,
 			Args:     args,
 			OutPoint: ckbTypes.OutPoint{
-				TxHash: ckbTypes.HexToHash("0xae2d5838730fc096e68fe839aea50d294493e10054513c10ca35e77e82e9243b"),
+				TxHash: ckbTypes.HexToHash("0x42a5b04df6ff0e2819ec6b814d33a028ed1593bc9e1cca463f679af555dce106"),
 				Index:  0,
 			},
 			DepType: ckbTypes.DepTypeDepGroup,
@@ -156,7 +152,7 @@ func cotaRegistryScript(chain string) SystemScript {
 		HashType: ckbTypes.HashTypeType,
 		Args:     args,
 		OutPoint: ckbTypes.OutPoint{
-			TxHash: ckbTypes.HexToHash("0x678fb90d09e44e1389d71cf1734b3e98c71718b0c2582a1088c27e2aa384895f"),
+			TxHash: ckbTypes.HexToHash("0x2dfcab7790f3cabffe5cb349546dac8918b409481828218cc162f9de5754116f"),
 			Index:  0,
 		},
 		DepType: ckbTypes.DepTypeDepGroup,
@@ -169,7 +165,7 @@ func cotaTypeScript(chain string) SystemScript {
 			CodeHash: ckbTypes.HexToHash("0x1122a4fb54697cf2e6e3a96c9d80fd398a936559b90954c6e88eb7ba0cf652df"),
 			HashType: ckbTypes.HashTypeType,
 			OutPoint: ckbTypes.OutPoint{
-				TxHash: ckbTypes.HexToHash("0xae2d5838730fc096e68fe839aea50d294493e10054513c10ca35e77e82e9243b"),
+				TxHash: ckbTypes.HexToHash("0x42a5b04df6ff0e2819ec6b814d33a028ed1593bc9e1cca463f679af555dce106"),
 				Index:  0,
 			},
 			DepType: ckbTypes.DepTypeDepGroup,
@@ -179,7 +175,7 @@ func cotaTypeScript(chain string) SystemScript {
 		CodeHash: ckbTypes.HexToHash("0x89cd8003a0eaf8e65e0c31525b7d1d5c1becefd2ea75bb4cff87810ae37764d8"),
 		HashType: ckbTypes.HashTypeType,
 		OutPoint: ckbTypes.OutPoint{
-			TxHash: ckbTypes.HexToHash("0x678fb90d09e44e1389d71cf1734b3e98c71718b0c2582a1088c27e2aa384895f"),
+			TxHash: ckbTypes.HexToHash("0x2dfcab7790f3cabffe5cb349546dac8918b409481828218cc162f9de5754116f"),
 			Index:  0,
 		},
 		DepType: ckbTypes.DepTypeDepGroup,

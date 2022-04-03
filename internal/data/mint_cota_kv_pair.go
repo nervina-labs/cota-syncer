@@ -9,6 +9,7 @@ import (
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
 	"github.com/nervina-labs/cota-smt-go/smt"
 	"hash/crc32"
+	"time"
 )
 
 var _ biz.MintCotaKvPairRepo = (*mintCotaKvPairRepo)(nil)
@@ -26,7 +27,7 @@ func (rp mintCotaKvPairRepo) ParseMintCotaEntries(blockNumber uint64, entry biz.
 }
 
 func generateDefineWithdrawV1KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPairRepo) (updatedDefineCotas []biz.DefineCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
-	entries := smt.MintCotaNFTV1EntriesFromSliceUnchecked(entry.Witness[1:])
+	entries := smt.MintCotaNFTV1EntriesFromSliceUnchecked(entry.InputType[1:])
 	defineCotaKeyVec := entries.DefineKeys()
 	defineCotaValueVec := entries.DefineNewValues()
 	lockHash, err := entry.LockScript.Hash()
@@ -46,6 +47,7 @@ func generateDefineWithdrawV1KvPairs(blockNumber uint64, entry biz.Entry, rp min
 			Configure:   value.Configure().AsSlice()[0],
 			LockHash:    lockHashStr,
 			LockHashCRC: lockHashCRC32,
+			UpdatedAt:   time.Now(),
 		})
 	}
 	withdrawKeyVec := entries.WithdrawalKeys()
@@ -85,7 +87,7 @@ func generateDefineWithdrawV1KvPairs(blockNumber uint64, entry biz.Entry, rp min
 }
 
 func generateDefineWithdrawV0KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPairRepo) (updatedDefineCotas []biz.DefineCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
-	entries := smt.MintCotaNFTEntriesFromSliceUnchecked(entry.Witness[1:])
+	entries := smt.MintCotaNFTEntriesFromSliceUnchecked(entry.InputType[1:])
 	defineCotaKeyVec := entries.DefineKeys()
 	defineCotaValueVec := entries.DefineNewValues()
 	lockHash, err := entry.LockScript.Hash()
@@ -105,6 +107,7 @@ func generateDefineWithdrawV0KvPairs(blockNumber uint64, entry biz.Entry, rp min
 			Configure:   value.Configure().AsSlice()[0],
 			LockHash:    lockHashStr,
 			LockHashCRC: lockHashCRC32,
+			UpdatedAt:   time.Now().UTC(),
 		})
 	}
 	withdrawKeyVec := entries.WithdrawalKeys()
