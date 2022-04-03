@@ -45,7 +45,7 @@ func NewConfig() (*Config, error) {
 	return &Config{vp: vp}, nil
 }
 
-func (s *Config) ReadSection(k string, v interface{}) error {
+func (s *Config) ReadSection(k string, v any) error {
 	err := s.vp.UnmarshalKey(k, v)
 	if err != nil {
 		return err

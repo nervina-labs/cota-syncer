@@ -102,7 +102,7 @@ func hashType(hashTypeStr string) (int64, error) {
 }
 
 func generateV0WithdrawKvPair(blockNumber uint64, entry biz.Entry, rp withdrawCotaNftKvPairRepo) (withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
-	entries := smt.WithdrawalCotaNFTEntriesFromSliceUnchecked(entry.Witness[1:])
+	entries := smt.WithdrawalCotaNFTEntriesFromSliceUnchecked(entry.InputType[1:])
 	withdrawKeyVec := entries.WithdrawalKeys()
 	withdrawValueVec := entries.WithdrawalValues()
 	lockHash, err := entry.LockScript.Hash()
@@ -146,7 +146,7 @@ func generateV0WithdrawKvPair(blockNumber uint64, entry biz.Entry, rp withdrawCo
 }
 
 func generateV1WithdrawKvPair(blockNumber uint64, entry biz.Entry, rp withdrawCotaNftKvPairRepo) (withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
-	entries := smt.WithdrawalCotaNFTV1EntriesFromSliceUnchecked(entry.Witness[1:])
+	entries := smt.WithdrawalCotaNFTV1EntriesFromSliceUnchecked(entry.InputType[1:])
 	withdrawKeyVec := entries.WithdrawalKeys()
 	withdrawValueVec := entries.WithdrawalValues()
 	lockHash, err := entry.LockScript.Hash()

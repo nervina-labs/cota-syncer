@@ -14,56 +14,47 @@ type KvPair struct {
 	UpdatedHoldCotas   []HoldCotaNftKvPair
 	WithdrawCotas      []WithdrawCotaNftKvPair
 	ClaimedCotas       []ClaimedCotaNftKvPair
+	IssuerInfos        []IssuerInfo
+	ClassInfos         []ClassInfo
 }
 
 func (p KvPair) HasRegisters() bool {
-	if len(p.Registers) > 0 {
-		return true
-	}
-	return false
+	return len(p.Registers) > 0
 }
 
 func (p KvPair) HasDefineCotas() bool {
-	if len(p.DefineCotas) > 0 {
-		return true
-	}
-	return false
+	return len(p.DefineCotas) > 0
 }
 
 func (p KvPair) HasUpdatedDefineCotas() bool {
-	if len(p.UpdatedDefineCotas) > 0 {
-		return true
-	}
-	return false
+	return len(p.UpdatedDefineCotas) > 0
 }
 func (p KvPair) HasHoldCotas() bool {
-	if len(p.HoldCotas) > 0 {
-		return true
-	}
-	return false
+	return len(p.HoldCotas) > 0
 }
 func (p KvPair) HasUpdatedHoldCotas() bool {
-	if len(p.UpdatedHoldCotas) > 0 {
-		return true
-	}
-	return false
+	return len(p.UpdatedHoldCotas) > 0
 }
 func (p KvPair) HasWithdrawCotas() bool {
-	if len(p.WithdrawCotas) > 0 {
-		return true
-	}
-	return false
+	return len(p.WithdrawCotas) > 0
 }
 func (p KvPair) HasClaimedCotas() bool {
-	if len(p.ClaimedCotas) > 0 {
-		return true
-	}
-	return false
+	return len(p.ClaimedCotas) > 0
+}
+
+func (p KvPair) HasIssuerInfos() bool {
+	return len(p.IssuerInfos) > 0
+}
+
+func (p KvPair) HasClassInfos() bool {
+	return len(p.ClassInfos) > 0
 }
 
 type KvPairRepo interface {
-	CreateKvPairs(ctx context.Context, checkInfo CheckInfo, kvPair *KvPair) error
-	RestoreKvPairs(ctx context.Context, blockNumber uint64) error
+	CreateCotaEntryKvPairs(ctx context.Context, checkInfo CheckInfo, kvPair *KvPair) error
+	RestoreCotaEntryKvPairs(ctx context.Context, blockNumber uint64) error
+	CreateMetadataKvPairs(ctx context.Context, checkInfo CheckInfo, kvPair *KvPair) error
+	RestoreMetadataKvPairs(ctx context.Context, blockNumber uint64) error
 }
 
 type SyncKvPairUsecase struct {
@@ -78,10 +69,18 @@ func NewSyncKvPairUsecase(repo KvPairRepo, logger *logger.Logger) *SyncKvPairUse
 	}
 }
 
-func (uc SyncKvPairUsecase) CreateKvPairs(ctx context.Context, checkInfo CheckInfo, kvPair *KvPair) error {
-	return uc.repo.CreateKvPairs(ctx, checkInfo, kvPair)
+func (uc SyncKvPairUsecase) CreateCotaEntryKvPairs(ctx context.Context, checkInfo CheckInfo, kvPair *KvPair) error {
+	return uc.repo.CreateCotaEntryKvPairs(ctx, checkInfo, kvPair)
 }
 
-func (uc SyncKvPairUsecase) RestoreKvPairs(ctx context.Context, blockNumber uint64) error {
-	return uc.repo.RestoreKvPairs(ctx, blockNumber)
+func (uc SyncKvPairUsecase) RestoreCotaEntryKvPairs(ctx context.Context, blockNumber uint64) error {
+	return uc.repo.RestoreCotaEntryKvPairs(ctx, blockNumber)
+}
+
+func (uc SyncKvPairUsecase) CreateMetadataKvPairs(ctx context.Context, checkInfo CheckInfo, kvPair *KvPair) error {
+	return uc.repo.CreateMetadataKvPairs(ctx, checkInfo, kvPair)
+}
+
+func (uc SyncKvPairUsecase) RestoreMetadataKvPairs(ctx context.Context, blockNumber uint64) error {
+	return uc.repo.RestoreMetadataKvPairs(ctx, blockNumber)
 }

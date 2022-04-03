@@ -60,7 +60,7 @@ func NewTransferCotaKvPairRepo(data *Data, logger *logger.Logger) biz.TransferCo
 }
 
 func generateTransferUpdateWithdrawV0KvPairs(blockNumber uint64, entry biz.Entry, rp transferCotaKvPairRepo) (claimedCotas []biz.ClaimedCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
-	entries := smt.TransferUpdateCotaNFTEntriesFromSliceUnchecked(entry.Witness[1:])
+	entries := smt.TransferUpdateCotaNFTEntriesFromSliceUnchecked(entry.InputType[1:])
 	claimedCotaKeyVec := entries.ClaimKeys()
 	lockHash, err := entry.LockScript.Hash()
 	if err != nil {
@@ -120,7 +120,7 @@ func generateTransferUpdateWithdrawV0KvPairs(blockNumber uint64, entry biz.Entry
 }
 
 func generateTransferUpdateWithdrawV1KvPairs(blockNumber uint64, entry biz.Entry, rp transferCotaKvPairRepo) (claimedCotas []biz.ClaimedCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
-	entries := smt.TransferUpdateCotaNFTV1EntriesFromSliceUnchecked(entry.Witness[1:])
+	entries := smt.TransferUpdateCotaNFTV1EntriesFromSliceUnchecked(entry.InputType[1:])
 	claimedCotaKeyVec := entries.ClaimKeys()
 	lockHash, err := entry.LockScript.Hash()
 	if err != nil {
@@ -180,7 +180,7 @@ func generateTransferUpdateWithdrawV1KvPairs(blockNumber uint64, entry biz.Entry
 }
 
 func generateTransferWithdrawV0KvPairs(blockNumber uint64, entry biz.Entry, rp transferCotaKvPairRepo) (claimedCotas []biz.ClaimedCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
-	entries := smt.TransferCotaNFTEntriesFromSliceUnchecked(entry.Witness[1:])
+	entries := smt.TransferCotaNFTEntriesFromSliceUnchecked(entry.InputType[1:])
 	claimedCotaKeyVec := entries.ClaimKeys()
 	lockHash, err := entry.LockScript.Hash()
 	if err != nil {
@@ -240,7 +240,7 @@ func generateTransferWithdrawV0KvPairs(blockNumber uint64, entry biz.Entry, rp t
 }
 
 func generateTransferWithdrawV1KvPairs(blockNumber uint64, entry biz.Entry, rp transferCotaKvPairRepo) (claimedCotas []biz.ClaimedCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
-	entries := smt.TransferCotaNFTV1EntriesFromSliceUnchecked(entry.Witness[1:])
+	entries := smt.TransferCotaNFTV1EntriesFromSliceUnchecked(entry.InputType[1:])
 	claimedCotaKeyVec := entries.ClaimKeys()
 	lockHash, err := entry.LockScript.Hash()
 	if err != nil {

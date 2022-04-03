@@ -57,16 +57,31 @@ func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, txIndex uin
 	var entries []biz.Entry
 	for index, cotaCell := range cotaCells {
 		witness := tx.Witnesses[index]
-		bytes, err := blockchain.WitnessArgsFromSliceUnchecked(witness).InputType().IntoBytes()
-		if err != nil {
-			return nil, err
+		witnessArgs := blockchain.WitnessArgsFromSliceUnchecked(witness)
+		if witnessArgs.OutputType().IsSome() {
+			outputType, err := witnessArgs.OutputType().IntoBytes()
+			if err != nil {
+				return nil, err
+			}
+			entries = append(entries, biz.Entry{
+				OutputType: outputType.RawData(),
+				LockScript: cotaCell.output.Lock,
+				TxIndex:    txIndex,
+				Version:    cotaCell.outputData[0],
+			})
 		}
-		entries = append(entries, biz.Entry{
-			Witness:    bytes.RawData(),
-			LockScript: cotaCell.output.Lock,
-			TxIndex:    txIndex,
-			Version:    cotaCell.outputData[0],
-		})
+		if witnessArgs.InputType().IsSome() {
+			inputType, err := witnessArgs.InputType().IntoBytes()
+			if err != nil {
+				return nil, err
+			}
+			entries = append(entries, biz.Entry{
+				InputType:  inputType.RawData(),
+				LockScript: cotaCell.output.Lock,
+				TxIndex:    txIndex,
+				Version:    cotaCell.outputData[0],
+			})
+		}
 	}
 	return entries, nil
 }

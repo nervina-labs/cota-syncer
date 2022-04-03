@@ -73,7 +73,7 @@ func (rp holdCotaNftKvPairRepo) DeleteHoldCotaNftKvPairs(ctx context.Context, bl
 }
 
 func (rp holdCotaNftKvPairRepo) ParseHoldCotaEntries(blockNumber uint64, entry biz.Entry) (holdCotas []biz.HoldCotaNftKvPair, err error) {
-	entries := smt.UpdateCotaNFTEntriesFromSliceUnchecked(entry.Witness[1:])
+	entries := smt.UpdateCotaNFTEntriesFromSliceUnchecked(entry.InputType[1:])
 	holdCotaKeyVec := entries.HoldKeys()
 	holdCotaValueVec := entries.HoldNewValues()
 	lockHash, err := entry.LockScript.Hash()
@@ -95,6 +95,7 @@ func (rp holdCotaNftKvPairRepo) ParseHoldCotaEntries(blockNumber uint64, entry b
 			LockHash:       lockHashStr,
 			LockHashCRC:    lockHashCRC32,
 			TxIndex:        entry.TxIndex,
+			UpdatedAt:      time.Now().UTC(),
 		})
 	}
 	return
