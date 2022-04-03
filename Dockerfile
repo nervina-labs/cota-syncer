@@ -2,7 +2,7 @@
 ##
 ## Build
 ##
-FROM golang:1.17 As builder
+FROM golang:1.18 As builder
 
 ENV GOPROXY=https://goproxy.cn
 
