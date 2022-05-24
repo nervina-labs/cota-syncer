@@ -21,7 +21,8 @@ import (
 // ProviderSet is data providers
 var ProviderSet = wire.NewSet(NewData, NewDBMigration, NewCheckInfoRepo, NewRegisterCotaKvPairRepo,
 	NewDefineCotaNftKvPairRepo, NewHoldCotaNftKvPairRepo, NewWithdrawCotaNftKvPairRepo, NewClaimedCotaNftKvPairRepo,
-	NewKvPairRepo, NewSystemScripts, NewCkbNodeClient, NewBlockSyncer, NewMetadataSyncer, NewCotaWitnessArgsParser, NewMintCotaKvPairRepo, NewTransferCotaKvPairRepo, NewIssuerInfoRepo, NewClassInfoRepo)
+	NewKvPairRepo, NewSystemScripts, NewCkbNodeClient, NewBlockSyncer, NewMetadataSyncer, NewCotaWitnessArgsParser,
+	NewMintCotaKvPairRepo, NewTransferCotaKvPairRepo, NewIssuerInfoRepo, NewClassInfoRepo, NewInvalidDateRepo)
 
 type Data struct {
 	db *gorm.DB
@@ -60,7 +61,8 @@ func NewData(conf *config.Database, logger *logger.Logger) (*Data, func(), error
 }
 
 type CkbNodeClient struct {
-	Rpc rpc.Client
+	Rpc  rpc.Client
+	Mode string
 }
 
 func NewCkbNodeClient(conf *config.CkbNode, logger *logger.Logger) (*CkbNodeClient, error) {
@@ -75,7 +77,8 @@ func NewCkbNodeClient(conf *config.CkbNode, logger *logger.Logger) (*CkbNodeClie
 		return nil, err
 	}
 	return &CkbNodeClient{
-		Rpc: client,
+		Rpc:  client,
+		Mode: conf.Mode,
 	}, nil
 }
 
