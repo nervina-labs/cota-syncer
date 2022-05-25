@@ -32,7 +32,7 @@ func (i InvalidDataCleaner) Start(ctx context.Context, _ string) error {
 
 	// TODO: replace block number
 	if info.Chain == "ckb" {
-		blockNumber = 111
+		blockNumber = 7233113
 	} else {
 		blockNumber = 5476282
 	}
