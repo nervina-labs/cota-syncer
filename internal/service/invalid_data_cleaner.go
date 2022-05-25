@@ -34,7 +34,7 @@ func (i InvalidDataCleaner) Start(ctx context.Context, _ string) error {
 	if info.Chain == "ckb" {
 		blockNumber = 111
 	} else {
-		blockNumber = 4809130
+		blockNumber = 5476282
 	}
 
 	return i.invalidDataUsecase.Clean(ctx, blockNumber)
