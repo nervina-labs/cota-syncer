@@ -155,7 +155,7 @@ func cotaRegistryScript(chain string) SystemScript {
 		HashType: ckbTypes.HashTypeType,
 		Args:     args,
 		OutPoint: ckbTypes.OutPoint{
-			TxHash: ckbTypes.HexToHash("0x2dfcab7790f3cabffe5cb349546dac8918b409481828218cc162f9de5754116f"),
+			TxHash: ckbTypes.HexToHash("0x698f2a29021ebd741b4a38b4a5f8fa3686103ba66773e7549b204a67db015ba0"),
 			Index:  0,
 		},
 		DepType: ckbTypes.DepTypeDepGroup,
@@ -178,7 +178,7 @@ func cotaTypeScript(chain string) SystemScript {
 		CodeHash: ckbTypes.HexToHash("0x89cd8003a0eaf8e65e0c31525b7d1d5c1becefd2ea75bb4cff87810ae37764d8"),
 		HashType: ckbTypes.HashTypeType,
 		OutPoint: ckbTypes.OutPoint{
-			TxHash: ckbTypes.HexToHash("0x2dfcab7790f3cabffe5cb349546dac8918b409481828218cc162f9de5754116f"),
+			TxHash: ckbTypes.HexToHash("0x698f2a29021ebd741b4a38b4a5f8fa3686103ba66773e7549b204a67db015ba0"),
 			Index:  0,
 		},
 		DepType: ckbTypes.DepTypeDepGroup,

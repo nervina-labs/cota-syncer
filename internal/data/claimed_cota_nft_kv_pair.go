@@ -54,9 +54,28 @@ func (rp claimedCotaNftKvPairRepo) DeleteClaimedCotaNftKvPairs(ctx context.Conte
 }
 
 func (rp claimedCotaNftKvPairRepo) ParseClaimedCotaEntries(blockNumber uint64, entry biz.Entry) (holdCotas []biz.HoldCotaNftKvPair, claimedCotas []biz.ClaimedCotaNftKvPair, err error) {
-	entries := smt.ClaimCotaNFTEntriesFromSliceUnchecked(entry.InputType[1:])
-	holdCotaKeyVec := entries.HoldKeys()
-	holdCotaValueVec := entries.HoldValues()
+	return rp.generateV0ToV2ClaimedKvPair(blockNumber, entry)
+}
+
+func (rp claimedCotaNftKvPairRepo) ParseClaimedUpdateCotaEntries(blockNumber uint64, entry biz.Entry) (holdCotas []biz.HoldCotaNftKvPair, claimedCotas []biz.ClaimedCotaNftKvPair, err error) {
+	return rp.generateV0ToV2ClaimedUpdateKvPair(blockNumber, entry)
+}
+
+func (rp claimedCotaNftKvPairRepo) generateV0ToV2ClaimedKvPair(blockNumber uint64, entry biz.Entry) (holdCotas []biz.HoldCotaNftKvPair, claimedCotas []biz.ClaimedCotaNftKvPair, err error) {
+	var holdCotaKeyVec *smt.HoldCotaNFTKeyVec = nil
+	var holdCotaValueVec *smt.HoldCotaNFTValueVec = nil
+	var claimedCotaKeyVec *smt.ClaimCotaNFTKeyVec = nil
+	if entry.Version == 0 {
+		entries := smt.ClaimCotaNFTEntriesFromSliceUnchecked(entry.InputType[1:])
+		holdCotaKeyVec = entries.HoldKeys()
+		holdCotaValueVec = entries.HoldValues()
+		claimedCotaKeyVec = entries.ClaimKeys()
+	} else {
+		entries := smt.ClaimCotaNFTV2EntriesFromSliceUnchecked(entry.InputType[1:])
+		holdCotaKeyVec = entries.HoldKeys()
+		holdCotaValueVec = entries.HoldValues()
+		claimedCotaKeyVec = entries.ClaimKeys()
+	}
 	lockHash, err := entry.LockScript.Hash()
 	if err != nil {
 		return
@@ -77,7 +96,6 @@ func (rp claimedCotaNftKvPairRepo) ParseClaimedCotaEntries(blockNumber uint64, e
 			LockHashCRC:    lockHashCRC32,
 		})
 	}
-	claimedCotaKeyVec := entries.ClaimKeys()
 	for i := uint(0); i < claimedCotaKeyVec.Len(); i++ {
 		key := claimedCotaKeyVec.Get(i)
 		cotaId := hex.EncodeToString(key.NftId().CotaId().RawData())
@@ -96,10 +114,22 @@ func (rp claimedCotaNftKvPairRepo) ParseClaimedCotaEntries(blockNumber uint64, e
 	return
 }
 
-func (rp claimedCotaNftKvPairRepo) ParseClaimedUpdateCotaEntries(blockNumber uint64, entry biz.Entry) (holdCotas []biz.HoldCotaNftKvPair, claimedCotas []biz.ClaimedCotaNftKvPair, err error) {
-	entries := smt.ClaimUpdateCotaNFTEntriesFromSliceUnchecked(entry.InputType[1:])
-	holdCotaKeyVec := entries.HoldKeys()
-	holdCotaValueVec := entries.HoldValues()
+func (rp claimedCotaNftKvPairRepo) generateV0ToV2ClaimedUpdateKvPair(blockNumber uint64, entry biz.Entry) (holdCotas []biz.HoldCotaNftKvPair, claimedCotas []biz.ClaimedCotaNftKvPair, err error) {
+	var holdCotaKeyVec *smt.HoldCotaNFTKeyVec = nil
+	var holdCotaValueVec *smt.HoldCotaNFTValueVec = nil
+	var claimedCotaKeyVec *smt.ClaimCotaNFTKeyVec = nil
+	if entry.Version == 0 {
+		entries := smt.ClaimUpdateCotaNFTEntriesFromSliceUnchecked(entry.InputType[1:])
+		holdCotaKeyVec = entries.HoldKeys()
+		holdCotaValueVec = entries.HoldValues()
+		claimedCotaKeyVec = entries.ClaimKeys()
+	} else {
+		entries := smt.ClaimUpdateCotaNFTV2EntriesFromSliceUnchecked(entry.InputType[1:])
+		holdCotaKeyVec = entries.HoldKeys()
+		holdCotaValueVec = entries.HoldValues()
+		claimedCotaKeyVec = entries.ClaimKeys()
+	}
+
 	lockHash, err := entry.LockScript.Hash()
 	if err != nil {
 		return
@@ -120,7 +150,6 @@ func (rp claimedCotaNftKvPairRepo) ParseClaimedUpdateCotaEntries(blockNumber uin
 			LockHashCRC:    lockHashCRC32,
 		})
 	}
-	claimedCotaKeyVec := entries.ClaimKeys()
 	for i := uint(0); i < claimedCotaKeyVec.Len(); i++ {
 		key := claimedCotaKeyVec.Get(i)
 		cotaId := hex.EncodeToString(key.NftId().CotaId().RawData())
@@ -138,3 +167,4 @@ func (rp claimedCotaNftKvPairRepo) ParseClaimedUpdateCotaEntries(blockNumber uin
 	}
 	return
 }
+

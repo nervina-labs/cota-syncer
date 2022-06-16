@@ -23,14 +23,14 @@ func (rp transferCotaKvPairRepo) ParseTransferCotaEntries(blockNumber uint64, en
 	if entry.Version == 0 {
 		return generateTransferWithdrawV0KvPairs(blockNumber, entry, rp)
 	}
-	return generateTransferWithdrawV1KvPairs(blockNumber, entry, rp)
+	return generateTransferWithdrawV1ToV2KvPairs(blockNumber, entry, rp)
 }
 
 func (rp transferCotaKvPairRepo) ParseTransferUpdateCotaEntries(blockNumber uint64, entry biz.Entry) (claimedCotas []biz.ClaimedCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
 	if entry.Version == 0 {
 		return generateTransferUpdateWithdrawV0KvPairs(blockNumber, entry, rp)
 	}
-	return generateTransferUpdateWithdrawV1KvPairs(blockNumber, entry, rp)
+	return generateTransferUpdateWithdrawV1ToV2KvPairs(blockNumber, entry, rp)
 }
 
 func (rp transferCotaKvPairRepo) FindOrCreateScript(ctx context.Context, script *biz.Script) error {
@@ -119,9 +119,22 @@ func generateTransferUpdateWithdrawV0KvPairs(blockNumber uint64, entry biz.Entry
 	return
 }
 
-func generateTransferUpdateWithdrawV1KvPairs(blockNumber uint64, entry biz.Entry, rp transferCotaKvPairRepo) (claimedCotas []biz.ClaimedCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
-	entries := smt.TransferUpdateCotaNFTV1EntriesFromSliceUnchecked(entry.InputType[1:])
-	claimedCotaKeyVec := entries.ClaimKeys()
+func generateTransferUpdateWithdrawV1ToV2KvPairs(blockNumber uint64, entry biz.Entry, rp transferCotaKvPairRepo) (claimedCotas []biz.ClaimedCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
+	var claimedCotaKeyVec *smt.ClaimCotaNFTKeyVec = nil
+	var withdrawKeyVec *smt.WithdrawalCotaNFTKeyV1Vec = nil
+	var withdrawValueVec *smt.WithdrawalCotaNFTValueV1Vec = nil
+
+	if entry.Version == 1 {
+		entries := smt.TransferUpdateCotaNFTV1EntriesFromSliceUnchecked(entry.InputType[1:])
+		claimedCotaKeyVec = entries.ClaimKeys()
+		withdrawKeyVec = entries.WithdrawalKeys()
+		withdrawValueVec = entries.WithdrawalValues()
+	} else {
+		entries := smt.TransferUpdateCotaNFTV2EntriesFromSliceUnchecked(entry.InputType[1:])
+		claimedCotaKeyVec = entries.ClaimKeys()
+		withdrawKeyVec = entries.WithdrawalKeys()
+		withdrawValueVec = entries.WithdrawalValues()
+	}
 	lockHash, err := entry.LockScript.Hash()
 	if err != nil {
 		return
@@ -143,8 +156,6 @@ func generateTransferUpdateWithdrawV1KvPairs(blockNumber uint64, entry biz.Entry
 			LockHashCrc: lockHashCRC32,
 		})
 	}
-	withdrawKeyVec := entries.WithdrawalKeys()
-	withdrawValueVec := entries.WithdrawalValues()
 	for i := uint(0); i < withdrawKeyVec.Len(); i++ {
 		key := withdrawKeyVec.Get(i)
 		value := withdrawValueVec.Get(i)
@@ -239,9 +250,21 @@ func generateTransferWithdrawV0KvPairs(blockNumber uint64, entry biz.Entry, rp t
 	return
 }
 
-func generateTransferWithdrawV1KvPairs(blockNumber uint64, entry biz.Entry, rp transferCotaKvPairRepo) (claimedCotas []biz.ClaimedCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
-	entries := smt.TransferCotaNFTV1EntriesFromSliceUnchecked(entry.InputType[1:])
-	claimedCotaKeyVec := entries.ClaimKeys()
+func generateTransferWithdrawV1ToV2KvPairs(blockNumber uint64, entry biz.Entry, rp transferCotaKvPairRepo) (claimedCotas []biz.ClaimedCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
+	var claimedCotaKeyVec *smt.ClaimCotaNFTKeyVec = nil
+	var withdrawKeyVec *smt.WithdrawalCotaNFTKeyV1Vec = nil
+	var withdrawValueVec *smt.WithdrawalCotaNFTValueV1Vec = nil
+	if entry.Version == 1 {
+		entries := smt.TransferCotaNFTV1EntriesFromSliceUnchecked(entry.InputType[1:])
+		claimedCotaKeyVec = entries.ClaimKeys()
+		withdrawKeyVec = entries.WithdrawalKeys()
+		withdrawValueVec = entries.WithdrawalValues()
+	} else {
+		entries := smt.TransferCotaNFTV2EntriesFromSliceUnchecked(entry.InputType[1:])
+		claimedCotaKeyVec = entries.ClaimKeys()
+		withdrawKeyVec = entries.WithdrawalKeys()
+		withdrawValueVec = entries.WithdrawalValues()
+	}
 	lockHash, err := entry.LockScript.Hash()
 	if err != nil {
 		return
@@ -263,8 +286,6 @@ func generateTransferWithdrawV1KvPairs(blockNumber uint64, entry biz.Entry, rp t
 			LockHashCrc: lockHashCRC32,
 		})
 	}
-	withdrawKeyVec := entries.WithdrawalKeys()
-	withdrawValueVec := entries.WithdrawalValues()
 	for i := uint(0); i < withdrawKeyVec.Len(); i++ {
 		key := withdrawKeyVec.Get(i)
 		value := withdrawValueVec.Get(i)
