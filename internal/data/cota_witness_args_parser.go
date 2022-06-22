@@ -49,16 +49,24 @@ func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, txIndex uin
 		return nil, err
 	}
 	cotaCells := make([]cotaCell, len(inputCotaCellGroups))
-	for typeHash, inputCota := range inputCotaCellGroups {
-		cotaCell := outputCotaCellGroups[typeHash]
-		if inputCota.index < len(inputCotaCellGroups) {
-			cotaCells[inputCota.index] = cotaCell
+	var cotaCellsIndex int
+	for typeHash, inputCotas := range inputCotaCellGroups {
+		outputGroupCotaCells := outputCotaCellGroups[typeHash]
+		firstCotaAtOutputGroup := outputGroupCotaCells[0]
+		firstCotaAtInputGroup := inputCotas[0]
+
+		cotaCells[cotaCellsIndex] = cotaCell{
+			output:     firstCotaAtOutputGroup.output,
+			index:      firstCotaAtInputGroup.index,
+			outputData: firstCotaAtOutputGroup.outputData,
 		}
+
+		cotaCellsIndex++
 	}
 
 	var entries []biz.Entry
-	for index, cotaCell := range cotaCells {
-		witness := tx.Witnesses[index]
+	for _, cotaCell := range cotaCells {
+		witness := tx.Witnesses[cotaCell.index]
 		witnessArgs := blockchain.WitnessArgsFromSliceUnchecked(witness)
 		if witnessArgs.OutputType().IsSome() {
 			outputType, err := witnessArgs.OutputType().IntoBytes()
@@ -88,20 +96,20 @@ func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, txIndex uin
 	return entries, nil
 }
 
-func (c CotaWitnessArgsParser) inputCotaCellGroups(inputs []*ckbTypes.CellInput, cotaType SystemScript) (map[string]cotaCell, error) {
-	group := make(map[string]cotaCell)
+func (c CotaWitnessArgsParser) inputCotaCellGroups(inputs []*ckbTypes.CellInput, cotaType SystemScript) (map[string][]cotaCell, error) {
 	cotaCells, err := c.inputCotaCells(inputs, cotaType)
 	if err != nil {
-		return group, err
+		return nil, err
 	}
+
+	group := make(map[string][]cotaCell)
 	for _, cell := range cotaCells {
 		typeHash, err := cell.output.Type.Hash()
 		if err != nil {
 			return group, err
 		}
-		if _, ok := group[typeHash.String()]; !ok {
-			group[typeHash.String()] = cell
-		}
+
+		group[typeHash.String()] = append(group[typeHash.String()], cell)
 	}
 
 	return group, nil
@@ -149,20 +157,20 @@ func (c CotaWitnessArgsParser) outputCotaCells(outputs []*ckbTypes.CellOutput, o
 	return cotaCells, nil
 }
 
-func (c CotaWitnessArgsParser) outputCotaCellGroups(outputs []*ckbTypes.CellOutput, outputsData [][]byte, cotaType SystemScript) (map[string]cotaCell, error) {
-	group := make(map[string]cotaCell)
+func (c CotaWitnessArgsParser) outputCotaCellGroups(outputs []*ckbTypes.CellOutput, outputsData [][]byte, cotaType SystemScript) (map[string][]cotaCell, error) {
 	cotaCells, err := c.outputCotaCells(outputs, outputsData, cotaType)
 	if err != nil {
-		return group, err
+		return nil, err
 	}
+
+	group := make(map[string][]cotaCell)
 	for _, cell := range cotaCells {
 		typeHash, err := cell.output.Type.Hash()
 		if err != nil {
 			return group, err
 		}
-		if _, ok := group[typeHash.String()]; !ok {
-			group[typeHash.String()] = cell
-		}
+
+		group[typeHash.String()] = append(group[typeHash.String()], cell)
 	}
 
 	return group, nil
