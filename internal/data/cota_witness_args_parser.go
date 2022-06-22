@@ -51,7 +51,9 @@ func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, txIndex uin
 	cotaCells := make([]cotaCell, len(inputCotaCellGroups))
 	for typeHash, inputCota := range inputCotaCellGroups {
 		cotaCell := outputCotaCellGroups[typeHash]
-		cotaCells[inputCota.index] = cotaCell
+		if inputCota.index < len(inputCotaCellGroups) {
+			cotaCells[inputCota.index] = cotaCell
+		}
 	}
 
 	var entries []biz.Entry
