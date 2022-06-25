@@ -67,6 +67,9 @@ func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, txIndex uin
 	var entries []biz.Entry
 	for _, cotaCell := range cotaCells {
 		witness := tx.Witnesses[cotaCell.index]
+		if len(witness) == 0 {
+			continue
+		}
 		witnessArgs := blockchain.WitnessArgsFromSliceUnchecked(witness)
 		if witnessArgs.OutputType().IsSome() {
 			outputType, err := witnessArgs.OutputType().IntoBytes()
