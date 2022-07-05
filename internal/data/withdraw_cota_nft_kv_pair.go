@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/binary"
 	"encoding/hex"
+	"hash/crc32"
+	"strconv"
+	"time"
+
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/data/blockchain"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
 	"github.com/nervina-labs/cota-smt-go/smt"
-	"hash/crc32"
-	"strconv"
-	"time"
 )
 
 var _ biz.WithdrawCotaNftKvPairRepo = (*withdrawCotaNftKvPairRepo)(nil)
@@ -23,12 +24,14 @@ type WithdrawCotaNftKvPair struct {
 	TokenIndex           uint32
 	OutPoint             string
 	OutPointCrc          uint32
+	TxHash               string
 	State                uint8
 	Configure            uint8
 	Characteristic       string
 	ReceiverLockScriptId uint
 	LockHash             string
 	LockHashCrc          uint32
+	LockScriptId         uint
 	Version              uint8
 	CreatedAt            time.Time
 	UpdatedAt            time.Time
