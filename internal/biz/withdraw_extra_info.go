@@ -9,6 +9,7 @@ import (
 type WithdrawQueryInfo struct {
 	BlockNumber uint64
 	OutPoint    string
+	LockHash    string
 }
 
 type WithdrawExtraInfoRepo interface {
@@ -22,7 +23,7 @@ type WithdrawExtraInfoUsecase struct {
 	logger *logger.Logger
 }
 
-func NewAddExtraInfoUsecase(repo WithdrawExtraInfoRepo, logger *logger.Logger) *WithdrawExtraInfoUsecase {
+func NewWithdrawExtraInfoUsecase(repo WithdrawExtraInfoRepo, logger *logger.Logger) *WithdrawExtraInfoUsecase {
 	return &WithdrawExtraInfoUsecase{
 		repo:   repo,
 		logger: logger,

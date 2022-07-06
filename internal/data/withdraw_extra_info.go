@@ -8,9 +8,9 @@ import (
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
 )
 
-const pageSize = 1000
+const pageSize = 10000
 
-// var _ biz.WithdrawExtraInfoRepo = (*withdrawExtraInfoRepo)(nil)
+var _ biz.WithdrawExtraInfoRepo = (*withdrawExtraInfoRepo)(nil)
 
 type withdrawExtraInfoRepo struct {
 	data   *Data
@@ -25,13 +25,9 @@ func NewWithdrawExtraInfoRepo(data *Data, logger *logger.Logger) biz.WithdrawExt
 }
 
 func (rp withdrawExtraInfoRepo) CreateExtraInfo(ctx context.Context, outPoint string, txHash string, lockScriptId uint) error {
-	var withdraw WithdrawCotaNftKvPair
-	if err := rp.data.db.WithContext(ctx).Where("out_point = ?", outPoint).First(withdraw).Error; err == nil {
-		withdraw.TxHash = txHash
-		withdraw.LockScriptId = lockScriptId
-		if err = rp.data.db.WithContext(ctx).Save(&withdraw).Error; err != nil {
-			return err
-		}
+	outPointCrc := crc32.ChecksumIEEE([]byte(outPoint))
+	if err := rp.data.db.WithContext(ctx).Model(WithdrawCotaNftKvPair{}).Where("out_point_crc = ? AND out_point = ?", outPointCrc, outPoint).Updates(WithdrawCotaNftKvPair{TxHash: txHash, LockScriptId: lockScriptId}).Error; err != nil {
+		return err
 	}
 	return nil
 }
@@ -43,10 +39,12 @@ func (rp withdrawExtraInfoRepo) FindAllQueryInfos(ctx context.Context) ([]biz.Wi
 	)
 	offset := 0
 	for {
-		result := rp.data.db.WithContext(ctx).Select("out_point").Where("tx_hash IS NULL").Limit(pageSize).Offset(offset * pageSize).Find(&withdrawals)
+		var temps []WithdrawCotaNftKvPair
+		result := rp.data.db.WithContext(ctx).Select("DISTINCT out_point, block_number, lock_hash").Where("tx_hash IS NULL").Limit(pageSize).Offset(offset * pageSize).Find(&temps)
 		if result.Error != nil {
 			return queryInfos, result.Error
 		}
+		withdrawals = append(withdrawals, temps...)
 		if result.RowsAffected == 0 {
 			break
 		}
@@ -56,6 +54,7 @@ func (rp withdrawExtraInfoRepo) FindAllQueryInfos(ctx context.Context) ([]biz.Wi
 		queryInfos = append(queryInfos, biz.WithdrawQueryInfo{
 			BlockNumber: v.BlockNumber,
 			OutPoint:    v.OutPoint,
+			LockHash:    v.LockHash,
 		})
 	}
 	return queryInfos, nil

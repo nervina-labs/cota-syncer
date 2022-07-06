@@ -120,9 +120,9 @@ func generateTransferUpdateWithdrawV0KvPairs(blockNumber uint64, entry biz.Entry
 }
 
 func generateTransferUpdateWithdrawV1ToV2KvPairs(blockNumber uint64, entry biz.Entry, rp transferCotaKvPairRepo) (claimedCotas []biz.ClaimedCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
-	var claimedCotaKeyVec *smt.ClaimCotaNFTKeyVec = nil
-	var withdrawKeyVec *smt.WithdrawalCotaNFTKeyV1Vec = nil
-	var withdrawValueVec *smt.WithdrawalCotaNFTValueV1Vec = nil
+	var claimedCotaKeyVec *smt.ClaimCotaNFTKeyVec
+	var withdrawKeyVec *smt.WithdrawalCotaNFTKeyV1Vec
+	var withdrawValueVec *smt.WithdrawalCotaNFTValueV1Vec
 
 	if entry.Version == 1 {
 		entries := smt.TransferUpdateCotaNFTV1EntriesFromSliceUnchecked(entry.InputType[1:])
