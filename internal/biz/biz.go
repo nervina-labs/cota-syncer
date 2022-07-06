@@ -15,4 +15,5 @@ type Entry struct {
 	LockScript *ckbTypes.Script
 	TxIndex    uint32
 	Version    uint8
+	TxHash     ckbTypes.Hash
 }

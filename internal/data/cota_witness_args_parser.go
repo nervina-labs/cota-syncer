@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/data/blockchain"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
@@ -81,6 +82,7 @@ func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, txIndex uin
 				LockScript: cotaCell.output.Lock,
 				TxIndex:    txIndex,
 				Version:    cotaCell.outputData[0],
+				TxHash:     tx.Hash,
 			})
 		}
 		if witnessArgs.InputType().IsSome() {
@@ -93,6 +95,7 @@ func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, txIndex uin
 				LockScript: cotaCell.output.Lock,
 				TxIndex:    txIndex,
 				Version:    cotaCell.outputData[0],
+				TxHash:     tx.Hash,
 			})
 		}
 	}
