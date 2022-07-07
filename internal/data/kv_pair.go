@@ -476,7 +476,7 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 			if err := tx.Model(IssuerInfoVersion{}).WithContext(ctx).Create(issuerInfoVersions).Error; err != nil {
 				return err
 			}
-			// upsert issuer info
+			// insert issuer info
 			issuerInfos := make([]IssuerInfo, len(kvPair.IssuerInfos))
 			for i, issuer := range kvPair.IssuerInfos {
 				issuerInfos[i] = IssuerInfo{
@@ -559,7 +559,7 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 			if err := tx.Model(ClassInfoVersion{}).WithContext(ctx).Create(classInfoVersions).Error; err != nil {
 				return err
 			}
-			// upsert class info
+			// insert class info
 			classInfos := make([]ClassInfo, len(kvPair.ClassInfos))
 			for i, class := range kvPair.ClassInfos {
 				classInfos[i] = ClassInfo{

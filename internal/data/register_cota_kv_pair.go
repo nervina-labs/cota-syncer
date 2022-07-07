@@ -48,17 +48,13 @@ func (rp registerCotaKvPairRepo) DeleteRegisterCotaKvPairs(ctx context.Context, 
 	return nil
 }
 
-func (rp registerCotaKvPairRepo) ParseRegistryEntries(_ context.Context, blockNumber uint64, tx *ckbTypes.Transaction) ([]biz.RegisterCotaKvPair, error) {
-	var registerCotas []biz.RegisterCotaKvPair
+func (rp registerCotaKvPairRepo) ParseRegistryEntries(_ context.Context, blockNumber uint64, tx *ckbTypes.Transaction) (registerCotas []biz.RegisterCotaKvPair, err error) {
 	bytes, err := blockchain.WitnessArgsFromSliceUnchecked(tx.Witnesses[0]).InputType().IntoBytes()
 	if err != nil {
-		return registerCotas, err
+		return
 	}
 	registerWitnessType := bytes.RawData()
-	registryEntries, err := smt.CotaNFTRegistryEntriesFromSlice(registerWitnessType, false)
-	if err != nil {
-		return registerCotas, err
-	}
+	registryEntries := smt.CotaNFTRegistryEntriesFromSliceUnchecked(registerWitnessType)
 	registryVec := registryEntries.Registries()
 	for i := uint(0); i < registryVec.Len(); i++ {
 		registerCotas = append(registerCotas, biz.RegisterCotaKvPair{
@@ -66,5 +62,5 @@ func (rp registerCotaKvPairRepo) ParseRegistryEntries(_ context.Context, blockNu
 			LockHash:    hex.EncodeToString(registryVec.Get(i).LockHash().RawData()),
 		})
 	}
-	return registerCotas, nil
+	return
 }

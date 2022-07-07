@@ -31,6 +31,7 @@ func (i InvalidDataCleaner) Start(ctx context.Context, _ string) error {
 		return err
 	}
 
+	// The block number where the cota smart contract was deployed
 	if info.Chain == "ckb" {
 		blockNumber = 7233113
 	} else {

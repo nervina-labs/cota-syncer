@@ -26,24 +26,17 @@ func (rp mintCotaKvPairRepo) ParseMintCotaEntries(blockNumber uint64, entry biz.
 	return generateMintV1KvPairs(blockNumber, entry, rp)
 }
 
-func generateMintV1KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPairRepo) ([]biz.DefineCotaNftKvPair, []biz.WithdrawCotaNftKvPair, error) {
-	var (
-		defineCotas   []biz.DefineCotaNftKvPair
-		withdrawCotas []biz.WithdrawCotaNftKvPair
-	)
-	entries, err := smt.MintCotaNFTV1EntriesFromSlice(entry.InputType[1:], false)
-	if err != nil {
-		return defineCotas, withdrawCotas, err
-	}
-
+func generateMintV1KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPairRepo) (defineCotas []biz.DefineCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
+	entries := smt.MintCotaNFTV1EntriesFromSliceUnchecked(entry.InputType[1:])
 	defineCotaKeyVec := entries.DefineKeys()
 	defineCotaValueVec := entries.DefineNewValues()
 	senderLock, lockHashStr, lockHashCRC32, err := GenerateSenderLock(entry)
 	if err != nil {
-		return defineCotas, withdrawCotas, err
+		return
 	}
-	if err := rp.FindOrCreateScript(context.TODO(), &senderLock); err != nil {
-		return defineCotas, withdrawCotas, err
+	err = rp.FindOrCreateScript(context.TODO(), &senderLock)
+	if err != nil {
+		return
 	}
 	for i := uint(0); i < defineCotaKeyVec.Len(); i++ {
 		key := defineCotaKeyVec.Get(i)
@@ -69,7 +62,7 @@ func generateMintV1KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPai
 		receiverLock := GenerateReceiverLock(value.ToLock().RawData())
 		err = rp.FindOrCreateScript(context.TODO(), &receiverLock)
 		if err != nil {
-			return defineCotas, withdrawCotas, err
+			return
 		}
 		withdrawCotas = append(withdrawCotas, biz.WithdrawCotaNftKvPair{
 			BlockNumber:          blockNumber,
@@ -89,26 +82,20 @@ func generateMintV1KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPai
 			Version:              entry.Version,
 		})
 	}
-	return defineCotas, withdrawCotas, err
+	return
 }
 
-func generateMintV0KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPairRepo) ([]biz.DefineCotaNftKvPair, []biz.WithdrawCotaNftKvPair, error) {
-	var (
-		defineCotas   []biz.DefineCotaNftKvPair
-		withdrawCotas []biz.WithdrawCotaNftKvPair
-	)
-	entries, err := smt.MintCotaNFTEntriesFromSlice(entry.InputType[1:], false)
-	if err != nil {
-		return defineCotas, withdrawCotas, err
-	}
+func generateMintV0KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPairRepo) (defineCotas []biz.DefineCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
+	entries := smt.MintCotaNFTEntriesFromSliceUnchecked(entry.InputType[1:])
 	defineCotaKeyVec := entries.DefineKeys()
 	defineCotaValueVec := entries.DefineNewValues()
 	senderLock, lockHashStr, lockHashCRC32, err := GenerateSenderLock(entry)
 	if err != nil {
-		return defineCotas, withdrawCotas, err
+		return
 	}
-	if err := rp.FindOrCreateScript(context.TODO(), &senderLock); err != nil {
-		return defineCotas, withdrawCotas, err
+	err = rp.FindOrCreateScript(context.TODO(), &senderLock)
+	if err != nil {
+		return
 	}
 	for i := uint(0); i < defineCotaKeyVec.Len(); i++ {
 		key := defineCotaKeyVec.Get(i)
@@ -134,7 +121,7 @@ func generateMintV0KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPai
 		receiverLock := GenerateReceiverLock(value.ToLock().RawData())
 		err = rp.FindOrCreateScript(context.TODO(), &receiverLock)
 		if err != nil {
-			return defineCotas, withdrawCotas, err
+			return
 		}
 		withdrawCotas = append(withdrawCotas, biz.WithdrawCotaNftKvPair{
 			BlockNumber:          blockNumber,
@@ -154,7 +141,7 @@ func generateMintV0KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPai
 			Version:              entry.Version,
 		})
 	}
-	return defineCotas, withdrawCotas, nil
+	return
 }
 
 func (rp mintCotaKvPairRepo) FindOrCreateScript(ctx context.Context, script *biz.Script) error {

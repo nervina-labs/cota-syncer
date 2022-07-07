@@ -18,14 +18,14 @@ type transferCotaKvPairRepo struct {
 	logger *logger.Logger
 }
 
-func (rp transferCotaKvPairRepo) ParseTransferCotaEntries(blockNumber uint64, entry biz.Entry) ([]biz.ClaimedCotaNftKvPair, []biz.WithdrawCotaNftKvPair, error) {
+func (rp transferCotaKvPairRepo) ParseTransferCotaEntries(blockNumber uint64, entry biz.Entry) (claimedCotas []biz.ClaimedCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
 	if entry.Version == 0 {
 		return generateTransferV0KvPairs(blockNumber, entry, rp)
 	}
 	return generateTransferV1ToV2KvPairs(blockNumber, entry, rp)
 }
 
-func (rp transferCotaKvPairRepo) ParseTransferUpdateCotaEntries(blockNumber uint64, entry biz.Entry) ([]biz.ClaimedCotaNftKvPair, []biz.WithdrawCotaNftKvPair, error) {
+func (rp transferCotaKvPairRepo) ParseTransferUpdateCotaEntries(blockNumber uint64, entry biz.Entry) (claimedCotas []biz.ClaimedCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
 	if entry.Version == 0 {
 		return generateTransferUpdateV0KvPairs(blockNumber, entry, rp)
 	}
@@ -58,22 +58,15 @@ func NewTransferCotaKvPairRepo(data *Data, logger *logger.Logger) biz.TransferCo
 	}
 }
 
-func generateTransferUpdateV0KvPairs(blockNumber uint64, entry biz.Entry, rp transferCotaKvPairRepo) ([]biz.ClaimedCotaNftKvPair, []biz.WithdrawCotaNftKvPair, error) {
-	var (
-		claimedCotas  []biz.ClaimedCotaNftKvPair
-		withdrawCotas []biz.WithdrawCotaNftKvPair
-	)
-	entries, err := smt.TransferUpdateCotaNFTEntriesFromSlice(entry.InputType[1:], false)
-	if err != nil {
-		return claimedCotas, withdrawCotas, err
-	}
+func generateTransferV0KvPairs(blockNumber uint64, entry biz.Entry, rp transferCotaKvPairRepo) (claimedCotas []biz.ClaimedCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
+	entries := smt.TransferCotaNFTEntriesFromSliceUnchecked(entry.InputType[1:])
 	claimedCotaKeyVec := entries.ClaimKeys()
 	senderLock, lockHashStr, lockHashCRC32, err := GenerateSenderLock(entry)
 	if err != nil {
-		return claimedCotas, withdrawCotas, err
+		return
 	}
-	if err := rp.FindOrCreateScript(context.TODO(), &senderLock); err != nil {
-		return claimedCotas, withdrawCotas, err
+	if err = rp.FindOrCreateScript(context.TODO(), &senderLock); err != nil {
+		return
 	}
 	for i := uint(0); i < claimedCotaKeyVec.Len(); i++ {
 		key := claimedCotaKeyVec.Get(i)
@@ -98,9 +91,8 @@ func generateTransferUpdateV0KvPairs(blockNumber uint64, entry biz.Entry, rp tra
 		cotaId := hex.EncodeToString(key.CotaId().RawData())
 		outpointStr := hex.EncodeToString(value.OutPoint().RawData())
 		receiverLock := GenerateReceiverLock(value.ToLock().RawData())
-		err = rp.FindOrCreateScript(context.TODO(), &receiverLock)
-		if err != nil {
-			return claimedCotas, withdrawCotas, err
+		if err = rp.FindOrCreateScript(context.TODO(), &receiverLock); err != nil {
+			return
 		}
 		withdrawCotas = append(withdrawCotas, biz.WithdrawCotaNftKvPair{
 			BlockNumber:          blockNumber,
@@ -120,41 +112,32 @@ func generateTransferUpdateV0KvPairs(blockNumber uint64, entry biz.Entry, rp tra
 			Version:              entry.Version,
 		})
 	}
-	return claimedCotas, withdrawCotas, nil
+	return
 }
 
-func generateTransferUpdateV1ToV2KvPairs(blockNumber uint64, entry biz.Entry, rp transferCotaKvPairRepo) ([]biz.ClaimedCotaNftKvPair, []biz.WithdrawCotaNftKvPair, error) {
+func generateTransferV1ToV2KvPairs(blockNumber uint64, entry biz.Entry, rp transferCotaKvPairRepo) (claimedCotas []biz.ClaimedCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
 	var (
 		claimedCotaKeyVec *smt.ClaimCotaNFTKeyVec
 		withdrawKeyVec    *smt.WithdrawalCotaNFTKeyV1Vec
 		withdrawValueVec  *smt.WithdrawalCotaNFTValueV1Vec
-		claimedCotas      []biz.ClaimedCotaNftKvPair
-		withdrawCotas     []biz.WithdrawCotaNftKvPair
 	)
-
 	if entry.Version == 1 {
-		entries, err := smt.TransferUpdateCotaNFTV1EntriesFromSlice(entry.InputType[1:], false)
-		if err != nil {
-			return claimedCotas, withdrawCotas, err
-		}
+		entries := smt.TransferCotaNFTV1EntriesFromSliceUnchecked(entry.InputType[1:])
 		claimedCotaKeyVec = entries.ClaimKeys()
 		withdrawKeyVec = entries.WithdrawalKeys()
 		withdrawValueVec = entries.WithdrawalValues()
 	} else {
-		entries, err := smt.TransferUpdateCotaNFTV2EntriesFromSlice(entry.InputType[1:], false)
-		if err != nil {
-			return claimedCotas, withdrawCotas, err
-		}
+		entries := smt.TransferCotaNFTV2EntriesFromSliceUnchecked(entry.InputType[1:])
 		claimedCotaKeyVec = entries.ClaimKeys()
 		withdrawKeyVec = entries.WithdrawalKeys()
 		withdrawValueVec = entries.WithdrawalValues()
 	}
 	senderLock, lockHashStr, lockHashCRC32, err := GenerateSenderLock(entry)
 	if err != nil {
-		return claimedCotas, withdrawCotas, err
+		return
 	}
-	if err := rp.FindOrCreateScript(context.TODO(), &senderLock); err != nil {
-		return claimedCotas, withdrawCotas, err
+	if err = rp.FindOrCreateScript(context.TODO(), &senderLock); err != nil {
+		return
 	}
 	for i := uint(0); i < claimedCotaKeyVec.Len(); i++ {
 		key := claimedCotaKeyVec.Get(i)
@@ -177,9 +160,8 @@ func generateTransferUpdateV1ToV2KvPairs(blockNumber uint64, entry biz.Entry, rp
 		cotaId := hex.EncodeToString(key.NftId().CotaId().RawData())
 		outpointStr := hex.EncodeToString(key.OutPoint().RawData())
 		receiverLock := GenerateReceiverLock(value.ToLock().RawData())
-		err = rp.FindOrCreateScript(context.TODO(), &receiverLock)
-		if err != nil {
-			return claimedCotas, withdrawCotas, err
+		if err = rp.FindOrCreateScript(context.TODO(), &receiverLock); err != nil {
+			return
 		}
 		withdrawCotas = append(withdrawCotas, biz.WithdrawCotaNftKvPair{
 			BlockNumber:          blockNumber,
@@ -199,25 +181,18 @@ func generateTransferUpdateV1ToV2KvPairs(blockNumber uint64, entry biz.Entry, rp
 			Version:              entry.Version,
 		})
 	}
-	return claimedCotas, withdrawCotas, nil
+	return
 }
 
-func generateTransferV0KvPairs(blockNumber uint64, entry biz.Entry, rp transferCotaKvPairRepo) ([]biz.ClaimedCotaNftKvPair, []biz.WithdrawCotaNftKvPair, error) {
-	var (
-		claimedCotas  []biz.ClaimedCotaNftKvPair
-		withdrawCotas []biz.WithdrawCotaNftKvPair
-	)
-	entries, err := smt.TransferCotaNFTEntriesFromSlice(entry.InputType[1:], false)
-	if err != nil {
-		return claimedCotas, withdrawCotas, err
-	}
+func generateTransferUpdateV0KvPairs(blockNumber uint64, entry biz.Entry, rp transferCotaKvPairRepo) (claimedCotas []biz.ClaimedCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
+	entries := smt.TransferUpdateCotaNFTEntriesFromSliceUnchecked(entry.InputType[1:])
 	claimedCotaKeyVec := entries.ClaimKeys()
 	senderLock, lockHashStr, lockHashCRC32, err := GenerateSenderLock(entry)
 	if err != nil {
-		return claimedCotas, withdrawCotas, err
+		return
 	}
-	if err := rp.FindOrCreateScript(context.TODO(), &senderLock); err != nil {
-		return claimedCotas, withdrawCotas, err
+	if err = rp.FindOrCreateScript(context.TODO(), &senderLock); err != nil {
+		return
 	}
 	for i := uint(0); i < claimedCotaKeyVec.Len(); i++ {
 		key := claimedCotaKeyVec.Get(i)
@@ -242,9 +217,8 @@ func generateTransferV0KvPairs(blockNumber uint64, entry biz.Entry, rp transferC
 		cotaId := hex.EncodeToString(key.CotaId().RawData())
 		outpointStr := hex.EncodeToString(value.OutPoint().RawData())
 		receiverLock := GenerateReceiverLock(value.ToLock().RawData())
-		err = rp.FindOrCreateScript(context.TODO(), &receiverLock)
-		if err != nil {
-			return claimedCotas, withdrawCotas, err
+		if err = rp.FindOrCreateScript(context.TODO(), &receiverLock); err != nil {
+			return
 		}
 		withdrawCotas = append(withdrawCotas, biz.WithdrawCotaNftKvPair{
 			BlockNumber:          blockNumber,
@@ -264,40 +238,33 @@ func generateTransferV0KvPairs(blockNumber uint64, entry biz.Entry, rp transferC
 			Version:              entry.Version,
 		})
 	}
-	return claimedCotas, withdrawCotas, nil
+	return
 }
 
-func generateTransferV1ToV2KvPairs(blockNumber uint64, entry biz.Entry, rp transferCotaKvPairRepo) ([]biz.ClaimedCotaNftKvPair, []biz.WithdrawCotaNftKvPair, error) {
+func generateTransferUpdateV1ToV2KvPairs(blockNumber uint64, entry biz.Entry, rp transferCotaKvPairRepo) (claimedCotas []biz.ClaimedCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
 	var (
 		claimedCotaKeyVec *smt.ClaimCotaNFTKeyVec
 		withdrawKeyVec    *smt.WithdrawalCotaNFTKeyV1Vec
 		withdrawValueVec  *smt.WithdrawalCotaNFTValueV1Vec
-		claimedCotas      []biz.ClaimedCotaNftKvPair
-		withdrawCotas     []biz.WithdrawCotaNftKvPair
 	)
+
 	if entry.Version == 1 {
-		entries, err := smt.TransferCotaNFTV1EntriesFromSlice(entry.InputType[1:], false)
-		if err != nil {
-			return claimedCotas, withdrawCotas, err
-		}
+		entries := smt.TransferUpdateCotaNFTV1EntriesFromSliceUnchecked(entry.InputType[1:])
 		claimedCotaKeyVec = entries.ClaimKeys()
 		withdrawKeyVec = entries.WithdrawalKeys()
 		withdrawValueVec = entries.WithdrawalValues()
 	} else {
-		entries, err := smt.TransferCotaNFTV2EntriesFromSlice(entry.InputType[1:], false)
+		entries := smt.TransferUpdateCotaNFTV2EntriesFromSliceUnchecked(entry.InputType[1:])
 		claimedCotaKeyVec = entries.ClaimKeys()
 		withdrawKeyVec = entries.WithdrawalKeys()
 		withdrawValueVec = entries.WithdrawalValues()
-		if err != nil {
-			return claimedCotas, withdrawCotas, err
-		}
 	}
 	senderLock, lockHashStr, lockHashCRC32, err := GenerateSenderLock(entry)
 	if err != nil {
-		return claimedCotas, withdrawCotas, err
+		return
 	}
-	if err := rp.FindOrCreateScript(context.TODO(), &senderLock); err != nil {
-		return claimedCotas, withdrawCotas, err
+	if err = rp.FindOrCreateScript(context.TODO(), &senderLock); err != nil {
+		return
 	}
 	for i := uint(0); i < claimedCotaKeyVec.Len(); i++ {
 		key := claimedCotaKeyVec.Get(i)
@@ -320,9 +287,8 @@ func generateTransferV1ToV2KvPairs(blockNumber uint64, entry biz.Entry, rp trans
 		cotaId := hex.EncodeToString(key.NftId().CotaId().RawData())
 		outpointStr := hex.EncodeToString(key.OutPoint().RawData())
 		receiverLock := GenerateReceiverLock(value.ToLock().RawData())
-		err = rp.FindOrCreateScript(context.TODO(), &receiverLock)
-		if err != nil {
-			return claimedCotas, withdrawCotas, err
+		if err = rp.FindOrCreateScript(context.TODO(), &receiverLock); err != nil {
+			return
 		}
 		withdrawCotas = append(withdrawCotas, biz.WithdrawCotaNftKvPair{
 			BlockNumber:          blockNumber,
@@ -342,5 +308,5 @@ func generateTransferV1ToV2KvPairs(blockNumber uint64, entry biz.Entry, rp trans
 			Version:              entry.Version,
 		})
 	}
-	return claimedCotas, withdrawCotas, nil
+	return
 }
