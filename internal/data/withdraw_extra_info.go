@@ -38,8 +38,8 @@ func (rp withdrawExtraInfoRepo) FindAllQueryInfos(ctx context.Context) ([]biz.Wi
 		queryInfos  []biz.WithdrawQueryInfo
 	)
 	offset := 0
+	var temps []WithdrawCotaNftKvPair
 	for {
-		var temps []WithdrawCotaNftKvPair
 		result := rp.data.db.WithContext(ctx).Select("DISTINCT out_point, block_number, lock_hash").Where("tx_hash IS NULL").Limit(pageSize).Offset(offset * pageSize).Find(&temps)
 		if result.Error != nil {
 			return queryInfos, result.Error
