@@ -27,7 +27,7 @@ func NewWithdrawExtraInfoService(extraInfoUsecase *biz.WithdrawExtraInfoUsecase,
 }
 
 func (s WithdrawExtraInfoService) Start(ctx context.Context, _ string) error {
-	s.logger.Infof(ctx, "withdraw extra info service started")
+	s.logger.Info(ctx, "withdraw extra info service started")
 	queryInfos, err := s.extraInfoUsecase.FindAllQueryInfos(ctx)
 	if err != nil {
 		return err
@@ -35,7 +35,6 @@ func (s WithdrawExtraInfoService) Start(ctx context.Context, _ string) error {
 	var block *ckbTypes.Block
 	var lock biz.Script
 	for _, v := range queryInfos {
-		s.logger.Infof(ctx, "check withdraw block number: %v", v.BlockNumber)
 		block, err = s.client.Rpc.GetBlockByNumber(ctx, v.BlockNumber)
 		if err != nil {
 			return err

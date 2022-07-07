@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/binary"
 	"encoding/hex"
+	"hash/crc32"
+	"time"
+
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
 	"github.com/nervina-labs/cota-smt-go/smt"
-	"hash/crc32"
-	"time"
 )
 
 var _ biz.HoldCotaNftKvPairRepo = (*holdCotaNftKvPairRepo)(nil)
@@ -73,7 +74,10 @@ func (rp holdCotaNftKvPairRepo) DeleteHoldCotaNftKvPairs(ctx context.Context, bl
 }
 
 func (rp holdCotaNftKvPairRepo) ParseHoldCotaEntries(blockNumber uint64, entry biz.Entry) (holdCotas []biz.HoldCotaNftKvPair, err error) {
-	entries := smt.UpdateCotaNFTEntriesFromSliceUnchecked(entry.InputType[1:])
+	entries, err := smt.UpdateCotaNFTEntriesFromSlice(entry.InputType[1:], false)
+	if err != nil {
+		return
+	}
 	holdCotaKeyVec := entries.HoldKeys()
 	holdCotaValueVec := entries.HoldNewValues()
 	lockHash, err := entry.LockScript.Hash()

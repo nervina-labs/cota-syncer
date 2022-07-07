@@ -3,12 +3,13 @@ package data
 import (
 	"context"
 	"errors"
+	"hash/crc32"
+	"time"
+
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"hash/crc32"
-	"time"
 )
 
 var _ biz.KvPairRepo = (*kvPairRepo)(nil)
@@ -134,12 +135,14 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 					TokenIndex:           cota.TokenIndex,
 					OutPoint:             cota.OutPoint,
 					OutPointCrc:          cota.OutPointCrc,
+					TxHash:               cota.TxHash,
 					State:                cota.State,
 					Configure:            cota.Configure,
 					Characteristic:       cota.Characteristic,
 					ReceiverLockScriptId: cota.ReceiverLockScriptId,
 					LockHash:             cota.LockHash,
 					LockHashCrc:          cota.LockHashCrc,
+					LockScriptId:         cota.LockScriptId,
 					Version:              cota.Version,
 				}
 			}
