@@ -38,7 +38,7 @@ func (c CotaWitnessArgsParser) isCotaCell(output *ckbTypes.CellOutput, cotaType 
 	return output.Type.CodeHash == cotaType.CodeHash && output.Type.HashType == cotaType.HashType
 }
 
-// There is not cota cells in inputs for registry, otherwise the amount of cota cells in inputs and outputs must be same
+// There are not cota cells in inputs for registry, otherwise the amount of cota cells in inputs and outputs must be same
 func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, txIndex uint32, cotaType SystemScript) ([]biz.Entry, error) {
 	inputCotaCellGroups, err := c.inputCotaCellGroups(tx.Inputs, cotaType)
 	if err != nil {

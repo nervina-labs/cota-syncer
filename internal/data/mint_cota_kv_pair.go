@@ -19,7 +19,7 @@ type mintCotaKvPairRepo struct {
 	logger *logger.Logger
 }
 
-func (rp mintCotaKvPairRepo) ParseMintCotaEntries(blockNumber uint64, entry biz.Entry) ([]biz.DefineCotaNftKvPair, []biz.WithdrawCotaNftKvPair, error) {
+func (rp mintCotaKvPairRepo) ParseMintCotaEntries(blockNumber uint64, entry biz.Entry) (defineCotas []biz.DefineCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
 	if entry.Version == 0 {
 		return generateMintV0KvPairs(blockNumber, entry, rp)
 	}
@@ -34,8 +34,7 @@ func generateMintV1KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPai
 	if err != nil {
 		return
 	}
-	err = rp.FindOrCreateScript(context.TODO(), &senderLock)
-	if err != nil {
+	if err = rp.FindOrCreateScript(context.TODO(), &senderLock); err != nil {
 		return
 	}
 	for i := uint(0); i < defineCotaKeyVec.Len(); i++ {
@@ -60,8 +59,7 @@ func generateMintV1KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPai
 		cotaId := hex.EncodeToString(key.NftId().CotaId().RawData())
 		outpointStr := hex.EncodeToString(key.OutPoint().RawData())
 		receiverLock := GenerateReceiverLock(value.ToLock().RawData())
-		err = rp.FindOrCreateScript(context.TODO(), &receiverLock)
-		if err != nil {
+		if err = rp.FindOrCreateScript(context.TODO(), &receiverLock); err != nil {
 			return
 		}
 		withdrawCotas = append(withdrawCotas, biz.WithdrawCotaNftKvPair{
@@ -93,8 +91,7 @@ func generateMintV0KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPai
 	if err != nil {
 		return
 	}
-	err = rp.FindOrCreateScript(context.TODO(), &senderLock)
-	if err != nil {
+	if err = rp.FindOrCreateScript(context.TODO(), &senderLock); err != nil {
 		return
 	}
 	for i := uint(0); i < defineCotaKeyVec.Len(); i++ {
@@ -119,8 +116,7 @@ func generateMintV0KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPai
 		cotaId := hex.EncodeToString(key.CotaId().RawData())
 		outpointStr := hex.EncodeToString(value.OutPoint().RawData())
 		receiverLock := GenerateReceiverLock(value.ToLock().RawData())
-		err = rp.FindOrCreateScript(context.TODO(), &receiverLock)
-		if err != nil {
+		if err = rp.FindOrCreateScript(context.TODO(), &receiverLock); err != nil {
 			return
 		}
 		withdrawCotas = append(withdrawCotas, biz.WithdrawCotaNftKvPair{

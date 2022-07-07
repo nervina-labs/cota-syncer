@@ -73,7 +73,7 @@ func (rp withdrawCotaNftKvPairRepo) DeleteWithdrawCotaNftKvPairs(ctx context.Con
 	return nil
 }
 
-func (rp withdrawCotaNftKvPairRepo) ParseWithdrawCotaEntries(blockNumber uint64, entry biz.Entry) ([]biz.WithdrawCotaNftKvPair, error) {
+func (rp withdrawCotaNftKvPairRepo) ParseWithdrawCotaEntries(blockNumber uint64, entry biz.Entry) (withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
 	if entry.Version == 0 {
 		return generateV0WithdrawKvPair(blockNumber, entry, rp)
 	}
