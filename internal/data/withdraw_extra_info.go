@@ -39,7 +39,7 @@ func (rp withdrawExtraInfoRepo) FindAllQueryInfos(ctx context.Context) ([]biz.Wi
 		offset             int
 	)
 	for {
-		result := rp.data.db.WithContext(ctx).Select("DISTINCT out_point, block_number, lock_hash").Where("tx_hash IS NULL").Limit(pageSize).Offset(offset * pageSize).Find(&temps)
+		result := rp.data.db.WithContext(ctx).Select("DISTINCT out_point, block_number, lock_hash").Where("tx_hash = ''").Limit(pageSize).Offset(offset * pageSize).Find(&temps)
 		if result.Error != nil {
 			return queryInfos, result.Error
 		}
