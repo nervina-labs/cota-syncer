@@ -14,7 +14,7 @@ type WithdrawQueryInfo struct {
 
 type WithdrawExtraInfoRepo interface {
 	CreateExtraInfo(ctx context.Context, outPoint string, txHash string, lockScriptId uint) error
-	FindAllQueryInfos(ctx context.Context) ([]WithdrawQueryInfo, error)
+	FindQueryInfos(ctx context.Context, page int, pageSize int) ([]WithdrawQueryInfo, error)
 	FindOrCreateScript(ctx context.Context, script *Script) error
 }
 
@@ -34,8 +34,8 @@ func (uc *WithdrawExtraInfoUsecase) CreateExtraInfo(ctx context.Context, outPoin
 	return uc.repo.CreateExtraInfo(ctx, outPoint, txHash, lockScriptId)
 }
 
-func (uc *WithdrawExtraInfoUsecase) FindAllQueryInfos(ctx context.Context) ([]WithdrawQueryInfo, error) {
-	return uc.repo.FindAllQueryInfos(ctx)
+func (uc *WithdrawExtraInfoUsecase) FindQueryInfos(ctx context.Context, page int, pageSize int) ([]WithdrawQueryInfo, error) {
+	return uc.repo.FindQueryInfos(ctx, page, pageSize)
 }
 
 func (uc *WithdrawExtraInfoUsecase) FindOrCreateScript(ctx context.Context, script *Script) error {

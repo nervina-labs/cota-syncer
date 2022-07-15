@@ -10,6 +10,8 @@ import (
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 )
 
+const pageSize int = 10000
+
 var _ Service = (*WithdrawExtraInfoService)(nil)
 
 type WithdrawExtraInfoService struct {
@@ -28,20 +30,19 @@ func NewWithdrawExtraInfoService(extraInfoUsecase *biz.WithdrawExtraInfoUsecase,
 
 func (s WithdrawExtraInfoService) Start(ctx context.Context, _ string) error {
 	s.logger.Info(ctx, "withdraw extra info service started")
-	queryInfos, err := s.extraInfoUsecase.FindAllQueryInfos(ctx)
-	if err != nil {
-		return err
-	}
-	var block *ckbTypes.Block
-	for _, info := range queryInfos {
-		block, err = s.client.Rpc.GetBlockByNumber(ctx, info.BlockNumber)
+	page := 0
+	for {
+		queryInfos, err := s.extraInfoUsecase.FindQueryInfos(ctx, page, pageSize)
 		if err != nil {
 			return err
 		}
-		for _, tx := range block.Transactions {
-			if err = s.parseExtraInfo(ctx, tx, info); err != nil {
-				return err
-			}
+		if len(queryInfos) == 0 {
+			break
+		}
+		page += 1
+
+		if err = s.parseExtraInfos(ctx, queryInfos); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -51,6 +52,22 @@ func (s WithdrawExtraInfoService) Stop(ctx context.Context) error {
 	s.logger.Info(ctx, "withdraw extra info service stopped")
 
 	return nil
+}
+
+func (s WithdrawExtraInfoService) parseExtraInfos(ctx context.Context, infos []biz.WithdrawQueryInfo) (err error) {
+	var block *ckbTypes.Block
+	for _, info := range infos {
+		block, err = s.client.Rpc.GetBlockByNumber(ctx, info.BlockNumber)
+		if err != nil {
+			return
+		}
+		for _, tx := range block.Transactions {
+			if err = s.parseExtraInfo(ctx, tx, info); err != nil {
+				return
+			}
+		}
+	}
+	return
 }
 
 func (s WithdrawExtraInfoService) parseExtraInfo(ctx context.Context, tx *ckbTypes.Transaction, info biz.WithdrawQueryInfo) error {
@@ -64,22 +81,23 @@ func (s WithdrawExtraInfoService) parseExtraInfo(ctx context.Context, tx *ckbTyp
 			if err != nil {
 				return err
 			}
-			if lockHash.String()[2:] == info.LockHash {
-				hashType, err := output.Lock.HashType.Serialize()
-				if err != nil {
-					return err
-				}
-				lock := biz.Script{
-					CodeHash: hex.EncodeToString(output.Lock.CodeHash[:]),
-					HashType: hex.EncodeToString(hashType),
-					Args:     hex.EncodeToString(output.Lock.Args),
-				}
-				if err = s.extraInfoUsecase.FindOrCreateScript(ctx, &lock); err != nil {
-					return err
-				}
-				if err = s.extraInfoUsecase.CreateExtraInfo(ctx, info.OutPoint, tx.Hash.String()[2:], lock.ID); err != nil {
-					return err
-				}
+			if lockHash.String()[2:] != info.LockHash {
+				continue
+			}
+			hashType, err := output.Lock.HashType.Serialize()
+			if err != nil {
+				return err
+			}
+			lock := biz.Script{
+				CodeHash: hex.EncodeToString(output.Lock.CodeHash[:]),
+				HashType: hex.EncodeToString(hashType),
+				Args:     hex.EncodeToString(output.Lock.Args),
+			}
+			if err = s.extraInfoUsecase.FindOrCreateScript(ctx, &lock); err != nil {
+				return err
+			}
+			if err = s.extraInfoUsecase.CreateExtraInfo(ctx, info.OutPoint, tx.Hash.String()[2:], lock.ID); err != nil {
+				return err
 			}
 		}
 	}

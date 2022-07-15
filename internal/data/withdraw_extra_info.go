@@ -8,8 +8,6 @@ import (
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
 )
 
-const pageSize = 10000
-
 var _ biz.WithdrawExtraInfoRepo = (*withdrawExtraInfoRepo)(nil)
 
 type withdrawExtraInfoRepo struct {
@@ -32,7 +30,7 @@ func (rp withdrawExtraInfoRepo) CreateExtraInfo(ctx context.Context, outPoint st
 	return nil
 }
 
-func (rp withdrawExtraInfoRepo) FindAllQueryInfos(ctx context.Context) ([]biz.WithdrawQueryInfo, error) {
+func (rp withdrawExtraInfoRepo) FindQueryInfos(ctx context.Context, page int, pageSize int) ([]biz.WithdrawQueryInfo, error) {
 	var (
 		withdrawals, temps []WithdrawCotaNftKvPair
 		queryInfos         []biz.WithdrawQueryInfo
