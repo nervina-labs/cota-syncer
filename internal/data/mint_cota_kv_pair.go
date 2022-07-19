@@ -30,11 +30,15 @@ func generateMintV1KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPai
 	entries := smt.MintCotaNFTV1EntriesFromSliceUnchecked(entry.InputType[1:])
 	defineCotaKeyVec := entries.DefineKeys()
 	defineCotaValueVec := entries.DefineNewValues()
-	senderLock, lockHashStr, lockHashCRC32, err := GenerateSenderLock(entry)
+	senderLock, err := GenerateSenderLock(entry)
 	if err != nil {
 		return
 	}
 	if err = rp.FindOrCreateScript(context.TODO(), &senderLock); err != nil {
+		return
+	}
+	lockHashStr, lockHashCRC32, err := GenerateLockHash(entry)
+	if err != nil {
 		return
 	}
 	for i := uint(0); i < defineCotaKeyVec.Len(); i++ {
@@ -87,11 +91,15 @@ func generateMintV0KvPairs(blockNumber uint64, entry biz.Entry, rp mintCotaKvPai
 	entries := smt.MintCotaNFTEntriesFromSliceUnchecked(entry.InputType[1:])
 	defineCotaKeyVec := entries.DefineKeys()
 	defineCotaValueVec := entries.DefineNewValues()
-	senderLock, lockHashStr, lockHashCRC32, err := GenerateSenderLock(entry)
+	senderLock, err := GenerateSenderLock(entry)
 	if err != nil {
 		return
 	}
 	if err = rp.FindOrCreateScript(context.TODO(), &senderLock); err != nil {
+		return
+	}
+	lockHashStr, lockHashCRC32, err := GenerateLockHash(entry)
+	if err != nil {
 		return
 	}
 	for i := uint(0); i < defineCotaKeyVec.Len(); i++ {

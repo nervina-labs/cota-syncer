@@ -61,11 +61,15 @@ func NewTransferCotaKvPairRepo(data *Data, logger *logger.Logger) biz.TransferCo
 func generateTransferV0KvPairs(blockNumber uint64, entry biz.Entry, rp transferCotaKvPairRepo) (claimedCotas []biz.ClaimedCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
 	entries := smt.TransferCotaNFTEntriesFromSliceUnchecked(entry.InputType[1:])
 	claimedCotaKeyVec := entries.ClaimKeys()
-	senderLock, lockHashStr, lockHashCRC32, err := GenerateSenderLock(entry)
+	senderLock, err := GenerateSenderLock(entry)
 	if err != nil {
 		return
 	}
 	if err = rp.FindOrCreateScript(context.TODO(), &senderLock); err != nil {
+		return
+	}
+	lockHashStr, lockHashCRC32, err := GenerateLockHash(entry)
+	if err != nil {
 		return
 	}
 	for i := uint(0); i < claimedCotaKeyVec.Len(); i++ {
@@ -132,11 +136,15 @@ func generateTransferV1ToV2KvPairs(blockNumber uint64, entry biz.Entry, rp trans
 		withdrawKeyVec = entries.WithdrawalKeys()
 		withdrawValueVec = entries.WithdrawalValues()
 	}
-	senderLock, lockHashStr, lockHashCRC32, err := GenerateSenderLock(entry)
+	senderLock, err := GenerateSenderLock(entry)
 	if err != nil {
 		return
 	}
 	if err = rp.FindOrCreateScript(context.TODO(), &senderLock); err != nil {
+		return
+	}
+	lockHashStr, lockHashCRC32, err := GenerateLockHash(entry)
+	if err != nil {
 		return
 	}
 	for i := uint(0); i < claimedCotaKeyVec.Len(); i++ {
@@ -187,11 +195,15 @@ func generateTransferV1ToV2KvPairs(blockNumber uint64, entry biz.Entry, rp trans
 func generateTransferUpdateV0KvPairs(blockNumber uint64, entry biz.Entry, rp transferCotaKvPairRepo) (claimedCotas []biz.ClaimedCotaNftKvPair, withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
 	entries := smt.TransferUpdateCotaNFTEntriesFromSliceUnchecked(entry.InputType[1:])
 	claimedCotaKeyVec := entries.ClaimKeys()
-	senderLock, lockHashStr, lockHashCRC32, err := GenerateSenderLock(entry)
+	senderLock, err := GenerateSenderLock(entry)
 	if err != nil {
 		return
 	}
 	if err = rp.FindOrCreateScript(context.TODO(), &senderLock); err != nil {
+		return
+	}
+	lockHashStr, lockHashCRC32, err := GenerateLockHash(entry)
+	if err != nil {
 		return
 	}
 	for i := uint(0); i < claimedCotaKeyVec.Len(); i++ {
@@ -259,11 +271,15 @@ func generateTransferUpdateV1ToV2KvPairs(blockNumber uint64, entry biz.Entry, rp
 		withdrawKeyVec = entries.WithdrawalKeys()
 		withdrawValueVec = entries.WithdrawalValues()
 	}
-	senderLock, lockHashStr, lockHashCRC32, err := GenerateSenderLock(entry)
+	senderLock, err := GenerateSenderLock(entry)
 	if err != nil {
 		return
 	}
 	if err = rp.FindOrCreateScript(context.TODO(), &senderLock); err != nil {
+		return
+	}
+	lockHashStr, lockHashCRC32, err := GenerateLockHash(entry)
+	if err != nil {
 		return
 	}
 	for i := uint(0); i < claimedCotaKeyVec.Len(); i++ {

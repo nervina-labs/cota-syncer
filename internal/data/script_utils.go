@@ -8,7 +8,7 @@ import (
 	"github.com/nervina-labs/cota-nft-entries-syncer/internal/data/blockchain"
 )
 
-func GenerateSenderLock(entry biz.Entry) (lockScript biz.Script, lockHashStr string, lockHashCRC32 uint32, err error) {
+func GenerateSenderLock(entry biz.Entry) (lockScript biz.Script, err error) {
 	hashType, err := entry.LockScript.HashType.Serialize()
 	if err != nil {
 		return
@@ -18,6 +18,10 @@ func GenerateSenderLock(entry biz.Entry) (lockScript biz.Script, lockHashStr str
 		HashType: hex.EncodeToString(hashType),
 		Args:     hex.EncodeToString(entry.LockScript.Args),
 	}
+	return
+}
+
+func GenerateLockHash(entry biz.Entry) (lockHashStr string, lockHashCRC32 uint32, err error) {
 	lockHash, err := entry.LockScript.Hash()
 	if err != nil {
 		return

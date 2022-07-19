@@ -107,11 +107,15 @@ func generateV0WithdrawKvPair(blockNumber uint64, entry biz.Entry, rp withdrawCo
 	entries := smt.WithdrawalCotaNFTEntriesFromSliceUnchecked(entry.InputType[1:])
 	withdrawKeyVec := entries.WithdrawalKeys()
 	withdrawValueVec := entries.WithdrawalValues()
-	senderLock, lockHashStr, lockHashCRC32, err := GenerateSenderLock(entry)
+	senderLock, err := GenerateSenderLock(entry)
 	if err != nil {
 		return
 	}
 	if err = rp.FindOrCreateScript(context.TODO(), &senderLock); err != nil {
+		return
+	}
+	lockHashStr, lockHashCRC32, err := GenerateLockHash(entry)
+	if err != nil {
 		return
 	}
 	for i := uint(0); i < withdrawKeyVec.Len(); i++ {
@@ -148,11 +152,15 @@ func generateV1WithdrawKvPair(blockNumber uint64, entry biz.Entry, rp withdrawCo
 	entries := smt.WithdrawalCotaNFTV1EntriesFromSliceUnchecked(entry.InputType[1:])
 	withdrawKeyVec := entries.WithdrawalKeys()
 	withdrawValueVec := entries.WithdrawalValues()
-	senderLock, lockHashStr, lockHashCRC32, err := GenerateSenderLock(entry)
+	senderLock, err := GenerateSenderLock(entry)
 	if err != nil {
 		return
 	}
 	if err = rp.FindOrCreateScript(context.TODO(), &senderLock); err != nil {
+		return
+	}
+	lockHashStr, lockHashCRC32, err := GenerateLockHash(entry)
+	if err != nil {
 		return
 	}
 	for i := uint(0); i < withdrawKeyVec.Len(); i++ {
