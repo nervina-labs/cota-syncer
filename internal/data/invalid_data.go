@@ -2,8 +2,8 @@ package data
 
 import (
 	"context"
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
+	"github.com/nervina-labs/cota-syncer/internal/biz"
+	"github.com/nervina-labs/cota-syncer/internal/logger"
 )
 
 var _ biz.InvalidDataRepo = (*invalidDataRepo)(nil)

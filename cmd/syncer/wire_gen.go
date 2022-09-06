@@ -7,12 +7,12 @@
 package main
 
 import (
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/app"
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/config"
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/data"
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/service"
+	"github.com/nervina-labs/cota-syncer/internal/app"
+	"github.com/nervina-labs/cota-syncer/internal/biz"
+	"github.com/nervina-labs/cota-syncer/internal/config"
+	"github.com/nervina-labs/cota-syncer/internal/data"
+	"github.com/nervina-labs/cota-syncer/internal/logger"
+	"github.com/nervina-labs/cota-syncer/internal/service"
 )
 
 // Injectors from wire.go:

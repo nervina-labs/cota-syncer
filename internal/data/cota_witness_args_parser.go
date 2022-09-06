@@ -3,8 +3,8 @@ package data
 import (
 	"context"
 
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/data/blockchain"
+	"github.com/nervina-labs/cota-syncer/internal/biz"
+	"github.com/nervina-labs/cota-syncer/internal/data/blockchain"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 )
 

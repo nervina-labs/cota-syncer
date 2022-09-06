@@ -4,8 +4,8 @@ import (
 	"encoding/hex"
 	"hash/crc32"
 
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/data/blockchain"
+	"github.com/nervina-labs/cota-syncer/internal/biz"
+	"github.com/nervina-labs/cota-syncer/internal/data/blockchain"
 )
 
 func GenerateSenderLock(entry biz.Entry) (lockScript biz.Script, err error) {

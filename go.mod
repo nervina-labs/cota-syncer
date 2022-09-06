@@ -1,4 +1,4 @@
-module github.com/nervina-labs/cota-nft-entries-syncer
+module github.com/nervina-labs/cota-syncer
 
 go 1.18
 
