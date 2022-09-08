@@ -2,8 +2,8 @@ package data
 
 import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
+	"github.com/nervina-labs/cota-syncer/internal/biz"
+	"github.com/nervina-labs/cota-syncer/internal/logger"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 	"reflect"
 	"testing"

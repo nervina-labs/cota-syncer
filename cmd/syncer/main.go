@@ -5,17 +5,17 @@ import (
 	"log"
 	"os"
 
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/app"
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/config"
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/data"
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/service"
+	"github.com/nervina-labs/cota-syncer/internal/app"
+	"github.com/nervina-labs/cota-syncer/internal/config"
+	"github.com/nervina-labs/cota-syncer/internal/data"
+	"github.com/nervina-labs/cota-syncer/internal/logger"
+	"github.com/nervina-labs/cota-syncer/internal/service"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 func newApp(logger *logger.Logger, blockSyncSvc *service.BlockSyncService, checkInfoCleanerSvc *service.CheckInfoCleanerService, metadataSyncSvc *service.MetadataSyncService, invalidDataCleanerSvc *service.InvalidDataCleaner, withdrawExtraInfoService *service.WithdrawExtraInfoService, m *data.DBMigration) *app.App {
 	return app.NewApp(
-		app.Name("cota-nft-entries-syncer"),
+		app.Name("cota-syncer"),
 		app.Version("0.0.1"),
 		app.Logger(logger),
 		app.Services(blockSyncSvc, checkInfoCleanerSvc, metadataSyncSvc, invalidDataCleanerSvc, withdrawExtraInfoService), app.Migration(m))

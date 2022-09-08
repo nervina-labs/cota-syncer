@@ -5,9 +5,9 @@ import (
 	"encoding/hex"
 	"time"
 
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/data/blockchain"
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
+	"github.com/nervina-labs/cota-syncer/internal/biz"
+	"github.com/nervina-labs/cota-syncer/internal/data/blockchain"
+	"github.com/nervina-labs/cota-syncer/internal/logger"
 	"github.com/nervina-labs/cota-smt-go/smt"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 )

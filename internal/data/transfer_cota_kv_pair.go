@@ -6,8 +6,8 @@ import (
 	"encoding/hex"
 	"hash/crc32"
 
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/biz"
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
+	"github.com/nervina-labs/cota-syncer/internal/biz"
+	"github.com/nervina-labs/cota-syncer/internal/logger"
 	"github.com/nervina-labs/cota-smt-go/smt"
 )
 

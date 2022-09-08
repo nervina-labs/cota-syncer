@@ -2,7 +2,7 @@ package biz
 
 import (
 	"context"
-	"github.com/nervina-labs/cota-nft-entries-syncer/internal/logger"
+	"github.com/nervina-labs/cota-syncer/internal/logger"
 )
 
 type MintCotaKvPair struct{}
