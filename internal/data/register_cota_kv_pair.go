@@ -2,13 +2,14 @@ package data
 
 import (
 	"context"
+	"encoding/binary"
 	"encoding/hex"
 	"time"
 
+	"github.com/nervina-labs/cota-smt-go/smt"
 	"github.com/nervina-labs/cota-syncer/internal/biz"
 	"github.com/nervina-labs/cota-syncer/internal/data/blockchain"
 	"github.com/nervina-labs/cota-syncer/internal/logger"
-	"github.com/nervina-labs/cota-smt-go/smt"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 )
 
@@ -18,6 +19,7 @@ type RegisterCotaKvPair struct {
 	ID          uint `gorm:"primaryKey"`
 	BlockNumber uint64
 	LockHash    string
+	CotaCellID  uint64
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
@@ -57,9 +59,11 @@ func (rp registerCotaKvPairRepo) ParseRegistryEntries(_ context.Context, blockNu
 	registryEntries := smt.CotaNFTRegistryEntriesFromSliceUnchecked(registerWitnessType)
 	registryVec := registryEntries.Registries()
 	for i := uint(0); i < registryVec.Len(); i++ {
+		registryVec.Get(i).State().RawData()
 		registerCotas = append(registerCotas, biz.RegisterCotaKvPair{
 			BlockNumber: blockNumber,
 			LockHash:    hex.EncodeToString(registryVec.Get(i).LockHash().RawData()),
+			CotaCellID:  binary.BigEndian.Uint64(registryVec.Get(i).State().AsSlice()[0:8]),
 		})
 	}
 	return
