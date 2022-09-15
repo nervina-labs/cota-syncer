@@ -2,6 +2,7 @@ package biz
 
 import (
 	"context"
+
 	"github.com/nervina-labs/cota-syncer/internal/logger"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 )
@@ -9,6 +10,7 @@ import (
 type RegisterCotaKvPair struct {
 	BlockNumber uint64
 	LockHash    string
+	CotaCellID  uint64
 }
 
 type RegisterCotaKvPairRepo interface {
