@@ -46,6 +46,25 @@ type IssuerInfoJson struct {
 	Localization Localization `json:"localization" mapstructure:",omitempty"`
 }
 
+type SubKeyInfoJson struct {
+	Version      string `json:"version" mapstructure:",omitempty"`
+	PubKey       string `json:"pub_key" mapstructure:",omitempty"`
+	CredentialId string `json:"credential_id" mapstructure:",omitempty"`
+}
+
+type JoyIDInfoJson struct {
+	Version      string           `json:"version" mapstructure:",omitempty"`
+	PubKey       string           `json:"pub_key" mapstructure:",omitempty"`
+	CredentialId string           `json:"credential_id" mapstructure:",omitempty"`
+	Alg          string           `json:"alg" mapstructure:",omitempty"`
+	CotaCellId   string           `json:"cota_cell_id" mapstructure:",omitempty"`
+	Name         string           `json:"name" mapstructure:",omitempty"`
+	Avatar       string           `json:"avatar" mapstructure:",omitempty"`
+	Description  string           `json:"description" mapstructure:",omitempty"`
+	Extension    string           `json:"extension" mapstructure:",omitempty"`
+	SubKeys      []SubKeyInfoJson `json:"sub_keys" mapstructure:",omitempty"`
+}
+
 type MetaType int
 
 func ParseMetadata(meta []byte) (CTMeta, error) {
@@ -54,7 +73,7 @@ func ParseMetadata(meta []byte) (CTMeta, error) {
 		return ctMeta, err
 	}
 	metaType := ctMeta.Metadata.Type
-	if metaType != "issuer" && metaType != "cota" {
+	if metaType != "issuer" && metaType != "cota" && metaType != "joy_id" {
 		return ctMeta, errors.New("invalid meta type")
 	}
 	return ctMeta, nil
