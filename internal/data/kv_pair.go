@@ -589,6 +589,98 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 				return err
 			}
 		}
+		if kvPair.HasJoyIDInfos() {
+			// save joyID info versions
+			joyIDInfoVersions := make([]JoyIDInfoVersion, len(kvPair.JoyIDInfos))
+			for i, info := range kvPair.JoyIDInfos {
+				var oldInfo JoyIDInfo
+				err := tx.Model(JoyIDInfo{}).WithContext(ctx).Where("lock_hash = ?", info.LockHash).First(&oldInfo).Error
+				if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+					return err
+				}
+				if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+					joyIDInfoVersions[i] = JoyIDInfoVersion{
+						BlockNumber:  0,
+						Version:      info.Version,
+						Name:         info.Name,
+						Description:  info.Description,
+						Avatar:       info.Avatar,
+						PubKey:       info.PubKey,
+						CredentialId: info.CredentialId,
+						CotaCellId:   info.CotaCellId,
+						LockHash:     info.LockHash,
+						Extension:    info.Extension,
+						ActionType:   0,
+						TxIndex:      info.TxIndex,
+					}
+				} else {
+					joyIDInfoVersions[i] = JoyIDInfoVersion{
+						OldBlockNumber: oldInfo.BlockNumber,
+						BlockNumber:    info.BlockNumber,
+						LockHash:       info.LockHash,
+						OldVersion:     oldInfo.Version,
+						Version:        info.Version,
+						OldName:        oldInfo.Name,
+						Name:           info.Name,
+						OldAvatar:      oldInfo.Avatar,
+						Avatar:         info.Avatar,
+						OldDescription: oldInfo.Description,
+						Description:    info.Description,
+						OldExtension:   oldInfo.Extension,
+						Extension:      info.Extension,
+						PubKey:         info.PubKey,
+						CredentialId:   info.CredentialId,
+						Alg:            info.Alg,
+						CotaCellId:     info.CotaCellId,
+						ActionType:     1,
+						TxIndex:        info.TxIndex,
+					}
+				}
+			}
+
+			if err := tx.Model(JoyIDInfoVersion{}).WithContext(ctx).Create(joyIDInfoVersions).Error; err != nil {
+				return err
+			}
+			// insert joyID info
+			var subKeys []SubKeyInfo
+			joyIDInfos := make([]JoyIDInfo, len(kvPair.JoyIDInfos))
+			for i, joyID := range kvPair.JoyIDInfos {
+				joyIDInfos[i] = JoyIDInfo{
+					BlockNumber:  joyID.BlockNumber,
+					LockHash:     joyID.LockHash,
+					Version:      joyID.Version,
+					Name:         joyID.Name,
+					Description:  joyID.Description,
+					Avatar:       joyID.Avatar,
+					PubKey:       joyID.PubKey,
+					CredentialId: joyID.CredentialId,
+					Alg:          joyID.Alg,
+					CotaCellId:   joyID.CotaCellId,
+					Extension:    joyID.Extension,
+					TxIndex:      joyID.TxIndex,
+				}
+				for _, subKey := range joyID.SubKeys {
+					subKeys = append(subKeys, SubKeyInfo{
+						LockHash:     joyID.LockHash,
+						PubKey:       subKey.PubKey,
+						CredentialId: subKey.CredentialId,
+						Alg:          subKey.Alg,
+					})
+				}
+			}
+			if err := tx.Model(JoyIDInfo{}).WithContext(ctx).Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "lock_hash"}},
+				UpdateAll: true,
+			}).Create(joyIDInfos).Error; err != nil {
+				return err
+			}
+			if err := tx.Model(SubKeyInfo{}).WithContext(ctx).Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "pub_key"}},
+				UpdateAll: true,
+			}).Create(subKeys).Error; err != nil {
+				return err
+			}
+		}
 		// create check info
 		if err := tx.Debug().Model(CheckInfo{}).WithContext(ctx).Create(&CheckInfo{
 			BlockNumber: checkInfo.BlockNumber,
@@ -603,11 +695,11 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 
 func (rp kvPairRepo) RestoreMetadataKvPairs(ctx context.Context, blockNumber uint64) error {
 	return rp.data.db.Transaction(func(tx *gorm.DB) error {
-		// 删掉所有新建的 issuer info
+		// delete all issuer info by the block number
 		if err := tx.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(IssuerInfo{}).Error; err != nil {
 			return err
 		}
-		// 把需要回滚的 block 更新过的 issuerInfo 恢复到更新前的状态
+		// update issuer info to the data before the last update
 		var issuerInfoVersions []IssuerInfoVersion
 		if err := tx.Model(IssuerInfoVersion{}).WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Group("lock_hash").Order("tx_index").Find(&issuerInfoVersions).Error; err != nil {
 			return err
@@ -665,6 +757,39 @@ func (rp kvPairRepo) RestoreMetadataKvPairs(ctx context.Context, blockNumber uin
 				Columns:   []clause.Column{{Name: "cota_id"}},
 				UpdateAll: true,
 			}).Create(updatedClassInfos).Error; err != nil {
+				return err
+			}
+		}
+		// delete all joyID info by the block number
+		if err := tx.Debug().WithContext(ctx).Where("block_number = ?", blockNumber).Delete(JoyIDInfo{}).Error; err != nil {
+			return err
+		}
+		var joyIDInfoVersions []JoyIDInfoVersion
+		if err := tx.Model(JoyIDInfoVersion{}).WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Group("lock_hash").Order("tx_index").Find(&joyIDInfoVersions).Error; err != nil {
+			return err
+		}
+		var updatedJoyIDInfos []JoyIDInfo
+		for _, version := range joyIDInfoVersions {
+			updatedJoyIDInfos = append(updatedJoyIDInfos, JoyIDInfo{
+				BlockNumber:  version.OldBlockNumber,
+				LockHash:     version.LockHash,
+				Version:      version.OldVersion,
+				Name:         version.OldName,
+				Avatar:       version.OldAvatar,
+				Description:  version.OldDescription,
+				Extension:    version.OldExtension,
+				PubKey:       version.PubKey,
+				CredentialId: version.CredentialId,
+				Alg:          version.Alg,
+				CotaCellId:   version.CotaCellId,
+				UpdatedAt:    time.Now().UTC(),
+			})
+		}
+		if len(updatedJoyIDInfos) > 0 {
+			if err := tx.Debug().Model(JoyIDInfo{}).WithContext(ctx).Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "lock_hash"}},
+				UpdateAll: true,
+			}).Create(updatedJoyIDInfos).Error; err != nil {
 				return err
 			}
 		}
