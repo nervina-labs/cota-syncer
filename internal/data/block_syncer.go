@@ -19,13 +19,14 @@ type BlockSyncer struct {
 	transferCotaUsecase   *biz.TransferCotaKvPairUsecase
 	issuerInfoUsecase     *biz.IssuerInfoUsecase
 	classInfoUsecase      *biz.ClassInfoUsecase
+	joyIDInfoUsecase      *biz.JoyIDInfoUsecase
 }
 
 func NewBlockSyncer(claimedCotaUsecase *biz.ClaimedCotaNftKvPairUsecase, defineCotaUsecase *biz.DefineCotaNftKvPairUsecase,
 	holdCotaUsecase *biz.HoldCotaNftKvPairUsecase, registerCotaUsecase *biz.RegisterCotaKvPairUsecase,
 	withdrawCotaUsecase *biz.WithdrawCotaNftKvPairUsecase, cotaWitnessArgsParser CotaWitnessArgsParser,
 	kvPairUsecase *biz.SyncKvPairUsecase, mintCotaUsecase *biz.MintCotaKvPairUsecase, transferCotaUsecase *biz.TransferCotaKvPairUsecase,
-	issuerInfoUsecase *biz.IssuerInfoUsecase, classInfoUsecase *biz.ClassInfoUsecase) BlockSyncer {
+	issuerInfoUsecase *biz.IssuerInfoUsecase, classInfoUsecase *biz.ClassInfoUsecase, joyIDInfoUsecase *biz.JoyIDInfoUsecase) BlockSyncer {
 	return BlockSyncer{
 		claimedCotaUsecase:    claimedCotaUsecase,
 		defineCotaUsecase:     defineCotaUsecase,
@@ -38,6 +39,7 @@ func NewBlockSyncer(claimedCotaUsecase *biz.ClaimedCotaNftKvPairUsecase, defineC
 		transferCotaUsecase:   transferCotaUsecase,
 		issuerInfoUsecase:     issuerInfoUsecase,
 		classInfoUsecase:      classInfoUsecase,
+		joyIDInfoUsecase:      joyIDInfoUsecase,
 	}
 }
 
