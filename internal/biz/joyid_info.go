@@ -7,7 +7,8 @@ import (
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 )
 
-type PubKeyInfo struct {
+type SubKeyInfo struct {
+	LockHash     string
 	PubKey       string
 	CredentialId string
 	Alg          string
@@ -26,7 +27,7 @@ type JoyIDInfo struct {
 	Description  string
 	Extension    string
 	TxIndex      uint32
-	SubKeys      []PubKeyInfo
+	SubKeys      []SubKeyInfo
 }
 
 type JoyIDInfoRepo interface {
