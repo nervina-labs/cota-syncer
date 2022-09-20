@@ -8,6 +8,7 @@ import (
 )
 
 type SubKeyInfo struct {
+	BlockNumber  uint64
 	LockHash     string
 	PubKey       string
 	CredentialId string
@@ -21,7 +22,7 @@ type JoyIDInfo struct {
 	PubKey       string
 	CredentialId string
 	Alg          string
-	CotaCellId   string
+	CotaCellId   uint64
 	Name         string
 	Avatar       string
 	Description  string

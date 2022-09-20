@@ -21,12 +21,11 @@ type JoyIDInfo struct {
 	PubKey       string
 	CredentialId string
 	Alg          string
-	CotaCellId   string
+	CotaCellId   uint64
 	Name         string
 	Avatar       string
 	Description  string
 	Extension    string
-	TxIndex      uint32
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
@@ -41,7 +40,7 @@ type JoyIDInfoVersion struct {
 	PubKey         string
 	CredentialId   string
 	Alg            string
-	CotaCellId     string
+	CotaCellId     uint64
 	OldName        string
 	Name           string
 	OldAvatar      string
@@ -59,6 +58,7 @@ type JoyIDInfoVersion struct {
 type SubKeyInfo struct {
 	ID           uint `gorm:"primaryKey"`
 	LockHash     string
+	BlockNumber  uint64
 	PubKey       string
 	CredentialId string
 	Alg          string
@@ -89,6 +89,7 @@ func (repo joyIDInfoRepo) CreateJoyIDInfo(ctx context.Context, joyIDInfo *biz.Jo
 	var subKeys []biz.SubKeyInfo
 	for _, v := range joyIDInfo.SubKeys {
 		subKeys = append(subKeys, biz.SubKeyInfo{
+			BlockNumber:  joyIDInfo.BlockNumber,
 			LockHash:     joyIDInfo.LockHash,
 			PubKey:       v.PubKey,
 			CredentialId: v.CredentialId,
@@ -132,7 +133,7 @@ func (repo joyIDInfoRepo) ParseJoyIDInfo(blockNumber uint64, txIndex uint32, loc
 		PubKey:       joyIDInfo.PubKey,
 		CredentialId: joyIDInfo.CredentialId,
 		Alg:          joyIDInfo.Alg,
-		CotaCellId:   joyIDInfo.Alg,
+		CotaCellId:   joyIDInfo.CotaCellId,
 		Extension:    joyIDInfo.Extension,
 		SubKeys:      joyID.SubKeys,
 		TxIndex:      txIndex,

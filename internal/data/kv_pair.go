@@ -657,11 +657,11 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 					Alg:          joyID.Alg,
 					CotaCellId:   joyID.CotaCellId,
 					Extension:    joyID.Extension,
-					TxIndex:      joyID.TxIndex,
 				}
 				for _, subKey := range joyID.SubKeys {
 					subKeys = append(subKeys, SubKeyInfo{
 						LockHash:     joyID.LockHash,
+						BlockNumber:  joyID.BlockNumber,
 						PubKey:       subKey.PubKey,
 						CredentialId: subKey.CredentialId,
 						Alg:          subKey.Alg,
