@@ -27,6 +27,7 @@ type JoyIDInfo struct {
 	Avatar       string
 	Description  string
 	Extension    string
+	Nickname     string
 	TxIndex      uint32
 	SubKeys      []SubKeyInfo
 }
@@ -34,7 +35,7 @@ type JoyIDInfo struct {
 type JoyIDInfoRepo interface {
 	CreateJoyIDInfo(ctx context.Context, joyID *JoyIDInfo) error
 	DeleteJoyIDInfo(ctx context.Context, blockNumber uint64) error
-	ParseJoyIDInfo(blockNumber uint64, txIndex uint32, lockScript *ckbTypes.Script, joyIDMeta map[string]any) (JoyIDInfo, error)
+	ParseJoyIDInfo(ctx context.Context, blockNumber uint64, txIndex uint32, lockScript *ckbTypes.Script, joyIDMeta map[string]any) (JoyIDInfo, error)
 }
 
 type JoyIDInfoUsecase struct {
@@ -57,6 +58,6 @@ func (uc *JoyIDInfoUsecase) DeleteByBlockNumber(ctx context.Context, blockNumber
 	return uc.repo.DeleteJoyIDInfo(ctx, blockNumber)
 }
 
-func (uc JoyIDInfoUsecase) ParseMetadata(blockNumber uint64, txIndex uint32, lockScript *ckbTypes.Script, joyIDMeta map[string]any) (JoyIDInfo, error) {
-	return uc.repo.ParseJoyIDInfo(blockNumber, txIndex, lockScript, joyIDMeta)
+func (uc JoyIDInfoUsecase) ParseMetadata(ctx context.Context, blockNumber uint64, txIndex uint32, lockScript *ckbTypes.Script, joyIDMeta map[string]any) (JoyIDInfo, error) {
+	return uc.repo.ParseJoyIDInfo(ctx, blockNumber, txIndex, lockScript, joyIDMeta)
 }

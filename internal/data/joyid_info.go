@@ -8,6 +8,7 @@ import (
 	"github.com/nervina-labs/cota-syncer/internal/logger"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 	"gorm.io/gorm/clause"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -29,6 +30,7 @@ type JoyIDInfo struct {
 	Avatar       string
 	Description  string
 	Extension    string
+	Nickname     string
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
@@ -52,6 +54,8 @@ type JoyIDInfoVersion struct {
 	Description    string
 	OldExtension   string
 	Extension      string
+	OldNickname    string
+	Nickname       string
 	ActionType     uint8 //	0-create 1-update 2-delete
 	TxIndex        uint32
 	CreatedAt      time.Time
@@ -94,9 +98,9 @@ func (repo joyIDInfoRepo) CreateJoyIDInfo(ctx context.Context, joyIDInfo *biz.Jo
 		subKeys = append(subKeys, biz.SubKeyInfo{
 			BlockNumber:  joyIDInfo.BlockNumber,
 			LockHash:     joyIDInfo.LockHash,
-			PubKey:       v.PubKey,
-			CredentialId: v.CredentialId,
-			Alg:          v.Alg,
+			PubKey:       remove0x(v.PubKey),
+			CredentialId: remove0x(v.CredentialId),
+			Alg:          remove0x(v.Alg),
 		})
 	}
 	if err := repo.data.db.WithContext(ctx).Clauses(clause.OnConflict{
@@ -115,7 +119,7 @@ func (repo joyIDInfoRepo) DeleteJoyIDInfo(ctx context.Context, blockNumber uint6
 	return nil
 }
 
-func (repo joyIDInfoRepo) ParseJoyIDInfo(blockNumber uint64, txIndex uint32, lockScript *ckbTypes.Script, joyIDMeta map[string]any) (joyID biz.JoyIDInfo, err error) {
+func (repo joyIDInfoRepo) ParseJoyIDInfo(ctx context.Context, blockNumber uint64, txIndex uint32, lockScript *ckbTypes.Script, joyIDMeta map[string]any) (joyID biz.JoyIDInfo, err error) {
 	lockHash, err := lockScript.Hash()
 	if err != nil {
 		return
@@ -140,6 +144,10 @@ func (repo joyIDInfoRepo) ParseJoyIDInfo(blockNumber uint64, txIndex uint32, loc
 			Alg:          remove0x(v.Alg),
 		}
 	}
+	nickname, err := repo.parseNickname(ctx, joyIDInfo.Name, lockHashStr)
+	if err != nil {
+		return
+	}
 	joyID = biz.JoyIDInfo{
 		BlockNumber:  blockNumber,
 		LockHash:     lockHashStr,
@@ -152,8 +160,46 @@ func (repo joyIDInfoRepo) ParseJoyIDInfo(blockNumber uint64, txIndex uint32, loc
 		Alg:          remove0x(joyIDInfo.Alg),
 		CotaCellId:   remove0x(joyIDInfo.CotaCellId),
 		Extension:    joyIDInfo.Extension,
+		Nickname:     nickname,
 		SubKeys:      subKeys,
 		TxIndex:      txIndex,
+	}
+	return
+}
+
+func (repo joyIDInfoRepo) parseNickname(ctx context.Context, name string, lockHash string) (nickname string, err error) {
+	var registry RegisterCotaKvPair
+	if err = repo.data.db.WithContext(ctx).Select("cota_cell_id").Where("lock_hash = ?", lockHash).First(&registry).Error; err != nil {
+		return
+	}
+	nickname = name + "#" + strconv.FormatUint(registry.CotaCellID%10000, 10)
+	repo.logger.Infof(ctx, "First nickname: %v", nickname)
+
+	var joyIDInfos []JoyIDInfo
+	if err = repo.data.db.WithContext(ctx).Where("nickname = ?", nickname).Find(&joyIDInfos).Error; err != nil {
+		return
+	}
+	if len(joyIDInfos) == 0 {
+		return
+	} else {
+		nickname = name + "#" + strconv.FormatUint(registry.CotaCellID%1000000, 10)
+		repo.logger.Infof(ctx, "Second nickname: %v", nickname)
+		if err = repo.data.db.WithContext(ctx).Where("nickname = ?", nickname).Find(&joyIDInfos).Error; err != nil {
+			return
+		}
+		if len(joyIDInfos) == 0 {
+			return
+		} else {
+			nickname = name + "#" + strconv.FormatUint(registry.CotaCellID%100000000, 10)
+			if err = repo.data.db.WithContext(ctx).Where("nickname = ?", nickname).Find(&joyIDInfos).Error; err != nil {
+				return
+			}
+			if len(joyIDInfos) == 0 {
+				return
+			} else {
+				nickname = name + "#" + strconv.FormatUint(registry.CotaCellID%10000000000, 10)
+			}
+		}
 	}
 	return
 }
