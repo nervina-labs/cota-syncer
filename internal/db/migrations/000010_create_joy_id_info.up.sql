@@ -57,5 +57,5 @@ CREATE TABLE IF NOT EXISTS sub_key_infos (
     updated_at datetime(6) NOT NULL,
     PRIMARY KEY (id),
     KEY index_sub_key_infos_on_block_number (block_number),
-    CONSTRAINT uc_sub_key_infos_on_lock_hash UNIQUE (lock_hash)
+    CONSTRAINT uc_sub_key_infos_on_pub_key UNIQUE (pub_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
