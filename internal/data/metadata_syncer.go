@@ -73,7 +73,7 @@ func (bp MetadataSyncer) parseMetadata(ctx context.Context, blockNumber uint64, 
 				}
 				kvPair.ClassInfos = append(kvPair.ClassInfos, classInfo)
 			case "joy_id":
-				joyIDInfo, err := bp.joyIDInfoUsecase.ParseMetadata(blockNumber, entry.TxIndex, entry.LockScript, ctMeta.Metadata.Data)
+				joyIDInfo, err := bp.joyIDInfoUsecase.ParseMetadata(ctx, blockNumber, entry.TxIndex, entry.LockScript, ctMeta.Metadata.Data)
 				if err != nil {
 					return kvPair, err
 				}

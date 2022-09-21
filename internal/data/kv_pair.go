@@ -611,6 +611,7 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 						CotaCellId:   info.CotaCellId,
 						LockHash:     info.LockHash,
 						Extension:    info.Extension,
+						Nickname:     info.Nickname,
 						ActionType:   0,
 						TxIndex:      info.TxIndex,
 					}
@@ -629,6 +630,8 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 						Description:    info.Description,
 						OldExtension:   oldInfo.Extension,
 						Extension:      info.Extension,
+						OldNickname:    oldInfo.Nickname,
+						Nickname:       info.Nickname,
 						PubKey:         info.PubKey,
 						CredentialId:   info.CredentialId,
 						Alg:            info.Alg,
@@ -658,6 +661,7 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 					Alg:          joyID.Alg,
 					CotaCellId:   joyID.CotaCellId,
 					Extension:    joyID.Extension,
+					Nickname:     joyID.Nickname,
 				}
 				for _, subKey := range joyID.SubKeys {
 					subKeys = append(subKeys, SubKeyInfo{
