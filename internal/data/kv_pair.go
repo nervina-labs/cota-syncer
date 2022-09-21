@@ -607,6 +607,7 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 						Avatar:       info.Avatar,
 						PubKey:       info.PubKey,
 						CredentialId: info.CredentialId,
+						Alg:          info.Alg,
 						CotaCellId:   info.CotaCellId,
 						LockHash:     info.LockHash,
 						Extension:    info.Extension,
@@ -674,11 +675,13 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 			}).Create(joyIDInfos).Error; err != nil {
 				return err
 			}
-			if err := tx.Model(SubKeyInfo{}).WithContext(ctx).Clauses(clause.OnConflict{
-				Columns:   []clause.Column{{Name: "pub_key"}},
-				UpdateAll: true,
-			}).Create(subKeys).Error; err != nil {
-				return err
+			if len(subKeys) > 0 {
+				if err := tx.Model(SubKeyInfo{}).WithContext(ctx).Clauses(clause.OnConflict{
+					Columns:   []clause.Column{{Name: "pub_key"}},
+					UpdateAll: true,
+				}).Create(subKeys).Error; err != nil {
+					return err
+				}
 			}
 		}
 		// create check info

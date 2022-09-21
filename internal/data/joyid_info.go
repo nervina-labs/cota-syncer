@@ -2,16 +2,19 @@ package data
 
 import (
 	"context"
-	"time"
-
+	"errors"
 	"github.com/mitchellh/mapstructure"
 	"github.com/nervina-labs/cota-syncer/internal/biz"
 	"github.com/nervina-labs/cota-syncer/internal/logger"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 	"gorm.io/gorm/clause"
+	"strings"
+	"time"
 )
 
 var _ biz.JoyIDInfoRepo = (*joyIDInfoRepo)(nil)
+
+var ErrInvalidJoyIDInfo = errors.New("JoyID info is invalid")
 
 type JoyIDInfo struct {
 	ID           uint `gorm:"primaryKey"`
@@ -21,7 +24,7 @@ type JoyIDInfo struct {
 	PubKey       string
 	CredentialId string
 	Alg          string
-	CotaCellId   uint64
+	CotaCellId   string
 	Name         string
 	Avatar       string
 	Description  string
@@ -40,7 +43,7 @@ type JoyIDInfoVersion struct {
 	PubKey         string
 	CredentialId   string
 	Alg            string
-	CotaCellId     uint64
+	CotaCellId     string
 	OldName        string
 	Name           string
 	OldAvatar      string
@@ -123,6 +126,20 @@ func (repo joyIDInfoRepo) ParseJoyIDInfo(blockNumber uint64, txIndex uint32, loc
 	if err != nil {
 		return
 	}
+	if len(joyIDInfo.PubKey) > 130 || len(joyIDInfo.CotaCellId) > 18 || len(joyIDInfo.Alg) > 4 {
+		err = ErrInvalidJoyIDInfo
+	}
+	subKeys := make([]biz.SubKeyInfo, len(joyIDInfo.SubKeys))
+	for i, v := range joyIDInfo.SubKeys {
+		if len(v.PubKey) > 130 || len(v.Alg) > 4 {
+			err = ErrInvalidJoyIDInfo
+		}
+		subKeys[i] = biz.SubKeyInfo{
+			PubKey:       remove0x(v.PubKey),
+			CredentialId: remove0x(v.CredentialId),
+			Alg:          remove0x(v.Alg),
+		}
+	}
 	joyID = biz.JoyIDInfo{
 		BlockNumber:  blockNumber,
 		LockHash:     lockHashStr,
@@ -130,13 +147,20 @@ func (repo joyIDInfoRepo) ParseJoyIDInfo(blockNumber uint64, txIndex uint32, loc
 		Name:         joyIDInfo.Name,
 		Avatar:       joyIDInfo.Avatar,
 		Description:  joyIDInfo.Description,
-		PubKey:       joyIDInfo.PubKey,
-		CredentialId: joyIDInfo.CredentialId,
-		Alg:          joyIDInfo.Alg,
-		CotaCellId:   joyIDInfo.CotaCellId,
+		PubKey:       remove0x(joyIDInfo.PubKey),
+		CredentialId: remove0x(joyIDInfo.CredentialId),
+		Alg:          remove0x(joyIDInfo.Alg),
+		CotaCellId:   remove0x(joyIDInfo.CotaCellId),
 		Extension:    joyIDInfo.Extension,
-		SubKeys:      joyID.SubKeys,
+		SubKeys:      subKeys,
 		TxIndex:      txIndex,
 	}
 	return
+}
+
+func remove0x(value string) string {
+	if strings.HasPrefix(value, "0x") {
+		return value[2:]
+	}
+	return value
 }

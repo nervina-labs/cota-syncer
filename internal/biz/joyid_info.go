@@ -22,7 +22,7 @@ type JoyIDInfo struct {
 	PubKey       string
 	CredentialId string
 	Alg          string
-	CotaCellId   uint64
+	CotaCellId   string
 	Name         string
 	Avatar       string
 	Description  string
