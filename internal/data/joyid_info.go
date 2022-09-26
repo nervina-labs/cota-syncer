@@ -8,6 +8,7 @@ import (
 	"github.com/nervina-labs/cota-syncer/internal/logger"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 	"gorm.io/gorm/clause"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -172,8 +173,15 @@ func (repo joyIDInfoRepo) parseNickname(ctx context.Context, name string, lockHa
 	if err = repo.data.db.WithContext(ctx).Select("cota_cell_id").Where("lock_hash = ?", lockHash).First(&registry).Error; err != nil {
 		return
 	}
-	nickname = name + "#" + strconv.FormatUint(registry.CotaCellID%10000, 10)
-	repo.logger.Infof(ctx, "First nickname: %v", nickname)
+	match, err := regexp.MatchString(`^[A-Za-z0-9]{4,}$`, name)
+	if err != nil {
+		return
+	}
+	var realName = name
+	if !match {
+		realName = "noname"
+	}
+	nickname = realName + "#" + strconv.FormatUint(registry.CotaCellID%10000, 10)
 
 	var joyIDInfos []JoyIDInfo
 	if err = repo.data.db.WithContext(ctx).Where("nickname = ?", nickname).Find(&joyIDInfos).Error; err != nil {
@@ -182,22 +190,21 @@ func (repo joyIDInfoRepo) parseNickname(ctx context.Context, name string, lockHa
 	if len(joyIDInfos) == 0 {
 		return
 	} else {
-		nickname = name + "#" + strconv.FormatUint(registry.CotaCellID%1000000, 10)
-		repo.logger.Infof(ctx, "Second nickname: %v", nickname)
+		nickname = realName + "#" + strconv.FormatUint(registry.CotaCellID%1000000, 10)
 		if err = repo.data.db.WithContext(ctx).Where("nickname = ?", nickname).Find(&joyIDInfos).Error; err != nil {
 			return
 		}
 		if len(joyIDInfos) == 0 {
 			return
 		} else {
-			nickname = name + "#" + strconv.FormatUint(registry.CotaCellID%100000000, 10)
+			nickname = realName + "#" + strconv.FormatUint(registry.CotaCellID%100000000, 10)
 			if err = repo.data.db.WithContext(ctx).Where("nickname = ?", nickname).Find(&joyIDInfos).Error; err != nil {
 				return
 			}
 			if len(joyIDInfos) == 0 {
 				return
 			} else {
-				nickname = name + "#" + strconv.FormatUint(registry.CotaCellID%10000000000, 10)
+				nickname = realName + "#" + strconv.FormatUint(registry.CotaCellID%10000000000, 10)
 			}
 		}
 	}
