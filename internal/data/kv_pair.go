@@ -299,6 +299,47 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 				return err
 			}
 		}
+		if kvPair.HasExtensionPairs() {
+			updatedExtensionPairVersions := make([]ExtensionPairVersion, len(kvPair.UpdatedExtensionPairs))
+			for i, extension := range kvPair.UpdatedExtensionPairs {
+				var oldExtension ExtensionPair
+				if err := tx.Model(ExtensionPair{}).WithContext(ctx).Where("key = ?", extension.Key).First(&oldExtension).Error; err != nil {
+					return err
+				}
+				updatedExtensionPairVersions[i] = ExtensionPairVersion{
+					OldBlockNumber: oldExtension.BlockNumber,
+					BlockNumber:    extension.BlockNumber,
+					Key:            extension.Key,
+					Value:          extension.Value,
+					OldValue:       oldExtension.Value,
+					LockHash:       extension.LockHash,
+					TxIndex:        extension.TxIndex,
+					ActionType:     1,
+				}
+			}
+			// create updated extension pair versions
+			if err := tx.Model(ExtensionPairVersion{}).WithContext(ctx).Create(updatedExtensionPairVersions).Error; err != nil {
+				return err
+			}
+			// update extension pairs
+			updatedExtensionPairs := make([]ExtensionPair, len(kvPair.UpdatedExtensionPairs))
+			for i, extension := range kvPair.UpdatedExtensionPairs {
+				updatedExtensionPairs[i] = ExtensionPair{
+					BlockNumber: extension.BlockNumber,
+					Key:         extension.Key,
+					Value:       extension.Value,
+					LockHash:    extension.LockHash,
+					LockHashCRC: extension.LockHashCRC,
+					UpdatedAt:   extension.UpdatedAt,
+				}
+			}
+			if err := tx.Debug().Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "key"}},
+				DoUpdates: clause.AssignmentColumns([]string{"block_number", "value", "updated_at"}),
+			}).Create(updatedExtensionPairs).Error; err != nil {
+				return err
+			}
+		}
 		// create check info
 		if err := tx.Debug().Model(CheckInfo{}).WithContext(ctx).Create(&CheckInfo{
 			BlockNumber: checkInfo.BlockNumber,
@@ -325,7 +366,6 @@ func (rp kvPairRepo) RestoreCotaEntryKvPairs(ctx context.Context, blockNumber ui
 		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 0).Delete(DefineCotaNftKvPairVersion{}).Error; err != nil {
 			return err
 		}
-		// 把需要回滚的 block 更新过的 define 恢复到更新前的状态，这里按 cota_id 分组取出回滚 block 下第一条
 		var updatedDefineCotaVersions []DefineCotaNftKvPairVersion
 		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Group("cota_id").Order("tx_index").Find(&updatedDefineCotaVersions).Error; err != nil {
 			return err
@@ -425,6 +465,64 @@ func (rp kvPairRepo) RestoreCotaEntryKvPairs(ctx context.Context, blockNumber ui
 		if err := tx.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(ClaimedCotaNftKvPair{}).Error; err != nil {
 			return err
 		}
+
+		// delete all extension pairs by the block number
+		if err := tx.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(ExtensionPair{}).Error; err != nil {
+			return err
+		}
+		// delete all created extension pair versions by the block number
+		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 0).Delete(ExtensionPairVersion{}).Error; err != nil {
+			return err
+		}
+		// restore all deleted extension pairs by the block number
+		var deletedExtensionPairVersions []ExtensionPairVersion
+		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 2).Group("key").Order("tx_index").Find(&deletedExtensionPairVersions).Error; err != nil {
+			return err
+		}
+		var deletedExtensionPairs []ExtensionPair
+		for _, version := range deletedExtensionPairVersions {
+			deletedExtensionPairs = append(deletedExtensionPairs, ExtensionPair{
+				BlockNumber: version.OldBlockNumber,
+				Key:         version.Key,
+				Value:       version.OldValue,
+				LockHash:    version.LockHash,
+				LockHashCRC: crc32.ChecksumIEEE([]byte(version.LockHash)),
+			})
+		}
+		if len(deletedExtensionPairs) > 0 {
+			if err := tx.WithContext(ctx).Create(deletedExtensionPairs).Error; err != nil {
+				return err
+			}
+		}
+		// delete all deleted extension pair versions by the block number
+		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 2).Delete(ExtensionPairVersion{}).Error; err != nil {
+			return err
+		}
+		// restore all updated extension pairs by the block number
+		var updatedExtensionPairVersions []ExtensionPairVersion
+		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Group("key").Order("tx_index").Find(&updatedExtensionPairVersions).Error; err != nil {
+			return err
+		}
+		var updatedExtensionPairs []ExtensionPair
+		for _, version := range updatedExtensionPairVersions {
+			updatedExtensionPairs = append(updatedExtensionPairs, ExtensionPair{
+				BlockNumber: version.OldBlockNumber,
+				Key:         version.Key,
+				Value:       version.OldValue,
+				LockHash:    version.LockHash,
+				LockHashCRC: crc32.ChecksumIEEE([]byte(version.LockHash)),
+			})
+		}
+		if len(updatedExtensionPairVersions) > 0 {
+			if err := tx.WithContext(ctx).Create(updatedExtensionPairs).Error; err != nil {
+				return err
+			}
+		}
+		// delete all updated extension pair versions by the block number
+		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Delete(ExtensionPairVersion{}).Error; err != nil {
+			return err
+		}
+
 		// delete check info
 		if err := tx.Debug().WithContext(ctx).Where("block_number = ? and check_type = ?", blockNumber, biz.SyncBlock).Delete(CheckInfo{}).Error; err != nil {
 			return err

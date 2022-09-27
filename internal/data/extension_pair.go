@@ -18,8 +18,8 @@ type ExtensionPair struct {
 	BlockNumber uint64
 	LockHash    string
 	LockHashCRC uint32
-	key         string
-	value       string
+	Key         string
+	Value       string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
