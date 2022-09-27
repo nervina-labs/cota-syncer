@@ -161,7 +161,6 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 				if err := tx.Model(HoldCotaNftKvPair{}).WithContext(ctx).Select("*").Where("cota_id = ? and token_index = ?", withdrawCota.CotaId, withdrawCota.TokenIndex).Find(&holdCota).Error; err != nil {
 					return err
 				}
-				// 上面把对象初始化出来了，所以需要通过具体值来判断是否存在
 				if holdCota.CotaId == "" {
 					continue
 				}
