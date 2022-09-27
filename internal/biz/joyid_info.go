@@ -58,6 +58,6 @@ func (uc *JoyIDInfoUsecase) DeleteByBlockNumber(ctx context.Context, blockNumber
 	return uc.repo.DeleteJoyIDInfo(ctx, blockNumber)
 }
 
-func (uc JoyIDInfoUsecase) ParseMetadata(ctx context.Context, blockNumber uint64, txIndex uint32, lockScript *ckbTypes.Script, joyIDMeta map[string]any) (JoyIDInfo, error) {
+func (uc *JoyIDInfoUsecase) ParseMetadata(ctx context.Context, blockNumber uint64, txIndex uint32, lockScript *ckbTypes.Script, joyIDMeta map[string]any) (JoyIDInfo, error) {
 	return uc.repo.ParseJoyIDInfo(ctx, blockNumber, txIndex, lockScript, joyIDMeta)
 }

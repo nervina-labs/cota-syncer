@@ -17,6 +17,7 @@ type KvPair struct {
 	IssuerInfos        []IssuerInfo
 	ClassInfos         []ClassInfo
 	JoyIDInfos         []JoyIDInfo
+	ExtensionPairs     []ExtensionPair
 }
 
 func (p KvPair) HasRegisters() bool {
@@ -53,6 +54,10 @@ func (p KvPair) HasClassInfos() bool {
 
 func (p KvPair) HasJoyIDInfos() bool {
 	return len(p.JoyIDInfos) > 0
+}
+
+func (p KvPair) HasExtensionPairs() bool {
+	return len(p.ExtensionPairs) > 0
 }
 
 type KvPairRepo interface {
