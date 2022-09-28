@@ -1,2 +1,2 @@
-DROP TABLE IF EXISTS extension;
-DROP TABLE IF EXISTS extension_versions;
+DROP TABLE IF EXISTS extension_kv_pairs;
+DROP TABLE IF EXISTS extension_kv_pair_versions;

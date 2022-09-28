@@ -300,13 +300,13 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 			}
 		}
 		if kvPair.HasExtensionPairs() {
-			updatedExtensionPairVersions := make([]ExtensionPairVersion, len(kvPair.UpdatedExtensionPairs))
+			updatedExtensionPairVersions := make([]ExtensionKvPairVersion, len(kvPair.UpdatedExtensionPairs))
 			for i, extension := range kvPair.UpdatedExtensionPairs {
-				var oldExtension ExtensionPair
-				if err := tx.Model(ExtensionPair{}).WithContext(ctx).Where("key = ?", extension.Key).First(&oldExtension).Error; err != nil {
+				var oldExtension ExtensionKvPair
+				if err := tx.Model(ExtensionKvPair{}).WithContext(ctx).Where("key = ?", extension.Key).First(&oldExtension).Error; err != nil {
 					return err
 				}
-				updatedExtensionPairVersions[i] = ExtensionPairVersion{
+				updatedExtensionPairVersions[i] = ExtensionKvPairVersion{
 					OldBlockNumber: oldExtension.BlockNumber,
 					BlockNumber:    extension.BlockNumber,
 					Key:            extension.Key,
@@ -318,13 +318,13 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 				}
 			}
 			// create updated extension pair versions
-			if err := tx.Model(ExtensionPairVersion{}).WithContext(ctx).Create(updatedExtensionPairVersions).Error; err != nil {
+			if err := tx.Model(ExtensionKvPairVersion{}).WithContext(ctx).Create(updatedExtensionPairVersions).Error; err != nil {
 				return err
 			}
 			// update extension pairs
-			updatedExtensionPairs := make([]ExtensionPair, len(kvPair.UpdatedExtensionPairs))
+			updatedExtensionPairs := make([]ExtensionKvPair, len(kvPair.UpdatedExtensionPairs))
 			for i, extension := range kvPair.UpdatedExtensionPairs {
-				updatedExtensionPairs[i] = ExtensionPair{
+				updatedExtensionPairs[i] = ExtensionKvPair{
 					BlockNumber: extension.BlockNumber,
 					Key:         extension.Key,
 					Value:       extension.Value,
@@ -467,21 +467,21 @@ func (rp kvPairRepo) RestoreCotaEntryKvPairs(ctx context.Context, blockNumber ui
 		}
 
 		// delete all extension pairs by the block number
-		if err := tx.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(ExtensionPair{}).Error; err != nil {
+		if err := tx.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(ExtensionKvPair{}).Error; err != nil {
 			return err
 		}
 		// delete all created extension pair versions by the block number
-		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 0).Delete(ExtensionPairVersion{}).Error; err != nil {
+		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 0).Delete(ExtensionKvPairVersion{}).Error; err != nil {
 			return err
 		}
 		// restore all deleted extension pairs by the block number
-		var deletedExtensionPairVersions []ExtensionPairVersion
+		var deletedExtensionPairVersions []ExtensionKvPairVersion
 		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 2).Group("key").Order("tx_index").Find(&deletedExtensionPairVersions).Error; err != nil {
 			return err
 		}
-		var deletedExtensionPairs []ExtensionPair
+		var deletedExtensionPairs []ExtensionKvPair
 		for _, version := range deletedExtensionPairVersions {
-			deletedExtensionPairs = append(deletedExtensionPairs, ExtensionPair{
+			deletedExtensionPairs = append(deletedExtensionPairs, ExtensionKvPair{
 				BlockNumber: version.OldBlockNumber,
 				Key:         version.Key,
 				Value:       version.OldValue,
@@ -495,17 +495,17 @@ func (rp kvPairRepo) RestoreCotaEntryKvPairs(ctx context.Context, blockNumber ui
 			}
 		}
 		// delete all deleted extension pair versions by the block number
-		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 2).Delete(ExtensionPairVersion{}).Error; err != nil {
+		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 2).Delete(ExtensionKvPairVersion{}).Error; err != nil {
 			return err
 		}
 		// restore all updated extension pairs by the block number
-		var updatedExtensionPairVersions []ExtensionPairVersion
+		var updatedExtensionPairVersions []ExtensionKvPairVersion
 		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Group("key").Order("tx_index").Find(&updatedExtensionPairVersions).Error; err != nil {
 			return err
 		}
-		var updatedExtensionPairs []ExtensionPair
+		var updatedExtensionPairs []ExtensionKvPair
 		for _, version := range updatedExtensionPairVersions {
-			updatedExtensionPairs = append(updatedExtensionPairs, ExtensionPair{
+			updatedExtensionPairs = append(updatedExtensionPairs, ExtensionKvPair{
 				BlockNumber: version.OldBlockNumber,
 				Key:         version.Key,
 				Value:       version.OldValue,
@@ -519,7 +519,7 @@ func (rp kvPairRepo) RestoreCotaEntryKvPairs(ctx context.Context, blockNumber ui
 			}
 		}
 		// delete all updated extension pair versions by the block number
-		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Delete(ExtensionPairVersion{}).Error; err != nil {
+		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Delete(ExtensionKvPairVersion{}).Error; err != nil {
 			return err
 		}
 

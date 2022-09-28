@@ -13,7 +13,7 @@ import (
 
 var _ biz.ExtensionPairRepo = (*extensionPairRepo)(nil)
 
-type ExtensionPair struct {
+type ExtensionKvPair struct {
 	ID          uint `gorm:"primaryKey"`
 	BlockNumber uint64
 	LockHash    string
@@ -24,7 +24,7 @@ type ExtensionPair struct {
 	UpdatedAt   time.Time
 }
 
-type ExtensionPairVersion struct {
+type ExtensionKvPairVersion struct {
 	ID             uint `gorm:"primaryKey"`
 	OldBlockNumber uint64
 	BlockNumber    uint64
@@ -43,7 +43,7 @@ type extensionPairRepo struct {
 	logger *logger.Logger
 }
 
-func NewExtensionPairRepo(data *Data, logger *logger.Logger) biz.ExtensionPairRepo {
+func NewExtensionKvPairRepo(data *Data, logger *logger.Logger) biz.ExtensionPairRepo {
 	return &extensionPairRepo{
 		data:   data,
 		logger: logger,
