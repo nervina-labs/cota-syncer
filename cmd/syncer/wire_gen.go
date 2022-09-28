@@ -53,7 +53,7 @@ func initApp(database *config.Database, ckbNode *config.CkbNode, loggerLogger *l
 	classInfoUsecase := biz.NewClassInfoUsecase(classInfoRepo, loggerLogger)
 	joyIDInfoRepo := data.NewJoyIDInfoRepo(dataData, loggerLogger)
 	joyIDInfoUsecase := biz.NewJoyIDInfoUsecase(joyIDInfoRepo, loggerLogger)
-	extensionPairRepo := data.NewExtensionPairRepo(dataData, loggerLogger)
+	extensionPairRepo := data.NewExtensionKvPairRepo(dataData, loggerLogger)
 	extensionPairUsecase := biz.NewExtensionPairUsecase(extensionPairRepo, loggerLogger)
 	blockSyncer := data.NewBlockSyncer(claimedCotaNftKvPairUsecase, defineCotaNftKvPairUsecase, holdCotaNftKvPairUsecase, registerCotaKvPairUsecase, withdrawCotaNftKvPairUsecase, cotaWitnessArgsParser, syncKvPairUsecase, mintCotaKvPairUsecase, transferCotaKvPairUsecase, issuerInfoUsecase, classInfoUsecase, joyIDInfoUsecase, extensionPairUsecase)
 	blockSyncService := service.NewBlockSyncService(checkInfoUsecase, loggerLogger, ckbNodeClient, systemScripts, blockSyncer)
