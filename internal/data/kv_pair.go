@@ -299,7 +299,40 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 				return err
 			}
 		}
+
+
 		if kvPair.HasExtensionPairs() {
+			// create extension pairs
+			extensionPairs := make([]ExtensionKvPair, len(kvPair.ExtensionPairs))
+			for i, extension := range kvPair.ExtensionPairs {
+				extensionPairs[i] = ExtensionKvPair{
+					BlockNumber:    extension.BlockNumber,
+					Key:            extension.Key,
+					Value:          extension.Value,
+					LockHash:       extension.LockHash,
+					LockHashCRC:    extension.LockHashCRC,
+				}
+			}
+			if err := tx.Model(ExtensionKvPair{}).WithContext(ctx).Create(extensionPairs).Error; err != nil {
+				return err
+			}
+			newExtensionPairVersions := make([]ExtensionKvPairVersion, len(kvPair.ExtensionPairs))
+			for i, extension := range kvPair.ExtensionPairs {
+				newExtensionPairVersions[i] = ExtensionKvPairVersion{
+					BlockNumber:    extension.BlockNumber,
+					Key:            extension.Key,
+					Value:          extension.Value,
+					LockHash:       extension.LockHash,
+					TxIndex:        extension.TxIndex,
+					ActionType:     0,
+				}
+			}
+			// create extension pair versions
+			if err := tx.Model(ExtensionKvPairVersion{}).WithContext(ctx).Create(newExtensionPairVersions).Error; err != nil {
+				return err
+			}
+		}
+		if kvPair.HasUpdatedExtensionPairs() {
 			updatedExtensionPairVersions := make([]ExtensionKvPairVersion, len(kvPair.UpdatedExtensionPairs))
 			for i, extension := range kvPair.UpdatedExtensionPairs {
 				var oldExtension ExtensionKvPair
