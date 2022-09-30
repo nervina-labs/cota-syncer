@@ -512,7 +512,7 @@ func (rp kvPairRepo) RestoreCotaEntryKvPairs(ctx context.Context, blockNumber ui
 		}
 		// restore all deleted extension pairs by the block number
 		var deletedExtensionPairVersions []ExtensionKvPairVersion
-		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 2).Group("key").Order("tx_index").Find(&deletedExtensionPairVersions).Error; err != nil {
+		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 2).Group("`key`").Order("tx_index").Find(&deletedExtensionPairVersions).Error; err != nil {
 			return err
 		}
 		var deletedExtensionPairs []ExtensionKvPair
@@ -536,7 +536,7 @@ func (rp kvPairRepo) RestoreCotaEntryKvPairs(ctx context.Context, blockNumber ui
 		}
 		// restore all updated extension pairs by the block number
 		var updatedExtensionPairVersions []ExtensionKvPairVersion
-		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Group("key").Order("tx_index").Find(&updatedExtensionPairVersions).Error; err != nil {
+		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Group("`key`").Order("tx_index").Find(&updatedExtensionPairVersions).Error; err != nil {
 			return err
 		}
 		var updatedExtensionPairs []ExtensionKvPair
