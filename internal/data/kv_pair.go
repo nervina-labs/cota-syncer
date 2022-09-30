@@ -300,7 +300,6 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 			}
 		}
 
-
 		if kvPair.HasExtensionPairs() {
 			// create extension pairs
 			extensionPairs := make([]ExtensionKvPair, len(kvPair.ExtensionPairs))
@@ -313,12 +312,15 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 					LockHashCRC:    extension.LockHashCRC,
 				}
 			}
-			if err := tx.Model(ExtensionKvPair{}).WithContext(ctx).Create(extensionPairs).Error; err != nil {
+			if err := tx.Debug().Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "key"}},
+				DoUpdates: clause.AssignmentColumns([]string{"block_number", "value", "updated_at"}),
+			}).Create(extensionPairs).Error; err != nil {
 				return err
 			}
-			newExtensionPairVersions := make([]ExtensionKvPairVersion, len(kvPair.ExtensionPairs))
+			extensionPairVersions := make([]ExtensionKvPairVersion, len(kvPair.ExtensionPairs))
 			for i, extension := range kvPair.ExtensionPairs {
-				newExtensionPairVersions[i] = ExtensionKvPairVersion{
+				extensionPairVersions[i] = ExtensionKvPairVersion{
 					BlockNumber:    extension.BlockNumber,
 					Key:            extension.Key,
 					Value:          extension.Value,
@@ -328,7 +330,7 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 				}
 			}
 			// create extension pair versions
-			if err := tx.Model(ExtensionKvPairVersion{}).WithContext(ctx).Create(newExtensionPairVersions).Error; err != nil {
+			if err := tx.Model(ExtensionKvPairVersion{}).WithContext(ctx).Create(extensionPairVersions).Error; err != nil {
 				return err
 			}
 		}
@@ -336,7 +338,7 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 			updatedExtensionPairVersions := make([]ExtensionKvPairVersion, len(kvPair.UpdatedExtensionPairs))
 			for i, extension := range kvPair.UpdatedExtensionPairs {
 				var oldExtension ExtensionKvPair
-				if err := tx.Model(ExtensionKvPair{}).WithContext(ctx).Where("key = ?", extension.Key).First(&oldExtension).Error; err != nil {
+				if err := tx.Model(ExtensionKvPair{}).WithContext(ctx).Where("`key` = ?", extension.Key).First(&oldExtension).Error; err != nil {
 					return err
 				}
 				updatedExtensionPairVersions[i] = ExtensionKvPairVersion{
@@ -354,16 +356,17 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 			if err := tx.Model(ExtensionKvPairVersion{}).WithContext(ctx).Create(updatedExtensionPairVersions).Error; err != nil {
 				return err
 			}
+
 			// update extension pairs
 			updatedExtensionPairs := make([]ExtensionKvPair, len(kvPair.UpdatedExtensionPairs))
 			for i, extension := range kvPair.UpdatedExtensionPairs {
 				updatedExtensionPairs[i] = ExtensionKvPair{
-					BlockNumber: extension.BlockNumber,
-					Key:         extension.Key,
-					Value:       extension.Value,
-					LockHash:    extension.LockHash,
-					LockHashCRC: extension.LockHashCRC,
-					UpdatedAt:   extension.UpdatedAt,
+					BlockNumber:    extension.BlockNumber,
+					Key:            extension.Key,
+					Value:          extension.Value,
+					LockHash:       extension.LockHash,
+					LockHashCRC:    extension.LockHashCRC,
+					UpdatedAt:      extension.UpdatedAt,
 				}
 			}
 			if err := tx.Debug().Clauses(clause.OnConflict{

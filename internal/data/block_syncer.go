@@ -166,12 +166,19 @@ func (bp BlockSyncer) parseCotaEntries(blockNumber uint64, entries []biz.Entry) 
 				kvPair.ClaimedCotas = append(kvPair.ClaimedCotas, claimedCotas...)
 				kvPair.WithdrawCotas = append(kvPair.WithdrawCotas, withdrawCotas...)
 			// Extension: Create extension pairs
-			case 0xF0, 0xF1:
+			case 0xF0:
 				extensionPairs, err := bp.extensionPairUsecase.ParseExtensionPair(blockNumber, entry)
 				if err != nil {
 					return kvPair, err
 				}
 				kvPair.ExtensionPairs = append(kvPair.ExtensionPairs, extensionPairs...)
+			// Extension: Update extension pairs
+			case 0xF1:
+				extensionPairs, err := bp.extensionPairUsecase.ParseExtensionPair(blockNumber, entry)
+				if err != nil {
+					return kvPair, err
+				}
+				kvPair.UpdatedExtensionPairs = append(kvPair.UpdatedExtensionPairs, extensionPairs...)
 			}
 		}
 	}
