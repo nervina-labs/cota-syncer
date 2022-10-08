@@ -3,13 +3,13 @@ package data
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/mitchellh/mapstructure"
 	"github.com/nervina-labs/cota-syncer/internal/biz"
 	"github.com/nervina-labs/cota-syncer/internal/logger"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 	"gorm.io/gorm/clause"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -181,7 +181,7 @@ func (repo joyIDInfoRepo) parseNickname(ctx context.Context, name string, lockHa
 	if !match {
 		realName = "noname"
 	}
-	nickname = realName + "#" + strconv.FormatUint(registry.CotaCellID%10000, 10)
+	nickname = realName + "#" + fmt.Sprintf("%04d", registry.CotaCellID%10000)
 
 	var joyIDInfos []JoyIDInfo
 	if err = repo.data.db.WithContext(ctx).Where("nickname = ?", nickname).Find(&joyIDInfos).Error; err != nil {
@@ -190,21 +190,21 @@ func (repo joyIDInfoRepo) parseNickname(ctx context.Context, name string, lockHa
 	if len(joyIDInfos) == 0 {
 		return
 	} else {
-		nickname = realName + "#" + strconv.FormatUint(registry.CotaCellID%1000000, 10)
+		nickname = realName + "#" + fmt.Sprintf("%06d", registry.CotaCellID%1000000)
 		if err = repo.data.db.WithContext(ctx).Where("nickname = ?", nickname).Find(&joyIDInfos).Error; err != nil {
 			return
 		}
 		if len(joyIDInfos) == 0 {
 			return
 		} else {
-			nickname = realName + "#" + strconv.FormatUint(registry.CotaCellID%100000000, 10)
+			nickname = realName + "#" + fmt.Sprintf("%08d", registry.CotaCellID%100000000)
 			if err = repo.data.db.WithContext(ctx).Where("nickname = ?", nickname).Find(&joyIDInfos).Error; err != nil {
 				return
 			}
 			if len(joyIDInfos) == 0 {
 				return
 			} else {
-				nickname = realName + "#" + strconv.FormatUint(registry.CotaCellID%10000000000, 10)
+				nickname = realName + "#" + fmt.Sprintf("%010d", registry.CotaCellID%10000000000)
 			}
 		}
 	}
