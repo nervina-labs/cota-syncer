@@ -134,7 +134,7 @@ func (repo joyIDInfoRepo) ParseJoyIDInfo(ctx context.Context, blockNumber uint64
 	if len(joyIDInfo.PubKey) > 130 || len(joyIDInfo.CotaCellId) > 18 || len(joyIDInfo.Alg) > 4 {
 		err = ErrInvalidJoyIDInfo
 	}
-	if len(joyIDInfo.Name) > 256 {
+	if len(joyIDInfo.Name) > 255 || len(joyIDInfo.Avatar) > 500 || len(joyIDInfo.Description) > 1000 {
 		return
 	}
 	subKeys := make([]biz.SubKeyInfo, len(joyIDInfo.SubKeys))
@@ -176,7 +176,7 @@ func (repo joyIDInfoRepo) parseNickname(ctx context.Context, name string, lockHa
 	if err = repo.data.db.WithContext(ctx).Select("cota_cell_id").Where("lock_hash = ?", lockHash).First(&registry).Error; err != nil {
 		return
 	}
-	match, err := regexp.MatchString(`^[A-Za-z0-9]{4,256}$`, name)
+	match, err := regexp.MatchString(`^[A-Za-z0-9]{4,255}$`, name)
 	if err != nil {
 		return
 	}
