@@ -184,21 +184,21 @@ func (repo joyIDInfoRepo) parseNickname(ctx context.Context, name string, lockHa
 	nickname = realName + "#" + fmt.Sprintf("%04d", registry.CotaCellID%10000)
 
 	var joyIDInfos []JoyIDInfo
-	if err = repo.data.db.WithContext(ctx).Where("nickname = ?", nickname).Find(&joyIDInfos).Error; err != nil {
+	if err = repo.data.db.Model(JoyIDInfo{}).WithContext(ctx).Where("lock_hash <> ? and nickname = ?", lockHash, nickname).Find(&joyIDInfos).Error; err != nil {
 		return
 	}
 	if len(joyIDInfos) == 0 {
 		return
 	} else {
 		nickname = realName + "#" + fmt.Sprintf("%06d", registry.CotaCellID%1000000)
-		if err = repo.data.db.WithContext(ctx).Where("nickname = ?", nickname).Find(&joyIDInfos).Error; err != nil {
+		if err = repo.data.db.Model(JoyIDInfo{}).WithContext(ctx).Where("lock_hash <> ? and nickname = ?", lockHash, nickname).Find(&joyIDInfos).Error; err != nil {
 			return
 		}
 		if len(joyIDInfos) == 0 {
 			return
 		} else {
 			nickname = realName + "#" + fmt.Sprintf("%08d", registry.CotaCellID%100000000)
-			if err = repo.data.db.WithContext(ctx).Where("nickname = ?", nickname).Find(&joyIDInfos).Error; err != nil {
+			if err = repo.data.db.Model(JoyIDInfo{}).WithContext(ctx).Where("lock_hash <> ? and nickname = ?", lockHash, nickname).Find(&joyIDInfos).Error; err != nil {
 				return
 			}
 			if len(joyIDInfos) == 0 {
