@@ -12,16 +12,18 @@ type MetadataSyncer struct {
 	cotaWitnessArgsParser CotaWitnessArgsParser
 	issuerInfoUsecase     *biz.IssuerInfoUsecase
 	classInfoUsecase      *biz.ClassInfoUsecase
+	joyIDInfoUsecase      *biz.JoyIDInfoUsecase
 }
 
 func NewMetadataSyncer(
 	kvPairUsecase *biz.SyncKvPairUsecase, cotaWitnessArgsParser CotaWitnessArgsParser, issuerInfoUsecase *biz.IssuerInfoUsecase,
-	classInfoUsecase *biz.ClassInfoUsecase) MetadataSyncer {
+	classInfoUsecase *biz.ClassInfoUsecase, joyIDInfoUsecase *biz.JoyIDInfoUsecase) MetadataSyncer {
 	return MetadataSyncer{
 		kvPairUsecase:         kvPairUsecase,
 		cotaWitnessArgsParser: cotaWitnessArgsParser,
 		issuerInfoUsecase:     issuerInfoUsecase,
 		classInfoUsecase:      classInfoUsecase,
+		joyIDInfoUsecase:      joyIDInfoUsecase,
 	}
 }
 
@@ -36,7 +38,7 @@ func (bp MetadataSyncer) Sync(ctx context.Context, block *ckbTypes.Block, checkI
 		}
 		entryVec = append(entryVec, entries...)
 	}
-	pairs, err := bp.parseMetadata(block.Header.Number, entryVec)
+	pairs, err := bp.parseMetadata(ctx, block.Header.Number, entryVec)
 	err = bp.kvPairUsecase.CreateMetadataKvPairs(ctx, checkInfo, &pairs)
 	if err != nil {
 		return err
@@ -48,10 +50,10 @@ func (bp MetadataSyncer) Rollback(ctx context.Context, blockNumber uint64) error
 	return bp.kvPairUsecase.RestoreMetadataKvPairs(ctx, blockNumber)
 }
 
-func (bp MetadataSyncer) parseMetadata(blockNumber uint64, entries []biz.Entry) (biz.KvPair, error) {
+func (bp MetadataSyncer) parseMetadata(ctx context.Context, blockNumber uint64, entries []biz.Entry) (biz.KvPair, error) {
 	var kvPair biz.KvPair
 	for _, entry := range entries {
-		// Parse Issuer/Class Metadata
+		// Parse Issuer/Class/JoyID Metadata
 		if len(entry.OutputType) > 0 {
 			ctMeta, err := biz.ParseMetadata(entry.OutputType)
 			if err != nil {
@@ -70,6 +72,12 @@ func (bp MetadataSyncer) parseMetadata(blockNumber uint64, entries []biz.Entry) 
 					return kvPair, err
 				}
 				kvPair.ClassInfos = append(kvPair.ClassInfos, classInfo)
+			case "joy_id":
+				joyIDInfo, err := bp.joyIDInfoUsecase.ParseMetadata(ctx, blockNumber, entry.TxIndex, entry.LockScript, ctMeta.Metadata.Data)
+				if err != nil {
+					return kvPair, err
+				}
+				kvPair.JoyIDInfos = append(kvPair.JoyIDInfos, joyIDInfo)
 			}
 		}
 	}

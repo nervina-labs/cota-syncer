@@ -16,6 +16,7 @@ type KvPair struct {
 	ClaimedCotas       []ClaimedCotaNftKvPair
 	IssuerInfos        []IssuerInfo
 	ClassInfos         []ClassInfo
+	JoyIDInfos         []JoyIDInfo
 }
 
 func (p KvPair) HasRegisters() bool {
@@ -48,6 +49,10 @@ func (p KvPair) HasIssuerInfos() bool {
 
 func (p KvPair) HasClassInfos() bool {
 	return len(p.ClassInfos) > 0
+}
+
+func (p KvPair) HasJoyIDInfos() bool {
+	return len(p.JoyIDInfos) > 0
 }
 
 type KvPairRepo interface {
