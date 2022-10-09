@@ -598,6 +598,9 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 				if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 					return err
 				}
+				if len(oldInfo.Name) > 240 || len(info.Name) > 240 {
+					continue
+				}
 				if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 					joyIDInfoVersions[i] = JoyIDInfoVersion{
 						BlockNumber:  0,

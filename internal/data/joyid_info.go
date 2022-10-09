@@ -133,9 +133,11 @@ func (repo joyIDInfoRepo) ParseJoyIDInfo(ctx context.Context, blockNumber uint64
 	}
 	if len(joyIDInfo.PubKey) > 130 || len(joyIDInfo.CotaCellId) > 18 || len(joyIDInfo.Alg) > 4 {
 		err = ErrInvalidJoyIDInfo
+		return
 	}
 	if len(joyIDInfo.Name) > 240 || len(joyIDInfo.Avatar) > 500 || len(joyIDInfo.Description) > 1000 {
 		err = ErrInvalidJoyIDInfo
+		return
 	}
 	subKeys := make([]biz.SubKeyInfo, len(joyIDInfo.SubKeys))
 	for i, v := range joyIDInfo.SubKeys {
