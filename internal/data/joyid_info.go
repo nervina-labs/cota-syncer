@@ -135,7 +135,7 @@ func (repo joyIDInfoRepo) ParseJoyIDInfo(ctx context.Context, blockNumber uint64
 		err = ErrInvalidJoyIDInfo
 	}
 	if len(joyIDInfo.Name) > 255 || len(joyIDInfo.Avatar) > 500 || len(joyIDInfo.Description) > 1000 {
-		return
+		err = ErrInvalidJoyIDInfo
 	}
 	subKeys := make([]biz.SubKeyInfo, len(joyIDInfo.SubKeys))
 	for i, v := range joyIDInfo.SubKeys {
