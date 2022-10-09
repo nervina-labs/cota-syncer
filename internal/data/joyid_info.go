@@ -131,7 +131,7 @@ func (repo joyIDInfoRepo) ParseJoyIDInfo(ctx context.Context, blockNumber uint64
 	if err != nil {
 		return
 	}
-	if len(joyIDInfo.PubKey) > 130 || len(joyIDInfo.CotaCellId) > 18 || len(joyIDInfo.Alg) > 4 {
+	if len(joyIDInfo.PubKey) > 128 || len(joyIDInfo.CotaCellId) > 18 || len(joyIDInfo.Alg) > 4 {
 		err = ErrInvalidJoyIDInfo
 		return
 	}
