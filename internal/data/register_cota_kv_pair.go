@@ -20,6 +20,7 @@ type RegisterCotaKvPair struct {
 	BlockNumber uint64
 	LockHash    string
 	CotaCellID  uint64
+	LockScriptId uint
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
