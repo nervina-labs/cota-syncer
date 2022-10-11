@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/binary"
 	"encoding/hex"
+	"hash/crc32"
 	"time"
 
 	"github.com/nervina-labs/cota-smt-go/smt"
@@ -51,7 +52,7 @@ func (rp registerCotaKvPairRepo) DeleteRegisterCotaKvPairs(ctx context.Context, 
 	return nil
 }
 
-func (rp registerCotaKvPairRepo) ParseRegistryEntries(_ context.Context, blockNumber uint64, tx *ckbTypes.Transaction) (registerCotas []biz.RegisterCotaKvPair, err error) {
+func (rp registerCotaKvPairRepo) ParseRegistryEntries(ctx context.Context, blockNumber uint64, tx *ckbTypes.Transaction) (registerCotas []biz.RegisterCotaKvPair, err error) {
 	bytes, err := blockchain.WitnessArgsFromSliceUnchecked(tx.Witnesses[0]).InputType().IntoBytes()
 	if err != nil {
 		return
@@ -59,12 +60,65 @@ func (rp registerCotaKvPairRepo) ParseRegistryEntries(_ context.Context, blockNu
 	registerWitnessType := bytes.RawData()
 	registryEntries := smt.CotaNFTRegistryEntriesFromSliceUnchecked(registerWitnessType)
 	registryVec := registryEntries.Registries()
+	lockMap, err := rp.generateLockMap(ctx, tx)
+	if err != nil {
+		return
+	}
 	for i := uint(0); i < registryVec.Len(); i++ {
+		lockHash := hex.EncodeToString(registryVec.Get(i).LockHash().RawData())
+		lockScriptId := lockMap[lockHash]
 		registerCotas = append(registerCotas, biz.RegisterCotaKvPair{
 			BlockNumber: blockNumber,
-			LockHash:    hex.EncodeToString(registryVec.Get(i).LockHash().RawData()),
+			LockHash:    lockHash,
 			CotaCellID:  binary.BigEndian.Uint64(registryVec.Get(i).State().AsSlice()[0:8]),
+			LockScriptId: lockScriptId,
 		})
 	}
 	return
+}
+
+func (rp registerCotaKvPairRepo) FindOrCreateScript(ctx context.Context, script *biz.Script) error {
+	ht, err := hashType(script.HashType)
+	if err != nil {
+		return err
+	}
+	s := Script{}
+	if err = rp.data.db.WithContext(ctx).FirstOrCreate(&s, Script{
+		CodeHash:    script.CodeHash,
+		CodeHashCrc: crc32.ChecksumIEEE([]byte(script.CodeHash)),
+		HashType:    ht,
+		Args:        script.Args,
+		ArgsCrc:     crc32.ChecksumIEEE([]byte(script.Args)),
+	}).Error; err != nil {
+		return err
+	}
+	script.ID = s.ID
+	return nil
+}
+
+
+func (rp registerCotaKvPairRepo) generateLockMap(ctx context.Context, tx *ckbTypes.Transaction) (map[string] uint, error) {
+	lockMap := make(map[string] uint, len(tx.Outputs))
+	for _, output := range tx.Outputs {
+		if output.Type != nil {
+			lockHash, err := output.Lock.Hash()
+			if err != nil {
+				return lockMap, err
+			}
+			hashType, err := output.Lock.HashType.Serialize()
+			if err != nil {
+				return lockMap, err
+			}
+			lock := biz.Script{
+				CodeHash: hex.EncodeToString(output.Lock.CodeHash[:]),
+				HashType: hex.EncodeToString(hashType),
+				Args:     hex.EncodeToString(output.Lock.Args),
+			}
+			if err = rp.FindOrCreateScript(ctx, &lock); err != nil {
+				return lockMap, err
+			}
+			lockMap[lockHash.String()[2:]] = lock.ID
+		}
+	}
+	return lockMap, nil
 }

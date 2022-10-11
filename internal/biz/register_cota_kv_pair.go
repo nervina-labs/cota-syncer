@@ -11,12 +11,14 @@ type RegisterCotaKvPair struct {
 	BlockNumber uint64
 	LockHash    string
 	CotaCellID  uint64
+	LockScriptId uint
 }
 
 type RegisterCotaKvPairRepo interface {
 	CreateRegisterCotaKvPair(ctx context.Context, register *RegisterCotaKvPair) error
 	DeleteRegisterCotaKvPairs(ctx context.Context, blockNumber uint64) error
 	ParseRegistryEntries(ctx context.Context, blockNumber uint64, tx *ckbTypes.Transaction) ([]RegisterCotaKvPair, error)
+	FindOrCreateScript(ctx context.Context, script *Script) error
 }
 
 type RegisterCotaKvPairUsecase struct {
@@ -41,4 +43,8 @@ func (uc *RegisterCotaKvPairUsecase) DeleteByBlockNumber(ctx context.Context, bl
 
 func (uc *RegisterCotaKvPairUsecase) ParseRegistryEntries(ctx context.Context, blockNumber uint64, tx *ckbTypes.Transaction) ([]RegisterCotaKvPair, error) {
 	return uc.repo.ParseRegistryEntries(ctx, blockNumber, tx)
+}
+
+func (uc *RegisterCotaKvPairUsecase) FindOrCreateScript(ctx context.Context, script *Script) error {
+	return uc.repo.FindOrCreateScript(ctx, script)
 }

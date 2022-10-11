@@ -87,9 +87,13 @@ func (bp BlockSyncer) isCotaRegistryCell(output *ckbTypes.CellOutput, registryTy
 }
 
 func (bp BlockSyncer) hasCotaRegistryCell(outputs []*ckbTypes.CellOutput, registryType SystemScript) (result bool) {
-	for _, output := range outputs {
-		if result = bp.isCotaRegistryCell(output, registryType); result {
-			break
+	if len(outputs) < 2 {
+		result = false
+	} else {
+		for _, output := range outputs {
+			if result = bp.isCotaRegistryCell(output, registryType); result {
+				break
+			}
 		}
 	}
 	return result

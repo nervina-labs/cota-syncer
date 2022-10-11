@@ -12,8 +12,6 @@ import (
 
 var _ Service = (*RegisterLockService)(nil)
 
-const registerPageSize int = 1000
-
 type RegisterLockService struct {
 	lockScriptUsecase *biz.RegisterLockScriptUsecase
 	logger            *logger.Logger
@@ -32,7 +30,7 @@ func (s RegisterLockService) Start(ctx context.Context, _ string) error {
 	s.logger.Info(ctx, "register lock script service started")
 	page := 0
 	for {
-		queryInfos, err := s.lockScriptUsecase.FindRegisterQueryInfos(ctx, page, registerPageSize)
+		queryInfos, err := s.lockScriptUsecase.FindRegisterQueryInfos(ctx, page, pageSize)
 		if err != nil {
 			return err
 		}
@@ -62,6 +60,9 @@ func (s RegisterLockService) parseLockScripts(ctx context.Context, infos []biz.R
 			return
 		}
 		for _, tx := range block.Transactions {
+			if len(tx.Outputs) < 2 {
+				continue
+			}
 			if err = s.parseLockScript(ctx, tx, info); err != nil {
 				return
 			}
