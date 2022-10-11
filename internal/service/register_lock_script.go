@@ -12,17 +12,19 @@ import (
 
 var _ Service = (*RegisterLockService)(nil)
 
+const registerPageSize int = 1000
+
 type RegisterLockService struct {
 	lockScriptUsecase *biz.RegisterLockScriptUsecase
-	logger           *logger.Logger
-	client           *data.CkbNodeClient
+	logger            *logger.Logger
+	client            *data.CkbNodeClient
 }
 
 func NewRegisterLockService(lockScriptUsecase *biz.RegisterLockScriptUsecase, logger *logger.Logger, client *data.CkbNodeClient) *RegisterLockService {
 	return &RegisterLockService{
 		lockScriptUsecase: lockScriptUsecase,
-		logger:           logger,
-		client:           client,
+		logger:            logger,
+		client:            client,
 	}
 }
 
@@ -30,7 +32,7 @@ func (s RegisterLockService) Start(ctx context.Context, _ string) error {
 	s.logger.Info(ctx, "register lock script service started")
 	page := 0
 	for {
-		queryInfos, err := s.lockScriptUsecase.FindRegisterQueryInfos(ctx, page, pageSize)
+		queryInfos, err := s.lockScriptUsecase.FindRegisterQueryInfos(ctx, page, registerPageSize)
 		if err != nil {
 			return err
 		}
