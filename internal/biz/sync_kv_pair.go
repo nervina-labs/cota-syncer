@@ -7,16 +7,18 @@ import (
 )
 
 type KvPair struct {
-	Registers          []RegisterCotaKvPair
-	DefineCotas        []DefineCotaNftKvPair
-	UpdatedDefineCotas []DefineCotaNftKvPair
-	HoldCotas          []HoldCotaNftKvPair
-	UpdatedHoldCotas   []HoldCotaNftKvPair
-	WithdrawCotas      []WithdrawCotaNftKvPair
-	ClaimedCotas       []ClaimedCotaNftKvPair
-	IssuerInfos        []IssuerInfo
-	ClassInfos         []ClassInfo
-	JoyIDInfos         []JoyIDInfo
+	Registers             []RegisterCotaKvPair
+	DefineCotas           []DefineCotaNftKvPair
+	UpdatedDefineCotas    []DefineCotaNftKvPair
+	HoldCotas             []HoldCotaNftKvPair
+	UpdatedHoldCotas      []HoldCotaNftKvPair
+	WithdrawCotas         []WithdrawCotaNftKvPair
+	ClaimedCotas          []ClaimedCotaNftKvPair
+	IssuerInfos           []IssuerInfo
+	ClassInfos            []ClassInfo
+	JoyIDInfos            []JoyIDInfo
+	ExtensionPairs        []ExtensionPair
+	UpdatedExtensionPairs []ExtensionPair
 }
 
 func (p KvPair) HasRegisters() bool {
@@ -53,6 +55,14 @@ func (p KvPair) HasClassInfos() bool {
 
 func (p KvPair) HasJoyIDInfos() bool {
 	return len(p.JoyIDInfos) > 0
+}
+
+func (p KvPair) HasExtensionPairs() bool {
+	return len(p.ExtensionPairs) > 0
+}
+
+func (p KvPair) HasUpdatedExtensionPairs() bool {
+	return len(p.UpdatedExtensionPairs) > 0
 }
 
 type KvPairRepo interface {

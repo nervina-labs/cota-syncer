@@ -20,13 +20,14 @@ type BlockSyncer struct {
 	issuerInfoUsecase     *biz.IssuerInfoUsecase
 	classInfoUsecase      *biz.ClassInfoUsecase
 	joyIDInfoUsecase      *biz.JoyIDInfoUsecase
+	extensionPairUsecase  *biz.ExtensionPairUsecase
 }
 
 func NewBlockSyncer(claimedCotaUsecase *biz.ClaimedCotaNftKvPairUsecase, defineCotaUsecase *biz.DefineCotaNftKvPairUsecase,
 	holdCotaUsecase *biz.HoldCotaNftKvPairUsecase, registerCotaUsecase *biz.RegisterCotaKvPairUsecase,
 	withdrawCotaUsecase *biz.WithdrawCotaNftKvPairUsecase, cotaWitnessArgsParser CotaWitnessArgsParser,
 	kvPairUsecase *biz.SyncKvPairUsecase, mintCotaUsecase *biz.MintCotaKvPairUsecase, transferCotaUsecase *biz.TransferCotaKvPairUsecase,
-	issuerInfoUsecase *biz.IssuerInfoUsecase, classInfoUsecase *biz.ClassInfoUsecase, joyIDInfoUsecase *biz.JoyIDInfoUsecase) BlockSyncer {
+	issuerInfoUsecase *biz.IssuerInfoUsecase, classInfoUsecase *biz.ClassInfoUsecase, joyIDInfoUsecase *biz.JoyIDInfoUsecase, extensionPairUsecase *biz.ExtensionPairUsecase) BlockSyncer {
 	return BlockSyncer{
 		claimedCotaUsecase:    claimedCotaUsecase,
 		defineCotaUsecase:     defineCotaUsecase,
@@ -40,6 +41,7 @@ func NewBlockSyncer(claimedCotaUsecase *biz.ClaimedCotaNftKvPairUsecase, defineC
 		issuerInfoUsecase:     issuerInfoUsecase,
 		classInfoUsecase:      classInfoUsecase,
 		joyIDInfoUsecase:      joyIDInfoUsecase,
+		extensionPairUsecase:  extensionPairUsecase,
 	}
 }
 
@@ -163,6 +165,20 @@ func (bp BlockSyncer) parseCotaEntries(blockNumber uint64, entries []biz.Entry) 
 				}
 				kvPair.ClaimedCotas = append(kvPair.ClaimedCotas, claimedCotas...)
 				kvPair.WithdrawCotas = append(kvPair.WithdrawCotas, withdrawCotas...)
+			// Extension: Create extension pairs
+			case 0xF0:
+				extensionPairs, err := bp.extensionPairUsecase.ParseExtensionPair(blockNumber, entry)
+				if err != nil {
+					return kvPair, err
+				}
+				kvPair.ExtensionPairs = append(kvPair.ExtensionPairs, extensionPairs...)
+			// Extension: Update extension pairs
+			case 0xF1:
+				extensionPairs, err := bp.extensionPairUsecase.ParseExtensionPair(blockNumber, entry)
+				if err != nil {
+					return kvPair, err
+				}
+				kvPair.UpdatedExtensionPairs = append(kvPair.UpdatedExtensionPairs, extensionPairs...)
 			}
 		}
 	}
