@@ -41,7 +41,7 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 			}
 			if err := tx.Model(RegisterCotaKvPair{}).WithContext(ctx).Clauses(clause.OnConflict{
 				Columns:   []clause.Column{{Name: "lock_hash"}},
-				DoUpdates: clause.AssignmentColumns([]string{"cota_cell_id", "lock_script_id", "block_number", "updated_at"}),
+				DoUpdates: clause.AssignmentColumns([]string{"cota_cell_id", "lock_script_id", "updated_at"}),
 			}).Create(registers).Error; err != nil {
 				return err
 			}
