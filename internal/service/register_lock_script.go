@@ -28,6 +28,9 @@ func NewRegisterLockService(lockScriptUsecase *biz.RegisterLockScriptUsecase, lo
 
 func (s RegisterLockService) Start(ctx context.Context, _ string) error {
 	s.logger.Info(ctx, "register lock script service started")
+	if result, err := s.lockScriptUsecase.IsAllHaveLock(ctx); result || err != nil {
+		return nil
+	}
 	page := 0
 	for {
 		queryInfos, err := s.lockScriptUsecase.FindRegisterQueryInfos(ctx, page, pageSize)
@@ -93,7 +96,7 @@ func (s RegisterLockService) parseLockScript(ctx context.Context, tx *ckbTypes.T
 		if err = s.lockScriptUsecase.FindOrCreateScript(ctx, &lock); err != nil {
 			return err
 		}
-		if err = s.lockScriptUsecase.CreateRegisterLock(ctx, info.LockHash, lock.ID); err != nil {
+		if err = s.lockScriptUsecase.AddRegisterLock(ctx, info.LockHash, lock.ID); err != nil {
 			return err
 		}
 	}

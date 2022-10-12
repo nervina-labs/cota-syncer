@@ -22,11 +22,19 @@ func NewRegisterLockScriptRepo(data *Data, logger *logger.Logger) biz.RegisterLo
 	}
 }
 
-func (rp registerLockScriptRepo) CreateRegisterLock(ctx context.Context, lockHash string, lockScriptId uint) error {
+func (rp registerLockScriptRepo) AddRegisterLock(ctx context.Context, lockHash string, lockScriptId uint) error {
 	if err := rp.data.db.WithContext(ctx).Model(RegisterCotaKvPair{}).Where("lock_hash = ?", lockHash).Updates(RegisterCotaKvPair{LockScriptId: lockScriptId}).Error; err != nil {
 		return err
 	}
 	return nil
+}
+
+func (rp registerLockScriptRepo) IsAllHaveLock(ctx context.Context) (bool, error) {
+	var count int64
+	if err := rp.data.db.WithContext(ctx).Model(RegisterCotaKvPair{}).Count(&count).Where("lock_script_id = 3094967296").Error; err != nil {
+		return false, err
+	}
+	return count == 0, nil
 }
 
 func (rp registerLockScriptRepo) FindRegisterQueryInfos(ctx context.Context, page int, pageSize int) ([]biz.RegisterQueryInfo, error) {

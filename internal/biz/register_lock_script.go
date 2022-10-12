@@ -12,7 +12,8 @@ type RegisterQueryInfo struct {
 }
 
 type RegisterLockScriptRepo interface {
-	CreateRegisterLock(ctx context.Context, lockHash string, lockScriptId uint) error
+	AddRegisterLock(ctx context.Context, lockHash string, lockScriptId uint) error
+	IsAllHaveLock(ctx context.Context) (bool, error)
 	FindRegisterQueryInfos(ctx context.Context, page int, pageSize int) ([]RegisterQueryInfo, error)
 	FindOrCreateScript(ctx context.Context, script *Script) error
 }
@@ -29,8 +30,12 @@ func NewRegisterLockScriptUsecase(repo RegisterLockScriptRepo, logger *logger.Lo
 	}
 }
 
-func (uc *RegisterLockScriptUsecase) CreateRegisterLock(ctx context.Context, lockHash string, lockScriptId uint) error {
-	return uc.repo.CreateRegisterLock(ctx, lockHash, lockScriptId)
+func (uc *RegisterLockScriptUsecase) AddRegisterLock(ctx context.Context, lockHash string, lockScriptId uint) error {
+	return uc.repo.AddRegisterLock(ctx, lockHash, lockScriptId)
+}
+
+func (uc *RegisterLockScriptUsecase) IsAllHaveLock(ctx context.Context) (bool, error) {
+	return uc.repo.IsAllHaveLock(ctx)
 }
 
 func (uc *RegisterLockScriptUsecase) FindRegisterQueryInfos(ctx context.Context, page int, pageSize int) ([]RegisterQueryInfo, error) {
