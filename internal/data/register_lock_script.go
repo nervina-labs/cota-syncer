@@ -31,7 +31,7 @@ func (rp registerLockScriptRepo) AddRegisterLock(ctx context.Context, lockHash s
 
 func (rp registerLockScriptRepo) IsAllHaveLock(ctx context.Context) (bool, error) {
 	var count int64
-	if err := rp.data.db.WithContext(ctx).Model(RegisterCotaKvPair{}).Count(&count).Where("lock_script_id = 3094967296").Error; err != nil {
+	if err := rp.data.db.WithContext(ctx).Model(RegisterCotaKvPair{}).Where("lock_script_id = 3094967296").Count(&count).Error; err != nil {
 		return false, err
 	}
 	return count == 0, nil
