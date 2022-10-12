@@ -66,8 +66,11 @@ func initApp(database *config.Database, ckbNode *config.CkbNode, loggerLogger *l
 	withdrawExtraInfoRepo := data.NewWithdrawExtraInfoRepo(dataData, loggerLogger)
 	withdrawExtraInfoUsecase := biz.NewWithdrawExtraInfoUsecase(withdrawExtraInfoRepo, loggerLogger)
 	withdrawExtraInfoService := service.NewWithdrawExtraInfoService(withdrawExtraInfoUsecase, loggerLogger, ckbNodeClient)
+	registerLockScriptRepo := data.NewRegisterLockScriptRepo(dataData, loggerLogger)
+	registerLockScriptUsecase := biz.NewRegisterLockScriptUsecase(registerLockScriptRepo, loggerLogger)
+	registerLockService := service.NewRegisterLockService(registerLockScriptUsecase, loggerLogger, ckbNodeClient)
 	dbMigration := data.NewDBMigration(dataData, loggerLogger)
-	appApp := newApp(loggerLogger, blockSyncService, checkInfoCleanerService, metadataSyncService, invalidDataCleaner, withdrawExtraInfoService, dbMigration)
+	appApp := newApp(loggerLogger, blockSyncService, checkInfoCleanerService, metadataSyncService, invalidDataCleaner, withdrawExtraInfoService, registerLockService, dbMigration)
 	return appApp, func() {
 		cleanup()
 	}, nil

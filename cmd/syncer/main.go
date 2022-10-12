@@ -13,12 +13,12 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-func newApp(logger *logger.Logger, blockSyncSvc *service.BlockSyncService, checkInfoCleanerSvc *service.CheckInfoCleanerService, metadataSyncSvc *service.MetadataSyncService, invalidDataCleanerSvc *service.InvalidDataCleaner, withdrawExtraInfoService *service.WithdrawExtraInfoService, m *data.DBMigration) *app.App {
+func newApp(logger *logger.Logger, blockSyncSvc *service.BlockSyncService, checkInfoCleanerSvc *service.CheckInfoCleanerService, metadataSyncSvc *service.MetadataSyncService, invalidDataCleanerSvc *service.InvalidDataCleaner, withdrawExtraInfoService *service.WithdrawExtraInfoService, registerLockService *service.RegisterLockService, m *data.DBMigration) *app.App {
 	return app.NewApp(
 		app.Name("cota-syncer"),
 		app.Version("0.0.1"),
 		app.Logger(logger),
-		app.Services(blockSyncSvc, checkInfoCleanerSvc, metadataSyncSvc, invalidDataCleanerSvc, withdrawExtraInfoService), app.Migration(m))
+		app.Services(blockSyncSvc, checkInfoCleanerSvc, metadataSyncSvc, invalidDataCleanerSvc, withdrawExtraInfoService, registerLockService), app.Migration(m))
 }
 
 func main() {

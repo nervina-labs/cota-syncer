@@ -11,7 +11,7 @@ import (
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 )
 
-var ProviderSet = wire.NewSet(NewBlockSyncService, NewCheckInfoService, NewMetadataSyncService, NewInvalidDataService, NewWithdrawExtraInfoService)
+var ProviderSet = wire.NewSet(NewBlockSyncService, NewCheckInfoService, NewMetadataSyncService, NewInvalidDataService, NewWithdrawExtraInfoService, NewRegisterLockService)
 
 type BlockSyncService struct {
 	checkInfoUsecase *biz.CheckInfoUsecase
