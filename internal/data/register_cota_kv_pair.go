@@ -122,4 +122,3 @@ func (rp registerCotaKvPairRepo) generateLockMap(ctx context.Context, tx *ckbTyp
 	}
 	return lockMap, nil
 }
-
