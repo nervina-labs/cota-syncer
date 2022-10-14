@@ -17,13 +17,13 @@ import (
 var _ biz.RegisterCotaKvPairRepo = (*registerCotaKvPairRepo)(nil)
 
 type RegisterCotaKvPair struct {
-	ID          uint `gorm:"primaryKey"`
-	BlockNumber uint64
-	LockHash    string
-	CotaCellID  uint64
+	ID           uint `gorm:"primaryKey"`
+	BlockNumber  uint64
+	LockHash     string
+	CotaCellID   uint64
 	LockScriptId uint
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }
 
 type registerCotaKvPairRepo struct {
@@ -60,18 +60,21 @@ func (rp registerCotaKvPairRepo) ParseRegistryEntries(ctx context.Context, block
 	registerWitnessType := bytes.RawData()
 	registryEntries := smt.CotaNFTRegistryEntriesFromSliceUnchecked(registerWitnessType)
 	registryVec := registryEntries.Registries()
-	lockMap, err := rp.generateLockMap(ctx, tx)
+	lockMap, err := rp.generateLockMap(tx)
 	if err != nil {
 		return
 	}
 	for i := uint(0); i < registryVec.Len(); i++ {
 		lockHash := hex.EncodeToString(registryVec.Get(i).LockHash().RawData())
-		lockScriptId := lockMap[lockHash]
+		lock := lockMap[lockHash]
+		if err = rp.FindOrCreateScript(ctx, lock); err != nil {
+			return
+		}
 		registerCotas = append(registerCotas, biz.RegisterCotaKvPair{
-			BlockNumber: blockNumber,
-			LockHash:    lockHash,
-			CotaCellID:  binary.BigEndian.Uint64(registryVec.Get(i).State().AsSlice()[0:8]),
-			LockScriptId: lockScriptId,
+			BlockNumber:  blockNumber,
+			LockHash:     lockHash,
+			CotaCellID:   binary.BigEndian.Uint64(registryVec.Get(i).State().AsSlice()[0:8]),
+			LockScriptId: lock.ID,
 		})
 	}
 	return
@@ -96,9 +99,8 @@ func (rp registerCotaKvPairRepo) FindOrCreateScript(ctx context.Context, script 
 	return nil
 }
 
-
-func (rp registerCotaKvPairRepo) generateLockMap(ctx context.Context, tx *ckbTypes.Transaction) (map[string] uint, error) {
-	lockMap := make(map[string] uint, len(tx.Outputs))
+func (rp registerCotaKvPairRepo) generateLockMap(tx *ckbTypes.Transaction) (map[string]*biz.Script, error) {
+	lockMap := make(map[string]*biz.Script, len(tx.Outputs))
 	for _, output := range tx.Outputs {
 		if output.Type != nil {
 			lockHash, err := output.Lock.Hash()
@@ -114,10 +116,7 @@ func (rp registerCotaKvPairRepo) generateLockMap(ctx context.Context, tx *ckbTyp
 				HashType: hex.EncodeToString(hashType),
 				Args:     hex.EncodeToString(output.Lock.Args),
 			}
-			if err = rp.FindOrCreateScript(ctx, &lock); err != nil {
-				return lockMap, err
-			}
-			lockMap[lockHash.String()[2:]] = lock.ID
+			lockMap[lockHash.String()[2:]] = &lock
 		}
 	}
 	return lockMap, nil
