@@ -39,10 +39,10 @@ func (rp registerLockScriptRepo) IsAllHaveLock(ctx context.Context) (bool, error
 
 func (rp registerLockScriptRepo) FindRegisterQueryInfos(ctx context.Context, page int, pageSize int) ([]biz.RegisterQueryInfo, error) {
 	var (
-		registerPairs        []RegisterCotaKvPair
-		registerQueryInfos   []biz.RegisterQueryInfo
+		registerPairs      []RegisterCotaKvPair
+		registerQueryInfos []biz.RegisterQueryInfo
 	)
-	result := rp.data.db.WithContext(ctx).Model(RegisterCotaKvPair{}).Select("block_number, lock_hash").Where("lock_script_id = 3094967296").Limit(pageSize).Offset(page * pageSize).Find(&registerPairs);
+	result := rp.data.db.WithContext(ctx).Model(RegisterCotaKvPair{}).Select("block_number, lock_hash").Where("lock_script_id = 3094967296").Limit(pageSize).Offset(page * pageSize).Find(&registerPairs)
 	if result.Error != nil {
 		return registerQueryInfos, result.Error
 	}
