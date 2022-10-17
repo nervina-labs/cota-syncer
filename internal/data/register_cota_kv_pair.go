@@ -66,15 +66,8 @@ func (rp registerCotaKvPairRepo) ParseRegistryEntries(ctx context.Context, block
 	}
 	for i := uint(0); i < registryVec.Len(); i++ {
 		lockHash := hex.EncodeToString(registryVec.Get(i).LockHash().RawData())
-		lock := lockMap[lockHash]
-		// The outputs of the update CCID transactions have no cota cells, the lock script will be nil.
-		if lock == nil {
-			registerCotas = append(registerCotas, biz.RegisterCotaKvPair{
-				BlockNumber: blockNumber,
-				LockHash:    lockHash,
-				CotaCellID:  binary.BigEndian.Uint64(registryVec.Get(i).State().AsSlice()[0:8]),
-			})
-		} else {
+		lock, ok := lockMap[lockHash]
+		if ok {
 			if err = rp.FindOrCreateScript(ctx, lock); err != nil {
 				return
 			}
@@ -83,6 +76,13 @@ func (rp registerCotaKvPairRepo) ParseRegistryEntries(ctx context.Context, block
 				LockHash:     lockHash,
 				CotaCellID:   binary.BigEndian.Uint64(registryVec.Get(i).State().AsSlice()[0:8]),
 				LockScriptId: lock.ID,
+			})
+		} else {
+			// The outputs of the update CCID transactions have no cota cells, the lock script will be nil.
+			registerCotas = append(registerCotas, biz.RegisterCotaKvPair{
+				BlockNumber: blockNumber,
+				LockHash:    lockHash,
+				CotaCellID:  binary.BigEndian.Uint64(registryVec.Get(i).State().AsSlice()[0:8]),
 			})
 		}
 	}
