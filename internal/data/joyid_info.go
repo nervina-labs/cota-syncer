@@ -131,8 +131,7 @@ func (repo joyIDInfoRepo) ParseJoyIDInfo(ctx context.Context, blockNumber uint64
 	if err != nil {
 		return
 	}
-	// include 0x prefix
-	if len(joyIDInfo.PubKey) > 130 || len(joyIDInfo.CotaCellId) > 18 || len(joyIDInfo.Alg) > 4 {
+	if lenNo0x(joyIDInfo.PubKey) > 128 || lenNo0x(joyIDInfo.CotaCellId) > 16 || lenNo0x(joyIDInfo.Alg) > 2 {
 		err = ErrInvalidJoyIDInfo
 		return
 	}
@@ -142,7 +141,7 @@ func (repo joyIDInfoRepo) ParseJoyIDInfo(ctx context.Context, blockNumber uint64
 	}
 	subKeys := make([]biz.SubKeyInfo, len(joyIDInfo.SubKeys))
 	for i, v := range joyIDInfo.SubKeys {
-		if len(v.PubKey) > 130 || len(v.Alg) > 4 {
+		if lenNo0x(v.PubKey) > 128 || len(v.Alg) > 4 {
 			err = ErrInvalidJoyIDInfo
 		}
 		subKeys[i] = biz.SubKeyInfo{
@@ -222,4 +221,8 @@ func remove0x(value string) string {
 		return value[2:]
 	}
 	return value
+}
+
+func lenNo0x(value string) int {
+	return len(remove0x(value))
 }
