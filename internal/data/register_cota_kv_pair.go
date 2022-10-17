@@ -67,6 +67,7 @@ func (rp registerCotaKvPairRepo) ParseRegistryEntries(ctx context.Context, block
 	for i := uint(0); i < registryVec.Len(); i++ {
 		lockHash := hex.EncodeToString(registryVec.Get(i).LockHash().RawData())
 		lock := lockMap[lockHash]
+		// The outputs of the update CCID transactions have no cota cells, the lock script will be nil.
 		if lock == nil {
 			registerCotas = append(registerCotas, biz.RegisterCotaKvPair{
 				BlockNumber: blockNumber,
