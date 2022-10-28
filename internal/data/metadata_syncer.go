@@ -2,7 +2,6 @@ package data
 
 import (
 	"context"
-
 	"github.com/nervina-labs/cota-syncer/internal/biz"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 )
