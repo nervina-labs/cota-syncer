@@ -773,6 +773,7 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 						PubKey:         info.PubKey,
 						CredentialId:   info.CredentialId,
 						Alg:            info.Alg,
+						OldFrontEnd:    oldInfo.FrontEnd,
 						FrontEnd:       info.FrontEnd,
 						CotaCellId:     info.CotaCellId,
 						ActionType:     1,
@@ -928,7 +929,7 @@ func (rp kvPairRepo) RestoreMetadataKvPairs(ctx context.Context, blockNumber uin
 				PubKey:       version.PubKey,
 				CredentialId: version.CredentialId,
 				Alg:          version.Alg,
-				FrontEnd:     version.FrontEnd,
+				FrontEnd:     version.OldFrontEnd,
 				CotaCellId:   version.CotaCellId,
 				UpdatedAt:    time.Now().UTC(),
 			})

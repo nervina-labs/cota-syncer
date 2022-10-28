@@ -47,6 +47,7 @@ type JoyIDInfoVersion struct {
 	PubKey         string
 	CredentialId   string
 	Alg            string
+	OldFrontEnd    string
 	FrontEnd       string
 	CotaCellId     string
 	OldName        string
