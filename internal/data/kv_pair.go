@@ -33,9 +33,9 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 			registers := make([]RegisterCotaKvPair, len(kvPair.Registers))
 			for i, register := range kvPair.Registers {
 				registers[i] = RegisterCotaKvPair{
-					BlockNumber: register.BlockNumber,
-					LockHash:    register.LockHash,
-					CotaCellID:  register.CotaCellID,
+					BlockNumber:  register.BlockNumber,
+					LockHash:     register.LockHash,
+					CotaCellID:   register.CotaCellID,
 					LockScriptId: register.LockScriptId,
 				}
 			}
@@ -306,11 +306,11 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 			extensionPairs := make([]ExtensionKvPair, len(kvPair.ExtensionPairs))
 			for i, extension := range kvPair.ExtensionPairs {
 				extensionPairs[i] = ExtensionKvPair{
-					BlockNumber:    extension.BlockNumber,
-					Key:            extension.Key,
-					Value:          extension.Value,
-					LockHash:       extension.LockHash,
-					LockHashCRC:    extension.LockHashCRC,
+					BlockNumber: extension.BlockNumber,
+					Key:         extension.Key,
+					Value:       extension.Value,
+					LockHash:    extension.LockHash,
+					LockHashCRC: extension.LockHashCRC,
 				}
 			}
 			if err := tx.Debug().Clauses(clause.OnConflict{
@@ -322,12 +322,12 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 			extensionPairVersions := make([]ExtensionKvPairVersion, len(kvPair.ExtensionPairs))
 			for i, extension := range kvPair.ExtensionPairs {
 				extensionPairVersions[i] = ExtensionKvPairVersion{
-					BlockNumber:    extension.BlockNumber,
-					Key:            extension.Key,
-					Value:          extension.Value,
-					LockHash:       extension.LockHash,
-					TxIndex:        extension.TxIndex,
-					ActionType:     0,
+					BlockNumber: extension.BlockNumber,
+					Key:         extension.Key,
+					Value:       extension.Value,
+					LockHash:    extension.LockHash,
+					TxIndex:     extension.TxIndex,
+					ActionType:  0,
 				}
 			}
 			// create extension pair versions
@@ -362,12 +362,12 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 			updatedExtensionPairs := make([]ExtensionKvPair, len(kvPair.UpdatedExtensionPairs))
 			for i, extension := range kvPair.UpdatedExtensionPairs {
 				updatedExtensionPairs[i] = ExtensionKvPair{
-					BlockNumber:    extension.BlockNumber,
-					Key:            extension.Key,
-					Value:          extension.Value,
-					LockHash:       extension.LockHash,
-					LockHashCRC:    extension.LockHashCRC,
-					UpdatedAt:      extension.UpdatedAt,
+					BlockNumber: extension.BlockNumber,
+					Key:         extension.Key,
+					Value:       extension.Value,
+					LockHash:    extension.LockHash,
+					LockHashCRC: extension.LockHashCRC,
+					UpdatedAt:   extension.UpdatedAt,
 				}
 			}
 			if err := tx.Debug().Clauses(clause.OnConflict{
@@ -745,6 +745,7 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 						PubKey:       info.PubKey,
 						CredentialId: info.CredentialId,
 						Alg:          info.Alg,
+						FrontEnd:     info.FrontEnd,
 						CotaCellId:   info.CotaCellId,
 						LockHash:     info.LockHash,
 						Extension:    info.Extension,
@@ -772,6 +773,8 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 						PubKey:         info.PubKey,
 						CredentialId:   info.CredentialId,
 						Alg:            info.Alg,
+						OldFrontEnd:    oldInfo.FrontEnd,
+						FrontEnd:       info.FrontEnd,
 						CotaCellId:     info.CotaCellId,
 						ActionType:     1,
 						TxIndex:        info.TxIndex,
@@ -796,6 +799,7 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 					PubKey:       joyID.PubKey,
 					CredentialId: joyID.CredentialId,
 					Alg:          joyID.Alg,
+					FrontEnd:     joyID.FrontEnd,
 					CotaCellId:   joyID.CotaCellId,
 					Extension:    joyID.Extension,
 					Nickname:     joyID.Nickname,
@@ -925,6 +929,7 @@ func (rp kvPairRepo) RestoreMetadataKvPairs(ctx context.Context, blockNumber uin
 				PubKey:       version.PubKey,
 				CredentialId: version.CredentialId,
 				Alg:          version.Alg,
+				FrontEnd:     version.OldFrontEnd,
 				CotaCellId:   version.CotaCellId,
 				UpdatedAt:    time.Now().UTC(),
 			})

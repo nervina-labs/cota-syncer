@@ -26,6 +26,7 @@ type JoyIDInfo struct {
 	PubKey       string
 	CredentialId string
 	Alg          string
+	FrontEnd     string
 	CotaCellId   string
 	Name         string
 	Avatar       string
@@ -46,6 +47,8 @@ type JoyIDInfoVersion struct {
 	PubKey         string
 	CredentialId   string
 	Alg            string
+	OldFrontEnd    string
+	FrontEnd       string
 	CotaCellId     string
 	OldName        string
 	Name           string
@@ -164,6 +167,7 @@ func (repo joyIDInfoRepo) ParseJoyIDInfo(ctx context.Context, blockNumber uint64
 		PubKey:       remove0x(joyIDInfo.PubKey),
 		CredentialId: remove0x(joyIDInfo.CredentialId),
 		Alg:          remove0x(joyIDInfo.Alg),
+		FrontEnd:     joyIDInfo.FrontEnd,
 		CotaCellId:   remove0x(joyIDInfo.CotaCellId),
 		Extension:    joyIDInfo.Extension,
 		Nickname:     nickname,
