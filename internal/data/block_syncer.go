@@ -21,13 +21,15 @@ type BlockSyncer struct {
 	classInfoUsecase      *biz.ClassInfoUsecase
 	joyIDInfoUsecase      *biz.JoyIDInfoUsecase
 	extensionPairUsecase  *biz.ExtensionPairUsecase
+	subKeyPairUsecase     *biz.SubKeyPairRepoUsecase
 }
 
 func NewBlockSyncer(claimedCotaUsecase *biz.ClaimedCotaNftKvPairUsecase, defineCotaUsecase *biz.DefineCotaNftKvPairUsecase,
 	holdCotaUsecase *biz.HoldCotaNftKvPairUsecase, registerCotaUsecase *biz.RegisterCotaKvPairUsecase,
 	withdrawCotaUsecase *biz.WithdrawCotaNftKvPairUsecase, cotaWitnessArgsParser CotaWitnessArgsParser,
 	kvPairUsecase *biz.SyncKvPairUsecase, mintCotaUsecase *biz.MintCotaKvPairUsecase, transferCotaUsecase *biz.TransferCotaKvPairUsecase,
-	issuerInfoUsecase *biz.IssuerInfoUsecase, classInfoUsecase *biz.ClassInfoUsecase, joyIDInfoUsecase *biz.JoyIDInfoUsecase, extensionPairUsecase *biz.ExtensionPairUsecase) BlockSyncer {
+	issuerInfoUsecase *biz.IssuerInfoUsecase, classInfoUsecase *biz.ClassInfoUsecase, joyIDInfoUsecase *biz.JoyIDInfoUsecase,
+	extensionPairUsecase *biz.ExtensionPairUsecase, subKeyPairUsecase *biz.SubKeyPairRepoUsecase) BlockSyncer {
 	return BlockSyncer{
 		claimedCotaUsecase:    claimedCotaUsecase,
 		defineCotaUsecase:     defineCotaUsecase,
@@ -42,6 +44,7 @@ func NewBlockSyncer(claimedCotaUsecase *biz.ClaimedCotaNftKvPairUsecase, defineC
 		classInfoUsecase:      classInfoUsecase,
 		joyIDInfoUsecase:      joyIDInfoUsecase,
 		extensionPairUsecase:  extensionPairUsecase,
+		subKeyPairUsecase:     subKeyPairUsecase,
 	}
 }
 
@@ -172,6 +175,12 @@ func (bp BlockSyncer) parseCotaEntries(blockNumber uint64, entries []biz.Entry) 
 					return kvPair, err
 				}
 				kvPair.ExtensionPairs = append(kvPair.ExtensionPairs, extensionPairs...)
+
+				subKeyPairs, err := bp.subKeyPairUsecase.ParseExtensionPair(blockNumber, entry)
+				if err != nil {
+					return kvPair, err
+				}
+				kvPair.SubKeyPairs = append(kvPair.SubKeyPairs, subKeyPairs...)
 			// Extension: Update extension pairs
 			case 0xF1:
 				extensionPairs, err := bp.extensionPairUsecase.ParseExtensionPair(blockNumber, entry)
@@ -179,6 +188,12 @@ func (bp BlockSyncer) parseCotaEntries(blockNumber uint64, entries []biz.Entry) 
 					return kvPair, err
 				}
 				kvPair.UpdatedExtensionPairs = append(kvPair.UpdatedExtensionPairs, extensionPairs...)
+
+				subKeyPairs, err := bp.subKeyPairUsecase.ParseExtensionPair(blockNumber, entry)
+				if err != nil {
+					return kvPair, err
+				}
+				kvPair.UpdatedSubKeyPairs = append(kvPair.SubKeyPairs, subKeyPairs...)
 			}
 		}
 	}

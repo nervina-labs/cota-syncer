@@ -377,6 +377,40 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 				return err
 			}
 		}
+
+		if kvPair.HasSubKeyPairs() {
+			subKeyPairs := make([]SubKeyPair, len(kvPair.SubKeyPairs))
+			subKeyPairVersions := make([]SubKeyPairVersion, len(kvPair.ExtensionPairs))
+			for i, subKey := range kvPair.SubKeyPairs {
+				subKeyPairs[i] = SubKeyPair{
+					BlockNumber: subKey.BlockNumber,
+					LockHash:    subKey.LockHash,
+					SubType:     subKey.SubType,
+					ExtData:     subKey.ExtData,
+					AlgIndex:    subKey.AlgIndex,
+					PubkeyHash:  subKey.PubkeyHash,
+				}
+				subKeyPairVersions[i] = SubKeyPairVersion{
+					BlockNumber: subKey.BlockNumber,
+					LockHash:    subKey.LockHash,
+					SubType:     subKey.SubType,
+					ExtData:     subKey.ExtData,
+					AlgIndex:    subKey.AlgIndex,
+					PubkeyHash:  subKey.PubkeyHash,
+					ActionType:  0,
+				}
+			}
+			if err := tx.Debug().Model(SubKeyPair{}).WithContext(ctx).Create(subKeyPairs).Error; err != nil {
+				return err
+			}
+			if err := tx.Debug().Model(SubKeyPairVersion{}).WithContext(ctx).Create(subKeyPairVersions).Error; err != nil {
+				return err
+			}
+		}
+		if kvPair.HasUpdatedSubKeyPairs() {
+
+		}
+
 		// create check info
 		if err := tx.Debug().Model(CheckInfo{}).WithContext(ctx).Create(&CheckInfo{
 			BlockNumber: checkInfo.BlockNumber,
@@ -558,6 +592,16 @@ func (rp kvPairRepo) RestoreCotaEntryKvPairs(ctx context.Context, blockNumber ui
 		// delete all updated extension pair versions by the block number
 		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Delete(ExtensionKvPairVersion{}).Error; err != nil {
 			return err
+		}
+
+		{
+			// delete all deleted sub key pair versions by the block number
+			if err := tx.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(SubKeyPair{}).Error; err != nil {
+				return err
+			}
+			// restore all updated sub key pairs by the block number
+
+			// delete all updated extension pair versions by the block number
 		}
 
 		// delete check info

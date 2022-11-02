@@ -19,6 +19,8 @@ type KvPair struct {
 	JoyIDInfos            []JoyIDInfo
 	ExtensionPairs        []ExtensionPair
 	UpdatedExtensionPairs []ExtensionPair
+	SubKeyPairs           []SubKeyPair
+	UpdatedSubKeyPairs    []SubKeyPair
 }
 
 func (p KvPair) HasRegisters() bool {
@@ -63,6 +65,14 @@ func (p KvPair) HasExtensionPairs() bool {
 
 func (p KvPair) HasUpdatedExtensionPairs() bool {
 	return len(p.UpdatedExtensionPairs) > 0
+}
+
+func (p KvPair) HasSubKeyPairs() bool {
+	return len(p.SubKeyPairs) > 0
+}
+
+func (p KvPair) HasUpdatedSubKeyPairs() bool {
+	return len(p.UpdatedSubKeyPairs) > 0
 }
 
 type KvPairRepo interface {
