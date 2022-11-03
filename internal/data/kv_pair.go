@@ -412,7 +412,7 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 			updatedSubKeyPairs := make([]SubKeyKvPair, len(kvPair.UpdatedSubKeyPairs))
 			for i, subKey := range kvPair.UpdatedSubKeyPairs {
 				var oldSubKey SubKeyKvPair
-				if err := tx.Model(SubKeyKvPair{}).WithContext(ctx).Where("`lock_hash` = ? and pubkey_hash = ?", subKey.LockHash, subKey.PubkeyHash).First(&oldSubKey).Error; err != nil {
+				if err := tx.Model(SubKeyKvPair{}).WithContext(ctx).Where("lock_hash = ? and pubkey_hash = ?", subKey.LockHash, subKey.PubkeyHash).First(&oldSubKey).Error; err != nil {
 					return err
 				}
 				updatedSubKeyPairVersions[i] = SubKeyKvPairVersion{
