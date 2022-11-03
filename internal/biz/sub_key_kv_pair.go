@@ -13,7 +13,6 @@ type SubKeyPair struct {
 	ExtData     uint32
 	AlgIndex    uint32
 	PubkeyHash  string
-	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
 

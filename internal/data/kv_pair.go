@@ -379,10 +379,10 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 		}
 
 		if kvPair.HasSubKeyPairs() {
-			subKeyPairs := make([]SubKeyPair, len(kvPair.SubKeyPairs))
-			subKeyPairVersions := make([]SubKeyPairVersion, len(kvPair.ExtensionPairs))
+			subKeyPairs := make([]SubKeyKvPair, len(kvPair.SubKeyPairs))
+			subKeyPairVersions := make([]SubKeyKvPairVersion, len(kvPair.ExtensionPairs))
 			for i, subKey := range kvPair.SubKeyPairs {
-				subKeyPairs[i] = SubKeyPair{
+				subKeyPairs[i] = SubKeyKvPair{
 					BlockNumber: subKey.BlockNumber,
 					LockHash:    subKey.LockHash,
 					SubType:     subKey.SubType,
@@ -390,7 +390,7 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 					AlgIndex:    subKey.AlgIndex,
 					PubkeyHash:  subKey.PubkeyHash,
 				}
-				subKeyPairVersions[i] = SubKeyPairVersion{
+				subKeyPairVersions[i] = SubKeyKvPairVersion{
 					BlockNumber: subKey.BlockNumber,
 					LockHash:    subKey.LockHash,
 					SubType:     subKey.SubType,
@@ -400,15 +400,52 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 					ActionType:  0,
 				}
 			}
-			if err := tx.Debug().Model(SubKeyPair{}).WithContext(ctx).Create(subKeyPairs).Error; err != nil {
+			if err := tx.Debug().WithContext(ctx).Create(subKeyPairs).Error; err != nil {
 				return err
 			}
-			if err := tx.Debug().Model(SubKeyPairVersion{}).WithContext(ctx).Create(subKeyPairVersions).Error; err != nil {
+			if err := tx.Debug().WithContext(ctx).Create(subKeyPairVersions).Error; err != nil {
 				return err
 			}
 		}
 		if kvPair.HasUpdatedSubKeyPairs() {
-
+			updatedSubKeyPairVersions := make([]SubKeyKvPairVersion, len(kvPair.UpdatedSubKeyPairs))
+			updatedSubKeyPairs := make([]SubKeyKvPair, len(kvPair.UpdatedSubKeyPairs))
+			for i, subKey := range kvPair.UpdatedSubKeyPairs {
+				var oldSubKey SubKeyKvPair
+				if err := tx.Model(SubKeyKvPair{}).WithContext(ctx).Where("`lock_hash` = ?", subKey.LockHash).First(&oldSubKey).Error; err != nil {
+					return err
+				}
+				updatedSubKeyPairVersions[i] = SubKeyKvPairVersion{
+					OldBlockNumber: oldSubKey.BlockNumber,
+					BlockNumber:    subKey.BlockNumber,
+					LockHash:       subKey.LockHash,
+					SubType:        subKey.SubType,
+					ExtData:        subKey.ExtData,
+					OldAlgIndex:    oldSubKey.AlgIndex,
+					AlgIndex:       subKey.AlgIndex,
+					OldPubkeyHash:  oldSubKey.PubkeyHash,
+					PubkeyHash:     subKey.PubkeyHash,
+					ActionType:     1,
+				}
+				updatedSubKeyPairs[i] = SubKeyKvPair{
+					BlockNumber: subKey.BlockNumber,
+					LockHash:    subKey.LockHash,
+					SubType:     subKey.SubType,
+					ExtData:     subKey.ExtData,
+					AlgIndex:    subKey.AlgIndex,
+					PubkeyHash:  subKey.PubkeyHash,
+					UpdatedAt:   subKey.UpdatedAt,
+				}
+			}
+			if err := tx.Debug().WithContext(ctx).Create(updatedSubKeyPairVersions).Error; err != nil {
+				return err
+			}
+			if err := tx.Debug().Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "lock_hash"}},
+				DoUpdates: clause.AssignmentColumns([]string{"block_number", "alg_index", "pubkey_hash", "updated_at"}),
+			}).Create(updatedSubKeyPairs).Error; err != nil {
+				return err
+			}
 		}
 
 		// create check info
@@ -589,19 +626,46 @@ func (rp kvPairRepo) RestoreCotaEntryKvPairs(ctx context.Context, blockNumber ui
 				return err
 			}
 		}
-		// delete all updated extension pair versions by the block number
+		// delete all updated extension pair versions by the block number1
 		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Delete(ExtensionKvPairVersion{}).Error; err != nil {
 			return err
 		}
 
+		// sub key pair
 		{
-			// delete all deleted sub key pair versions by the block number
-			if err := tx.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(SubKeyPair{}).Error; err != nil {
+			// delete all sub key pair by the block number
+			if err := tx.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(SubKeyKvPair{}).Error; err != nil {
+				return err
+			}
+			// delete all created extension pair versions by the block number
+			if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 0).Delete(SubKeyKvPairVersion{}).Error; err != nil {
 				return err
 			}
 			// restore all updated sub key pairs by the block number
-
-			// delete all updated extension pair versions by the block number
+			var updatedSubKeyPairKvVersions []SubKeyKvPairVersion
+			if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Find(&updatedSubKeyPairKvVersions).Error; err != nil {
+				return err
+			}
+			var updatedSubKeyKvPairs []SubKeyKvPair
+			for _, version := range updatedSubKeyPairKvVersions {
+				updatedSubKeyKvPairs = append(updatedSubKeyKvPairs, SubKeyKvPair{
+					BlockNumber: version.OldBlockNumber,
+					LockHash:    version.LockHash,
+					SubType:     version.SubType,
+					ExtData:     version.ExtData,
+					AlgIndex:    version.AlgIndex,
+					PubkeyHash:  version.OldPubkeyHash,
+				})
+			}
+			if len(updatedSubKeyKvPairs) > 0 {
+				if err := tx.WithContext(ctx).Create(updatedExtensionPairs).Error; err != nil {
+					return err
+				}
+			}
+			// delete all updated sub key pair versions by the block number
+			if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Delete(SubKeyKvPairVersion{}).Error; err != nil {
+				return err
+			}
 		}
 
 		// delete check info

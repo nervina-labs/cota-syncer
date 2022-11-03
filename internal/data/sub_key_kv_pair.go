@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-type SubKeyPair struct {
+type SubKeyKvPair struct {
 	ID          uint `gorm:"primaryKey"`
 	BlockNumber uint64
 	LockHash    string
@@ -22,7 +22,7 @@ type SubKeyPair struct {
 	UpdatedAt   time.Time
 }
 
-type SubKeyPairVersion struct {
+type SubKeyKvPairVersion struct {
 	ID             uint `gorm:"primaryKey"`
 	OldBlockNumber uint64
 	BlockNumber    uint64
@@ -33,7 +33,7 @@ type SubKeyPairVersion struct {
 	AlgIndex       uint32
 	OldPubkeyHash  string
 	PubkeyHash     string
-	ActionType     uint8 //	0-create 1-update 2-delete
+	ActionType     uint8 //	0-create 1-update
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 }
@@ -97,6 +97,7 @@ func (rp subKeyPairRepo) ParseSubKeyPairs(blockNumber uint64, entry biz.Entry) (
 			ExtData:     uint32(extData),
 			AlgIndex:    uint32(algIndex),
 			PubkeyHash:  remove0x(string(value.PubkeyHash().RawData())),
+			UpdatedAt:   time.Now().UTC(),
 		})
 	}
 
