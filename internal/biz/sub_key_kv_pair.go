@@ -11,7 +11,7 @@ type SubKeyPair struct {
 	LockHash    string
 	SubType     string
 	ExtData     uint32
-	AlgIndex    uint32
+	AlgIndex    uint16
 	PubkeyHash  string
 	UpdatedAt   time.Time
 }

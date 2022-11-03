@@ -16,7 +16,7 @@ type SubKeyKvPair struct {
 	LockHash    string
 	SubType     string
 	ExtData     uint32
-	AlgIndex    uint32
+	AlgIndex    uint16
 	PubkeyHash  string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
@@ -29,8 +29,8 @@ type SubKeyKvPairVersion struct {
 	LockHash       string
 	SubType        string
 	ExtData        uint32
-	OldAlgIndex    uint32
-	AlgIndex       uint32
+	OldAlgIndex    uint16
+	AlgIndex       uint16
 	OldPubkeyHash  string
 	PubkeyHash     string
 	ActionType     uint8 //	0-create 1-update
@@ -74,7 +74,12 @@ func (rp subKeyPairRepo) ParseSubKeyPairs(blockNumber uint64, entry biz.Entry) (
 		err               error
 	)
 
-	entries := smt.SubKeyEntriesFromSliceUnchecked(entry.InputType[1:])
+	extensionEntries := smt.ExtensionEntriesFromSliceUnchecked(entry.InputType[1:])
+	if string(extensionEntries.SubType().RawData()) != "subkey" {
+		return []biz.SubKeyPair{}, nil
+	}
+
+	entries := smt.SubKeyEntriesFromSliceUnchecked(extensionEntries.RawData().AsSlice())
 	if lockHash, err = entry.LockScript.Hash(); err != nil {
 		return nil, err
 	}
@@ -95,7 +100,7 @@ func (rp subKeyPairRepo) ParseSubKeyPairs(blockNumber uint64, entry biz.Entry) (
 			LockHash:    remove0x(lockHash.Hex()),
 			SubType:     string(key.SubType().RawData()),
 			ExtData:     uint32(extData),
-			AlgIndex:    uint32(algIndex),
+			AlgIndex:    uint16(algIndex),
 			PubkeyHash:  remove0x(string(value.PubkeyHash().RawData())),
 			UpdatedAt:   time.Now().UTC(),
 		})

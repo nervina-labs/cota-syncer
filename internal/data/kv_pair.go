@@ -412,7 +412,7 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 			updatedSubKeyPairs := make([]SubKeyKvPair, len(kvPair.UpdatedSubKeyPairs))
 			for i, subKey := range kvPair.UpdatedSubKeyPairs {
 				var oldSubKey SubKeyKvPair
-				if err := tx.Model(SubKeyKvPair{}).WithContext(ctx).Where("`lock_hash` = ?", subKey.LockHash).First(&oldSubKey).Error; err != nil {
+				if err := tx.Model(SubKeyKvPair{}).WithContext(ctx).Where("`lock_hash` = ? and pubkey_hash = ?", subKey.LockHash, subKey.PubkeyHash).First(&oldSubKey).Error; err != nil {
 					return err
 				}
 				updatedSubKeyPairVersions[i] = SubKeyKvPairVersion{
@@ -441,8 +441,8 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 				return err
 			}
 			if err := tx.Debug().Clauses(clause.OnConflict{
-				Columns:   []clause.Column{{Name: "lock_hash"}},
-				DoUpdates: clause.AssignmentColumns([]string{"block_number", "alg_index", "pubkey_hash", "updated_at"}),
+				Columns:   []clause.Column{{Name: "lock_hash"}, {Name: "pubkey_hash"}},
+				DoUpdates: clause.AssignmentColumns([]string{"block_number", "alg_index", "updated_at"}),
 			}).Create(updatedSubKeyPairs).Error; err != nil {
 				return err
 			}
