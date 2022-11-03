@@ -626,7 +626,7 @@ func (rp kvPairRepo) RestoreCotaEntryKvPairs(ctx context.Context, blockNumber ui
 				return err
 			}
 		}
-		// delete all updated extension pair versions by the block number1
+		// delete all updated extension pair versions by the block number
 		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Delete(ExtensionKvPairVersion{}).Error; err != nil {
 			return err
 		}
@@ -653,7 +653,7 @@ func (rp kvPairRepo) RestoreCotaEntryKvPairs(ctx context.Context, blockNumber ui
 					LockHash:    version.LockHash,
 					SubType:     version.SubType,
 					ExtData:     version.ExtData,
-					AlgIndex:    version.AlgIndex,
+					AlgIndex:    version.OldAlgIndex,
 					PubkeyHash:  version.OldPubkeyHash,
 				})
 			}
