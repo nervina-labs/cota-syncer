@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"hash/crc32"
+	"strconv"
 	"time"
 
 	"github.com/nervina-labs/cota-smt-go/smt"
@@ -64,7 +65,7 @@ func (rp extensionPairRepo) DeleteExtensionPairs(ctx context.Context, blockNumbe
 	return nil
 }
 
-func (rp extensionPairRepo) ParseExtensionPairs(blockNumber uint64, entry biz.Entry) (pairs []biz.ExtensionPair, err error) {
+func (rp extensionPairRepo) ParseExtensionPairs(blockNumber uint64, entry biz.Entry) (pairs []biz.ExtensionPair, subKeyPairs []biz.SubKeyPair, err error) {
 	entries := smt.ExtensionEntriesFromSliceUnchecked(entry.InputType[1:])
 	extensionLeafKeys := entries.Leaves().Keys()
 	extensionLeafValues := entries.Leaves().Values()
@@ -86,5 +87,38 @@ func (rp extensionPairRepo) ParseExtensionPairs(blockNumber uint64, entry biz.En
 			TxIndex:     entry.TxIndex,
 		})
 	}
+
+	switch string(entries.SubType().RawData()) {
+	case "subkey":
+		var extData, algIndex int64
+
+		subKeyEntries := smt.SubKeyEntriesFromSliceUnchecked(entries.RawData().AsSlice())
+		if lockHash, err = entry.LockScript.Hash(); err != nil {
+			return
+		}
+
+		for i := uint(0); i < subKeyEntries.Len(); i++ {
+			key := subKeyEntries.Keys().Get(i)
+			value := subKeyEntries.Values().Get(i)
+
+			if extData, err = strconv.ParseInt(string(key.ExtData().RawData()), 10, 64); err != nil {
+				return
+			}
+			if algIndex, err = strconv.ParseInt(string(value.AlgIndex().RawData()), 10, 64); err != nil {
+				return
+			}
+
+			subKeyPairs = append(subKeyPairs, biz.SubKeyPair{
+				BlockNumber: blockNumber,
+				LockHash:    remove0x(lockHash.Hex()),
+				SubType:     string(key.SubType().RawData()),
+				ExtData:     uint32(extData),
+				AlgIndex:    uint16(algIndex),
+				PubkeyHash:  remove0x(string(value.PubkeyHash().RawData())),
+				UpdatedAt:   time.Now().UTC(),
+			})
+		}
+	}
+
 	return
 }

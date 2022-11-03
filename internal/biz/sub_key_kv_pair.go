@@ -19,7 +19,6 @@ type SubKeyPair struct {
 type SubKeyPairRepo interface {
 	CreateSubKeyPair(ctx context.Context, extension *SubKeyPair) error
 	DeleteSubKeyPairs(ctx context.Context, blockNumber uint64) error
-	ParseSubKeyPairs(blockNumber uint64, entry Entry) ([]SubKeyPair, error)
 }
 
 type SubKeyPairRepoUsecase struct {
@@ -40,8 +39,4 @@ func (uc *SubKeyPairRepoUsecase) Create(ctx context.Context, extension *SubKeyPa
 
 func (uc *SubKeyPairRepoUsecase) DeleteByBlockNumber(ctx context.Context, blockNumber uint64) error {
 	return uc.repo.DeleteSubKeyPairs(ctx, blockNumber)
-}
-
-func (uc *SubKeyPairRepoUsecase) ParseExtensionPair(blockNumber uint64, entry Entry) ([]SubKeyPair, error) {
-	return uc.repo.ParseSubKeyPairs(blockNumber, entry)
 }
