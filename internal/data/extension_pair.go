@@ -97,9 +97,11 @@ func (rp extensionPairRepo) ParseExtensionPairs(blockNumber uint64, entry biz.En
 			return
 		}
 
-		for i := uint(0); i < subKeyEntries.Len(); i++ {
-			key := subKeyEntries.Keys().Get(i)
-			value := subKeyEntries.Values().Get(i)
+		subKeyLeafKeys := subKeyEntries.Keys()
+		subKeyLeafValues := subKeyEntries.Values()
+		for i := uint(0); i < subKeyLeafKeys.Len(); i++ {
+			key := subKeyLeafKeys.Get(i)
+			value := subKeyLeafValues.Get(i)
 
 			if extData, err = strconv.ParseInt(string(key.ExtData().RawData()), 10, 64); err != nil {
 				return

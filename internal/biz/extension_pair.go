@@ -15,6 +15,14 @@ type ExtensionPair struct {
 	Value       string
 	TxIndex     uint32
 	UpdatedAt   time.Time
+
+	BlockNumber uint64
+	LockHash    string
+	SubType     string
+	ExtData     uint32
+	AlgIndex    uint16
+	PubkeyHash  string
+	UpdatedAt   time.Time
 }
 
 type ExtensionPairs struct {
