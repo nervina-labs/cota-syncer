@@ -17,10 +17,15 @@ type ExtensionPair struct {
 	UpdatedAt   time.Time
 }
 
+type ExtensionPairs struct {
+	Extensions []ExtensionPair
+	SubKeys    []SubKeyPair
+}
+
 type ExtensionPairRepo interface {
 	CreateExtensionPair(ctx context.Context, extension *ExtensionPair) error
 	DeleteExtensionPairs(ctx context.Context, blockNumber uint64) error
-	ParseExtensionPairs(blockNumber uint64, entry Entry) ([]ExtensionPair, []SubKeyPair, error)
+	ParseExtensionPairs(blockNumber uint64, entry Entry) (ExtensionPairs, error)
 }
 
 type ExtensionPairUsecase struct {
@@ -43,6 +48,6 @@ func (uc *ExtensionPairUsecase) DeleteByBlockNumber(ctx context.Context, blockNu
 	return uc.repo.DeleteExtensionPairs(ctx, blockNumber)
 }
 
-func (uc *ExtensionPairUsecase) ParseExtensionPair(blockNumber uint64, entry Entry) ([]ExtensionPair, []SubKeyPair, error) {
+func (uc *ExtensionPairUsecase) ParseExtensionPair(blockNumber uint64, entry Entry) (ExtensionPairs, error) {
 	return uc.repo.ParseExtensionPairs(blockNumber, entry)
 }

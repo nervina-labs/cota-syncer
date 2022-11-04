@@ -169,20 +169,20 @@ func (bp BlockSyncer) parseCotaEntries(blockNumber uint64, entries []biz.Entry) 
 				kvPair.WithdrawCotas = append(kvPair.WithdrawCotas, withdrawCotas...)
 			// Extension: Create extension pairs
 			case 0xF0:
-				extensionPairs, subKeyPairs, err := bp.extensionPairUsecase.ParseExtensionPair(blockNumber, entry)
+				extensionPairs, err := bp.extensionPairUsecase.ParseExtensionPair(blockNumber, entry)
 				if err != nil {
 					return kvPair, err
 				}
-				kvPair.ExtensionPairs = append(kvPair.ExtensionPairs, extensionPairs...)
-				kvPair.SubKeyPairs = append(kvPair.SubKeyPairs, subKeyPairs...)
+				kvPair.ExtensionPairs = append(kvPair.ExtensionPairs, extensionPairs.Extensions...)
+				kvPair.SubKeyPairs = append(kvPair.SubKeyPairs, extensionPairs.SubKeys...)
 			// Extension: Update extension pairs
 			case 0xF1:
-				extensionPairs, subKeyPairs, err := bp.extensionPairUsecase.ParseExtensionPair(blockNumber, entry)
+				extensionPairs, err := bp.extensionPairUsecase.ParseExtensionPair(blockNumber, entry)
 				if err != nil {
 					return kvPair, err
 				}
-				kvPair.UpdatedExtensionPairs = append(kvPair.UpdatedExtensionPairs, extensionPairs...)
-				kvPair.UpdatedSubKeyPairs = append(kvPair.SubKeyPairs, subKeyPairs...)
+				kvPair.UpdatedExtensionPairs = append(kvPair.UpdatedExtensionPairs, extensionPairs.Extensions...)
+				kvPair.UpdatedSubKeyPairs = append(kvPair.UpdatedSubKeyPairs, extensionPairs.SubKeys...)
 			}
 		}
 	}

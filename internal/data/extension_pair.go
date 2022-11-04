@@ -65,7 +65,7 @@ func (rp extensionPairRepo) DeleteExtensionPairs(ctx context.Context, blockNumbe
 	return nil
 }
 
-func (rp extensionPairRepo) ParseExtensionPairs(blockNumber uint64, entry biz.Entry) (pairs []biz.ExtensionPair, subKeyPairs []biz.SubKeyPair, err error) {
+func (rp extensionPairRepo) ParseExtensionPairs(blockNumber uint64, entry biz.Entry) (pairs biz.ExtensionPairs, err error) {
 	entries := smt.ExtensionEntriesFromSliceUnchecked(entry.InputType[1:])
 	extensionLeafKeys := entries.Leaves().Keys()
 	extensionLeafValues := entries.Leaves().Values()
@@ -78,7 +78,7 @@ func (rp extensionPairRepo) ParseExtensionPairs(blockNumber uint64, entry biz.En
 	for i := uint(0); i < extensionLeafKeys.Len(); i++ {
 		key := extensionLeafKeys.Get(i)
 		value := extensionLeafValues.Get(i)
-		pairs = append(pairs, biz.ExtensionPair{
+		pairs.Extensions = append(pairs.Extensions, biz.ExtensionPair{
 			BlockNumber: blockNumber,
 			Key:         hex.EncodeToString(key.RawData()),
 			Value:       hex.EncodeToString(value.RawData()),
@@ -108,7 +108,7 @@ func (rp extensionPairRepo) ParseExtensionPairs(blockNumber uint64, entry biz.En
 				return
 			}
 
-			subKeyPairs = append(subKeyPairs, biz.SubKeyPair{
+			pairs.SubKeys = append(pairs.SubKeys, biz.SubKeyPair{
 				BlockNumber: blockNumber,
 				LockHash:    remove0x(lockHash.Hex()),
 				SubType:     string(key.SubType().RawData()),
