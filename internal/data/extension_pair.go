@@ -92,21 +92,17 @@ func (rp extensionPairRepo) ParseExtensionPairs(blockNumber uint64, entry biz.En
 	case "subkey":
 		var extData, algIndex int64
 
-		subKeyEntries := smt.SubKeyEntriesFromSliceUnchecked(entries.RawData().AsSlice())
-		if lockHash, err = entry.LockScript.Hash(); err != nil {
-			return
-		}
-
+		subKeyEntries := smt.SubKeyEntriesFromSliceUnchecked(entries.RawData().RawData())
 		subKeyLeafKeys := subKeyEntries.Keys()
 		subKeyLeafValues := subKeyEntries.Values()
 		for i := uint(0); i < subKeyLeafKeys.Len(); i++ {
 			key := subKeyLeafKeys.Get(i)
 			value := subKeyLeafValues.Get(i)
 
-			if extData, err = strconv.ParseInt(string(key.ExtData().RawData()), 10, 64); err != nil {
+			if extData, err = strconv.ParseInt(hex.EncodeToString(key.ExtData().RawData()), 10, 64); err != nil {
 				return
 			}
-			if algIndex, err = strconv.ParseInt(string(value.AlgIndex().RawData()), 10, 64); err != nil {
+			if algIndex, err = strconv.ParseInt(hex.EncodeToString(value.AlgIndex().RawData()), 10, 64); err != nil {
 				return
 			}
 
@@ -116,7 +112,7 @@ func (rp extensionPairRepo) ParseExtensionPairs(blockNumber uint64, entry biz.En
 				SubType:     string(key.SubType().RawData()),
 				ExtData:     uint32(extData),
 				AlgIndex:    uint16(algIndex),
-				PubkeyHash:  remove0x(string(value.PubkeyHash().RawData())),
+				PubkeyHash:  remove0x(hex.EncodeToString(value.PubkeyHash().RawData())),
 				UpdatedAt:   time.Now().UTC(),
 			})
 		}
