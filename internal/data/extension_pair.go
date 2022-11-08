@@ -90,33 +90,46 @@ func (rp extensionPairRepo) ParseExtensionPairs(blockNumber uint64, entry biz.En
 
 	switch string(entries.SubType().RawData()) {
 	case "subkey":
-		var extData, algIndex int64
-
-		subKeyEntries := smt.SubKeyEntriesFromSliceUnchecked(entries.RawData().RawData())
-		subKeyLeafKeys := subKeyEntries.Keys()
-		subKeyLeafValues := subKeyEntries.Values()
-		for i := uint(0); i < subKeyLeafKeys.Len(); i++ {
-			key := subKeyLeafKeys.Get(i)
-			value := subKeyLeafValues.Get(i)
-
-			if extData, err = strconv.ParseInt(hex.EncodeToString(key.ExtData().RawData()), 10, 64); err != nil {
-				return
-			}
-			if algIndex, err = strconv.ParseInt(hex.EncodeToString(value.AlgIndex().RawData()), 10, 64); err != nil {
-				return
-			}
-
-			pairs.SubKeys = append(pairs.SubKeys, biz.SubKeyPair{
-				BlockNumber: blockNumber,
-				LockHash:    remove0x(lockHash.Hex()),
-				SubType:     string(key.SubType().RawData()),
-				ExtData:     uint32(extData),
-				AlgIndex:    uint16(algIndex),
-				PubkeyHash:  remove0x(hex.EncodeToString(value.PubkeyHash().RawData())),
-				UpdatedAt:   time.Now().UTC(),
-			})
+		var subKeys []biz.SubKeyPair
+		if subKeys, err = rp.parseSubKeyPairs(entries, blockNumber, lockHashStr); err != nil {
+			return biz.ExtensionPairs{}, err
 		}
+		pairs.SubKeys = append(pairs.SubKeys, subKeys...)
 	}
 
 	return
+}
+
+func (rp extensionPairRepo) parseSubKeyPairs(entries *smt.ExtensionEntries, blockNumber uint64, lockHash string) ([]biz.SubKeyPair, error) {
+	var (
+		extData, algIndex int64
+		subKeys           []biz.SubKeyPair
+		err               error
+	)
+
+	subKeyEntries := smt.SubKeyEntriesFromSliceUnchecked(entries.RawData().RawData())
+	subKeyLeafKeys := subKeyEntries.Keys()
+	subKeyLeafValues := subKeyEntries.Values()
+	for i := uint(0); i < subKeyLeafKeys.Len(); i++ {
+		key := subKeyLeafKeys.Get(i)
+		value := subKeyLeafValues.Get(i)
+
+		if extData, err = strconv.ParseInt(hex.EncodeToString(key.ExtData().RawData()), 10, 32); err != nil {
+			return nil, err
+		}
+		if algIndex, err = strconv.ParseInt(hex.EncodeToString(value.AlgIndex().RawData()), 10, 16); err != nil {
+			return nil, err
+		}
+		subKeys = append(subKeys, biz.SubKeyPair{
+			BlockNumber: blockNumber,
+			LockHash:    lockHash,
+			SubType:     string(key.SubType().RawData()),
+			ExtData:     uint32(extData),
+			AlgIndex:    uint16(algIndex),
+			PubkeyHash:  remove0x(hex.EncodeToString(value.PubkeyHash().RawData())),
+			UpdatedAt:   time.Now().UTC(),
+		})
+	}
+
+	return subKeys, nil
 }
