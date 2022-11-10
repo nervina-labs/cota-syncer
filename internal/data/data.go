@@ -23,7 +23,7 @@ var ProviderSet = wire.NewSet(NewData, NewDBMigration, NewCheckInfoRepo, NewRegi
 	NewDefineCotaNftKvPairRepo, NewHoldCotaNftKvPairRepo, NewWithdrawCotaNftKvPairRepo, NewClaimedCotaNftKvPairRepo,
 	NewKvPairRepo, NewSystemScripts, NewCkbNodeClient, NewBlockSyncer, NewMetadataSyncer, NewCotaWitnessArgsParser,
 	NewMintCotaKvPairRepo, NewTransferCotaKvPairRepo, NewIssuerInfoRepo, NewClassInfoRepo, NewJoyIDInfoRepo, NewInvalidDateRepo,
-	NewWithdrawExtraInfoRepo, NewExtensionKvPairRepo, NewRegisterLockScriptRepo)
+	NewWithdrawExtraInfoRepo, NewExtensionKvPairRepo, NewRegisterLockScriptRepo, NewSubKeyKvPairRepo)
 
 type Data struct {
 	db *gorm.DB

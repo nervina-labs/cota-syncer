@@ -2,7 +2,6 @@ package data
 
 import (
 	"context"
-
 	"github.com/nervina-labs/cota-syncer/internal/biz"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 )
@@ -21,13 +20,15 @@ type BlockSyncer struct {
 	classInfoUsecase      *biz.ClassInfoUsecase
 	joyIDInfoUsecase      *biz.JoyIDInfoUsecase
 	extensionPairUsecase  *biz.ExtensionPairUsecase
+	subKeyPairUsecase     *biz.SubKeyPairRepoUsecase
 }
 
 func NewBlockSyncer(claimedCotaUsecase *biz.ClaimedCotaNftKvPairUsecase, defineCotaUsecase *biz.DefineCotaNftKvPairUsecase,
 	holdCotaUsecase *biz.HoldCotaNftKvPairUsecase, registerCotaUsecase *biz.RegisterCotaKvPairUsecase,
 	withdrawCotaUsecase *biz.WithdrawCotaNftKvPairUsecase, cotaWitnessArgsParser CotaWitnessArgsParser,
 	kvPairUsecase *biz.SyncKvPairUsecase, mintCotaUsecase *biz.MintCotaKvPairUsecase, transferCotaUsecase *biz.TransferCotaKvPairUsecase,
-	issuerInfoUsecase *biz.IssuerInfoUsecase, classInfoUsecase *biz.ClassInfoUsecase, joyIDInfoUsecase *biz.JoyIDInfoUsecase, extensionPairUsecase *biz.ExtensionPairUsecase) BlockSyncer {
+	issuerInfoUsecase *biz.IssuerInfoUsecase, classInfoUsecase *biz.ClassInfoUsecase, joyIDInfoUsecase *biz.JoyIDInfoUsecase,
+	extensionPairUsecase *biz.ExtensionPairUsecase, subKeyPairUsecase *biz.SubKeyPairRepoUsecase) BlockSyncer {
 	return BlockSyncer{
 		claimedCotaUsecase:    claimedCotaUsecase,
 		defineCotaUsecase:     defineCotaUsecase,
@@ -42,6 +43,7 @@ func NewBlockSyncer(claimedCotaUsecase *biz.ClaimedCotaNftKvPairUsecase, defineC
 		classInfoUsecase:      classInfoUsecase,
 		joyIDInfoUsecase:      joyIDInfoUsecase,
 		extensionPairUsecase:  extensionPairUsecase,
+		subKeyPairUsecase:     subKeyPairUsecase,
 	}
 }
 
@@ -171,14 +173,16 @@ func (bp BlockSyncer) parseCotaEntries(blockNumber uint64, entries []biz.Entry) 
 				if err != nil {
 					return kvPair, err
 				}
-				kvPair.ExtensionPairs = append(kvPair.ExtensionPairs, extensionPairs...)
+				kvPair.ExtensionPairs = append(kvPair.ExtensionPairs, extensionPairs.Extensions...)
+				kvPair.SubKeyPairs = append(kvPair.SubKeyPairs, extensionPairs.SubKeys...)
 			// Extension: Update extension pairs
 			case 0xF1:
 				extensionPairs, err := bp.extensionPairUsecase.ParseExtensionPair(blockNumber, entry)
 				if err != nil {
 					return kvPair, err
 				}
-				kvPair.UpdatedExtensionPairs = append(kvPair.UpdatedExtensionPairs, extensionPairs...)
+				kvPair.UpdatedExtensionPairs = append(kvPair.UpdatedExtensionPairs, extensionPairs.Extensions...)
+				kvPair.UpdatedSubKeyPairs = append(kvPair.UpdatedSubKeyPairs, extensionPairs.SubKeys...)
 			}
 		}
 	}

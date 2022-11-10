@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"hash/crc32"
+	"strconv"
 	"time"
 
 	"github.com/nervina-labs/cota-smt-go/smt"
@@ -64,7 +65,7 @@ func (rp extensionPairRepo) DeleteExtensionPairs(ctx context.Context, blockNumbe
 	return nil
 }
 
-func (rp extensionPairRepo) ParseExtensionPairs(blockNumber uint64, entry biz.Entry) (pairs []biz.ExtensionPair, err error) {
+func (rp extensionPairRepo) ParseExtensionPairs(blockNumber uint64, entry biz.Entry) (pairs biz.ExtensionPairs, err error) {
 	entries := smt.ExtensionEntriesFromSliceUnchecked(entry.InputType[1:])
 	extensionLeafKeys := entries.Leaves().Keys()
 	extensionLeafValues := entries.Leaves().Values()
@@ -77,7 +78,7 @@ func (rp extensionPairRepo) ParseExtensionPairs(blockNumber uint64, entry biz.En
 	for i := uint(0); i < extensionLeafKeys.Len(); i++ {
 		key := extensionLeafKeys.Get(i)
 		value := extensionLeafValues.Get(i)
-		pairs = append(pairs, biz.ExtensionPair{
+		pairs.Extensions = append(pairs.Extensions, biz.ExtensionPair{
 			BlockNumber: blockNumber,
 			Key:         hex.EncodeToString(key.RawData()),
 			Value:       hex.EncodeToString(value.RawData()),
@@ -86,5 +87,49 @@ func (rp extensionPairRepo) ParseExtensionPairs(blockNumber uint64, entry biz.En
 			TxIndex:     entry.TxIndex,
 		})
 	}
+
+	switch string(entries.SubType().RawData()) {
+	case "subkey":
+		var subKeys []biz.SubKeyPair
+		if subKeys, err = rp.parseSubKeyPairs(entries, blockNumber, lockHashStr); err != nil {
+			return biz.ExtensionPairs{}, err
+		}
+		pairs.SubKeys = append(pairs.SubKeys, subKeys...)
+	}
+
 	return
+}
+
+func (rp extensionPairRepo) parseSubKeyPairs(entries *smt.ExtensionEntries, blockNumber uint64, lockHash string) ([]biz.SubKeyPair, error) {
+	var (
+		extData, algIndex int64
+		subKeys           []biz.SubKeyPair
+		err               error
+	)
+
+	subKeyEntries := smt.SubKeyEntriesFromSliceUnchecked(entries.RawData().RawData())
+	subKeyLeafKeys := subKeyEntries.Keys()
+	subKeyLeafValues := subKeyEntries.Values()
+	for i := uint(0); i < subKeyLeafKeys.Len(); i++ {
+		key := subKeyLeafKeys.Get(i)
+		value := subKeyLeafValues.Get(i)
+
+		if extData, err = strconv.ParseInt(hex.EncodeToString(key.ExtData().RawData()), 10, 32); err != nil {
+			return nil, err
+		}
+		if algIndex, err = strconv.ParseInt(hex.EncodeToString(value.AlgIndex().RawData()), 10, 16); err != nil {
+			return nil, err
+		}
+		subKeys = append(subKeys, biz.SubKeyPair{
+			BlockNumber: blockNumber,
+			LockHash:    lockHash,
+			SubType:     string(key.SubType().RawData()),
+			ExtData:     uint32(extData),
+			AlgIndex:    uint16(algIndex),
+			PubkeyHash:  remove0x(hex.EncodeToString(value.PubkeyHash().RawData())),
+			UpdatedAt:   time.Now().UTC(),
+		})
+	}
+
+	return subKeys, nil
 }
