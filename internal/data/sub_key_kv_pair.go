@@ -57,7 +57,7 @@ func (rp subKeyPairRepo) CreateSubKeyPair(ctx context.Context, subKey *biz.SubKe
 }
 
 func (rp subKeyPairRepo) DeleteSubKeyPairs(ctx context.Context, blockNumber uint64) error {
-	if err := rp.data.db.WithContext(ctx).Where("block_number = ?", blockNumber).Error; err != nil {
+	if err := rp.data.db.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(SubKeyKvPair{}).Error; err != nil {
 		return err
 	}
 	return nil
