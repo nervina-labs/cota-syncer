@@ -33,6 +33,7 @@ type SocialKvPairVersion struct {
 	Total           uint8
 	OldSigners      string
 	Signers         string
+	ActionType      uint8 //	0-create 1-update
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }

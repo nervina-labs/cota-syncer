@@ -8,7 +8,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/google/wire v0.5.0
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/nervina-labs/cota-smt-go v0.11.0
+	github.com/nervina-labs/cota-smt-go v0.12.0
 	github.com/nervosnetwork/ckb-sdk-go v1.0.4
 	github.com/spf13/viper v1.11.0
 	golang.org/x/sync v0.0.0-20220513210516-0976fa681c29

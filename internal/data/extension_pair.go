@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"hash/crc32"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/nervina-labs/cota-smt-go/smt"
@@ -95,12 +96,15 @@ func (rp extensionPairRepo) ParseExtensionPairs(blockNumber uint64, entry biz.En
 			return biz.ExtensionPairs{}, err
 		}
 		pairs.SubKeys = append(pairs.SubKeys, subKeys...)
-	case "":
-		var socialKeys []biz.SocialKvPair
-		if socialKeys, err = rp.parseSocialKeyPairs(entries, blockNumber, lockHashStr); err != nil {
+	case "social":
+		var socialKey *biz.SocialKvPair
+		if socialKey, err = rp.parseSocialKeyPairs(entries, blockNumber, lockHashStr); err != nil {
 			return biz.ExtensionPairs{}, err
 		}
-		pairs.SocialKeys = append(pairs.SocialKeys, socialKeys...)
+
+		if socialKey != nil {
+			pairs.SocialKeys = append(pairs.SocialKeys, *socialKey)
+		}
 	}
 
 	return
@@ -140,6 +144,42 @@ func (rp extensionPairRepo) parseSubKeyPairs(entries *smt.ExtensionEntries, bloc
 	return subKeys, nil
 }
 
-func (rp extensionPairRepo) parseSocialKeyPairs(entries *smt.ExtensionEntries, blockNumber uint64, lockHash string) ([]biz.SocialKvPair, error) {
+func (rp extensionPairRepo) parseSocialKeyPairs(entries *smt.ExtensionEntries, blockNumber uint64, lockHash string) (*biz.SocialKvPair, error) {
+	var (
+		recoveryMode, must, total int64
+		signers                   []string
+		err                       error
+	)
 
+	socialEntry := smt.SocialEntryFromSliceUnchecked(entries.RawData().RawData())
+	socialLeafValues := socialEntry.Value()
+	if socialLeafValues == nil {
+		return nil, nil
+	}
+
+	if recoveryMode, err = strconv.ParseInt(hex.EncodeToString(socialLeafValues.RecoveryMode().AsSlice()), 10, 8); err != nil {
+		return nil, err
+	}
+	if must, err = strconv.ParseInt(hex.EncodeToString(socialLeafValues.Must().AsSlice()), 10, 8); err != nil {
+		return nil, err
+	}
+	if total, err = strconv.ParseInt(hex.EncodeToString(socialLeafValues.Total().AsSlice()), 10, 8); err != nil {
+		return nil, err
+	}
+
+	lockScriptVec := socialLeafValues.Signers()
+	for i := uint(0); i < socialLeafValues.Signers().Len(); i++ {
+		signer := lockScriptVec.Get(i).RawData()
+		signers = append(signers, remove0x(hex.EncodeToString(signer)))
+	}
+
+	return &biz.SocialKvPair{
+		BlockNumber:  blockNumber,
+		LockHash:     lockHash,
+		LockHashCRC:  crc32.ChecksumIEEE([]byte(lockHash)),
+		RecoveryMode: uint8(recoveryMode),
+		Must:         uint8(must),
+		Total:        uint8(total),
+		Signers:      strings.Join(signers, ","),
+	}, nil
 }

@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS social_kv_pair_versions (
     total tinyint NOT NULL,
     old_signers text NOT NULL,
     signers text NOT NULL,
+    action_type tinyint UNSIGNED NOT NULL,
     created_at datetime(6) NOT NULL,
     updated_at datetime(6) NOT NULL,
     PRIMARY KEY (id),
