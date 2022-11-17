@@ -95,6 +95,12 @@ func (rp extensionPairRepo) ParseExtensionPairs(blockNumber uint64, entry biz.En
 			return biz.ExtensionPairs{}, err
 		}
 		pairs.SubKeys = append(pairs.SubKeys, subKeys...)
+	case "":
+		var socialKeys []biz.SocialKvPair
+		if socialKeys, err = rp.parseSocialKeyPairs(entries, blockNumber, lockHashStr); err != nil {
+			return biz.ExtensionPairs{}, err
+		}
+		pairs.SocialKeys = append(pairs.SocialKeys, socialKeys...)
 	}
 
 	return
@@ -132,4 +138,8 @@ func (rp extensionPairRepo) parseSubKeyPairs(entries *smt.ExtensionEntries, bloc
 	}
 
 	return subKeys, nil
+}
+
+func (rp extensionPairRepo) parseSocialKeyPairs(entries *smt.ExtensionEntries, blockNumber uint64, lockHash string) ([]biz.SocialKvPair, error) {
+
 }

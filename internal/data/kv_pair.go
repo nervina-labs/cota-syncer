@@ -448,6 +448,14 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 			}
 		}
 
+		if kvPair.HasSocialKeyPairs() {
+			socialKeyPairs := make([]SocialKvPair, len(kvPair.SocialKeyPairs))
+			socialKeyPairVersions := make([]SocialKvPairVersion, len(kvPair.SocialKeyPairs))
+		}
+		if kvPair.HasUpdatedSocialKeyPairs() {
+
+		}
+
 		// create check info
 		if err := tx.Debug().Model(CheckInfo{}).WithContext(ctx).Create(&CheckInfo{
 			BlockNumber: checkInfo.BlockNumber,
