@@ -380,7 +380,7 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 
 		if kvPair.HasSubKeyPairs() {
 			subKeyPairs := make([]SubKeyKvPair, len(kvPair.SubKeyPairs))
-			subKeyPairVersions := make([]SubKeyKvPairVersion, len(kvPair.ExtensionPairs))
+			subKeyPairVersions := make([]SubKeyKvPairVersion, len(kvPair.SubKeyPairs))
 			for i, subKey := range kvPair.SubKeyPairs {
 				subKeyPairs[i] = SubKeyKvPair{
 					BlockNumber: subKey.BlockNumber,
