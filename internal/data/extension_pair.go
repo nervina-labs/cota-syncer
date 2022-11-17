@@ -181,5 +181,6 @@ func (rp extensionPairRepo) parseSocialKeyPairs(entries *smt.ExtensionEntries, b
 		Must:         uint8(must),
 		Total:        uint8(total),
 		Signers:      strings.Join(signers, ","),
+		UpdatedAt:    time.Now().UTC(),
 	}, nil
 }

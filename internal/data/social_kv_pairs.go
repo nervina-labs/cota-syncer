@@ -60,7 +60,7 @@ func (rp socialKeyPairRepo) CreateSocialKeyPair(ctx context.Context, social *biz
 }
 
 func (rp socialKeyPairRepo) DeleteSocialKeyPairs(ctx context.Context, blockNumber uint64) error {
-	if err := rp.data.db.WithContext(ctx).Where("block_number = ?", blockNumber).Error; err != nil {
+	if err := rp.data.db.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(SocialKvPair{}).Error; err != nil {
 		return err
 	}
 	return nil
