@@ -7,9 +7,9 @@ import (
 	"hash/crc32"
 	"time"
 
+	"github.com/nervina-labs/cota-smt-go/smt"
 	"github.com/nervina-labs/cota-syncer/internal/biz"
 	"github.com/nervina-labs/cota-syncer/internal/logger"
-	"github.com/nervina-labs/cota-smt-go/smt"
 )
 
 var _ biz.DefineCotaNftKvPairRepo = (*defineCotaNftKvPairRepo)(nil)
@@ -63,7 +63,7 @@ func (rp defineCotaNftKvPairRepo) CreateDefineCotaNftKvPair(ctx context.Context,
 }
 
 func (rp defineCotaNftKvPairRepo) DeleteDefineCotaNftKvPairs(ctx context.Context, blockNumber uint64) error {
-	if err := rp.data.db.WithContext(ctx).Where("block_number = ?", blockNumber).Error; err != nil {
+	if err := rp.data.db.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(DefineCotaNftKvPair{}).Error; err != nil {
 		return err
 	}
 	return nil
