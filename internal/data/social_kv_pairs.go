@@ -38,28 +38,28 @@ type SocialKvPairVersion struct {
 	UpdatedAt       time.Time
 }
 
-var _ biz.SocialPairRepo = (*socialKeyPairRepo)(nil)
+var _ biz.SocialPairRepo = (*socialPairRepo)(nil)
 
-type socialKeyPairRepo struct {
+type socialPairRepo struct {
 	data   *Data
 	logger *logger.Logger
 }
 
-func NewSocialKeyKvPairRepo(data *Data, logger *logger.Logger) biz.SubKeyPairRepo {
+func NewSocialKvPairRepo(data *Data, logger *logger.Logger) biz.SubKeyPairRepo {
 	return &subKeyPairRepo{
 		data:   data,
 		logger: logger,
 	}
 }
 
-func (rp socialKeyPairRepo) CreateSocialKeyPair(ctx context.Context, social *biz.SocialKvPair) error {
+func (rp socialPairRepo) CreateSocialPair(ctx context.Context, social *biz.SocialKvPair) error {
 	if err := rp.data.db.WithContext(ctx).Create(social).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-func (rp socialKeyPairRepo) DeleteSocialKeyPairs(ctx context.Context, blockNumber uint64) error {
+func (rp socialPairRepo) DeleteSocialPairs(ctx context.Context, blockNumber uint64) error {
 	if err := rp.data.db.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(SocialKvPair{}).Error; err != nil {
 		return err
 	}

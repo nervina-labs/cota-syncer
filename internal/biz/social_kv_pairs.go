@@ -19,8 +19,8 @@ type SocialKvPair struct {
 }
 
 type SocialPairRepo interface {
-	CreateSocialKeyPair(ctx context.Context, extension *SocialKvPair) error
-	DeleteSocialKeyPairs(ctx context.Context, blockNumber uint64) error
+	CreateSocialPair(ctx context.Context, extension *SocialKvPair) error
+	DeleteSocialPairs(ctx context.Context, blockNumber uint64) error
 }
 
 type SocialPairRepoUsecase struct {
@@ -28,7 +28,7 @@ type SocialPairRepoUsecase struct {
 	logger *logger.Logger
 }
 
-func NewSocialKeyPairRepoUsecase(repo SocialPairRepo, logger *logger.Logger) *SocialPairRepoUsecase {
+func NewSocialPairRepoUsecase(repo SocialPairRepo, logger *logger.Logger) *SocialPairRepoUsecase {
 	return &SocialPairRepoUsecase{
 		repo:   repo,
 		logger: logger,
@@ -36,9 +36,9 @@ func NewSocialKeyPairRepoUsecase(repo SocialPairRepo, logger *logger.Logger) *So
 }
 
 func (uc *SocialPairRepoUsecase) Create(ctx context.Context, social *SocialKvPair) error {
-	return uc.repo.CreateSocialKeyPair(ctx, social)
+	return uc.repo.CreateSocialPair(ctx, social)
 }
 
 func (uc *SocialPairRepoUsecase) DeleteByBlockNumber(ctx context.Context, blockNumber uint64) error {
-	return uc.repo.DeleteSocialKeyPairs(ctx, blockNumber)
+	return uc.repo.DeleteSocialPairs(ctx, blockNumber)
 }
