@@ -184,7 +184,7 @@ func (bp BlockSyncer) parseCotaEntries(blockNumber uint64, entries []biz.Entry) 
 				}
 				kvPair.UpdatedExtensionPairs = append(kvPair.UpdatedExtensionPairs, extensionPairs.Extensions...)
 				kvPair.UpdatedSubKeyPairs = append(kvPair.UpdatedSubKeyPairs, extensionPairs.SubKeys...)
-				kvPair.UpdatedSocialPairs = append(kvPair.SocialPairs, extensionPairs.Socials...)
+				kvPair.UpdatedSocialPairs = append(kvPair.UpdatedSocialPairs, extensionPairs.Socials...)
 			}
 		}
 	}
