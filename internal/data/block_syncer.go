@@ -175,7 +175,7 @@ func (bp BlockSyncer) parseCotaEntries(blockNumber uint64, entries []biz.Entry) 
 				}
 				kvPair.ExtensionPairs = append(kvPair.ExtensionPairs, extensionPairs.Extensions...)
 				kvPair.SubKeyPairs = append(kvPair.SubKeyPairs, extensionPairs.SubKeys...)
-				kvPair.SocialKeyPairs = append(kvPair.SocialKeyPairs, extensionPairs.SocialKey...)
+				kvPair.SocialKeyPairs = append(kvPair.SocialKeyPairs, extensionPairs.SocialKeys...)
 			// Extension: Update extension pairs
 			case 0xF1:
 				extensionPairs, err := bp.extensionPairUsecase.ParseExtensionPair(blockNumber, entry)
@@ -184,7 +184,7 @@ func (bp BlockSyncer) parseCotaEntries(blockNumber uint64, entries []biz.Entry) 
 				}
 				kvPair.UpdatedExtensionPairs = append(kvPair.UpdatedExtensionPairs, extensionPairs.Extensions...)
 				kvPair.UpdatedSubKeyPairs = append(kvPair.UpdatedSubKeyPairs, extensionPairs.SubKeys...)
-				kvPair.UpdatedSocialKeyPairs = append(kvPair.SocialKeyPairs, extensionPairs.SocialKey...)
+				kvPair.UpdatedSocialKeyPairs = append(kvPair.SocialKeyPairs, extensionPairs.SocialKeys...)
 			}
 		}
 	}

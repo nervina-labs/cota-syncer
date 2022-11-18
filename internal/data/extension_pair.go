@@ -152,23 +152,23 @@ func (rp extensionPairRepo) parseSocialKeyPairs(entries *smt.ExtensionEntries, b
 	)
 
 	socialEntry := smt.SocialEntryFromSliceUnchecked(entries.RawData().RawData())
-	socialLeafValues := socialEntry.Value()
-	if socialLeafValues == nil {
+	socialLeafValue := socialEntry.Value()
+	if socialLeafValue == nil {
 		return nil, nil
 	}
 
-	if recoveryMode, err = strconv.ParseInt(hex.EncodeToString(socialLeafValues.RecoveryMode().AsSlice()), 10, 8); err != nil {
+	if recoveryMode, err = strconv.ParseInt(hex.EncodeToString(socialLeafValue.RecoveryMode().AsSlice()), 10, 8); err != nil {
 		return nil, err
 	}
-	if must, err = strconv.ParseInt(hex.EncodeToString(socialLeafValues.Must().AsSlice()), 10, 8); err != nil {
+	if must, err = strconv.ParseInt(hex.EncodeToString(socialLeafValue.Must().AsSlice()), 10, 8); err != nil {
 		return nil, err
 	}
-	if total, err = strconv.ParseInt(hex.EncodeToString(socialLeafValues.Total().AsSlice()), 10, 8); err != nil {
+	if total, err = strconv.ParseInt(hex.EncodeToString(socialLeafValue.Total().AsSlice()), 10, 8); err != nil {
 		return nil, err
 	}
 
-	lockScriptVec := socialLeafValues.Signers()
-	for i := uint(0); i < socialLeafValues.Signers().Len(); i++ {
+	lockScriptVec := socialLeafValue.Signers()
+	for i := uint(0); i < socialLeafValue.Signers().Len(); i++ {
 		signer := lockScriptVec.Get(i).RawData()
 		signers = append(signers, remove0x(hex.EncodeToString(signer)))
 	}
