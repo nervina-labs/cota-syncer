@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS social_kv_pairs (
     id bigint NOT NULL AUTO_INCREMENT,
     block_number bigint UNSIGNED NOT NULL,
     lock_hash char(64) NOT NULL,
-    lock_hash_crc int unsigned NOT NULL,
+    lock_hash_crc int UNSIGNED NOT NULL,
     recovery_mode tinyint UNSIGNED NOT NULL,
     must tinyint UNSIGNED NOT NULL,
     total tinyint UNSIGNED NOT NULL,
