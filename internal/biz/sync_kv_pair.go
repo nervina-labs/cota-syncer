@@ -21,6 +21,8 @@ type KvPair struct {
 	UpdatedExtensionPairs []ExtensionPair
 	SubKeyPairs           []SubKeyPair
 	UpdatedSubKeyPairs    []SubKeyPair
+	SocialPairs           []SocialKvPair
+	UpdatedSocialPairs    []SocialKvPair
 }
 
 func (p KvPair) HasRegisters() bool {
@@ -73,6 +75,14 @@ func (p KvPair) HasSubKeyPairs() bool {
 
 func (p KvPair) HasUpdatedSubKeyPairs() bool {
 	return len(p.UpdatedSubKeyPairs) > 0
+}
+
+func (p KvPair) HasSocialPairs() bool {
+	return len(p.SocialPairs) > 0
+}
+
+func (p KvPair) HasUpdatedSocialPairs() bool {
+	return len(p.UpdatedSocialPairs) > 0
 }
 
 type KvPairRepo interface {

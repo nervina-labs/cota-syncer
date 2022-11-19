@@ -8,7 +8,8 @@ import (
 var ProviderSet = wire.NewSet(NewCheckInfoUsecase, NewRegisterCotaKvPairUsecase, NewDefineCotaNftKvPairUsecase,
 	NewHoldCotaNftKvPairUsecase, NewWithdrawCotaNftKvPairUsecase, NewClaimedCotaNftKvPairUsecase, NewSyncKvPairUsecase,
 	NewMintCotaKvPairUsecase, NewTransferCotaKvPairUsecase, NewIssuerInfoUsecase, NewClassInfoUsecase, NewJoyIDInfoUsecase,
-	NewInvalidDataUsecase, NewWithdrawExtraInfoUsecase, NewExtensionPairUsecase, NewRegisterLockScriptUsecase, NewSubKeyPairRepoUsecase)
+	NewInvalidDataUsecase, NewWithdrawExtraInfoUsecase, NewExtensionPairUsecase, NewRegisterLockScriptUsecase, NewSubKeyPairRepoUsecase,
+	NewSocialPairRepoUsecase)
 
 type Entry struct {
 	InputType  []byte

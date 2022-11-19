@@ -20,6 +20,7 @@ type ExtensionPair struct {
 type ExtensionPairs struct {
 	Extensions []ExtensionPair
 	SubKeys    []SubKeyPair
+	Socials    []SocialKvPair
 }
 
 type ExtensionPairRepo interface {

@@ -448,6 +448,80 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 			}
 		}
 
+		if kvPair.HasSocialPairs() {
+			socialPairs := make([]SocialKvPair, len(kvPair.SocialPairs))
+			socialPairVersions := make([]SocialKvPairVersion, len(kvPair.SocialPairs))
+			for i, social := range kvPair.SocialPairs {
+				socialPairs[i] = SocialKvPair{
+					BlockNumber:  social.BlockNumber,
+					LockHash:     social.LockHash,
+					LockHashCRC:  social.LockHashCRC,
+					RecoveryMode: social.RecoveryMode,
+					Must:         social.Must,
+					Total:        social.Total,
+					Signers:      social.Signers,
+				}
+				socialPairVersions[i] = SocialKvPairVersion{
+					BlockNumber:  social.BlockNumber,
+					LockHash:     social.LockHash,
+					RecoveryMode: social.RecoveryMode,
+					Must:         social.Must,
+					Total:        social.Total,
+					Signers:      social.Signers,
+					ActionType:   0,
+				}
+			}
+			if err := tx.Debug().WithContext(ctx).Create(socialPairs).Error; err != nil {
+				return err
+			}
+			if err := tx.Debug().WithContext(ctx).Create(socialPairVersions).Error; err != nil {
+				return err
+			}
+		}
+		if kvPair.HasUpdatedSocialPairs() {
+			updatedSocialPairs := make([]SocialKvPair, len(kvPair.UpdatedSocialPairs))
+			updatedSocialPairVersions := make([]SocialKvPairVersion, len(kvPair.UpdatedSocialPairs))
+			for i, social := range kvPair.UpdatedSocialPairs {
+				var oldSocial SocialKvPair
+				if err := tx.Model(SocialKvPair{}).WithContext(ctx).Where("lock_hash = ?", social.LockHash).First(&oldSocial).Error; err != nil {
+					return err
+				}
+				updatedSocialPairs[i] = SocialKvPair{
+					BlockNumber:  social.BlockNumber,
+					LockHash:     social.LockHash,
+					LockHashCRC:  social.LockHashCRC,
+					RecoveryMode: social.RecoveryMode,
+					Must:         social.Must,
+					Total:        social.Total,
+					Signers:      social.Signers,
+				}
+				updatedSocialPairVersions[i] = SocialKvPairVersion{
+					OldBlockNumber:  oldSocial.BlockNumber,
+					BlockNumber:     social.BlockNumber,
+					LockHash:        social.LockHash,
+					OldRecoveryMode: oldSocial.RecoveryMode,
+					RecoveryMode:    social.RecoveryMode,
+					OldMust:         oldSocial.Must,
+					Must:            social.Must,
+					OldTotal:        oldSocial.Total,
+					Total:           social.Total,
+					OldSigners:      oldSocial.Signers,
+					Signers:         social.Signers,
+					ActionType:      1,
+				}
+				if err := tx.Debug().WithContext(ctx).Create(updatedSocialPairVersions).Error; err != nil {
+					return err
+				}
+
+				if err := tx.Debug().Clauses(clause.OnConflict{
+					Columns:   []clause.Column{{Name: "lock_hash"}},
+					DoUpdates: clause.AssignmentColumns([]string{"block_number", "recovery_mode", "must", "total", "signers"}),
+				}).Create(updatedSocialPairs).Error; err != nil {
+					return err
+				}
+			}
+		}
+
 		// create check info
 		if err := tx.Debug().Model(CheckInfo{}).WithContext(ctx).Create(&CheckInfo{
 			BlockNumber: checkInfo.BlockNumber,
@@ -662,6 +736,41 @@ func (rp kvPairRepo) RestoreCotaEntryKvPairs(ctx context.Context, blockNumber ui
 		}
 		// delete all updated sub key pair versions by the block number
 		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Delete(SubKeyKvPairVersion{}).Error; err != nil {
+			return err
+		}
+
+		// delete all social key pair by the block number
+		if err := tx.WithContext(ctx).Where("block_number = ?", blockNumber).Delete(SocialKvPair{}).Error; err != nil {
+			return err
+		}
+		// delete all created social key pair versions by the block number
+		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 0).Delete(SocialKvPairVersion{}).Error; err != nil {
+			return err
+		}
+		// restore all updated sub key pairs by the block number
+		var updatedSocialPairVersions []SocialKvPairVersion
+		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Find(&updatedSocialPairVersions).Error; err != nil {
+			return err
+		}
+		var updatedSocialKvPairs []SocialKvPair
+		for _, version := range updatedSocialPairVersions {
+			updatedSocialKvPairs = append(updatedSocialKvPairs, SocialKvPair{
+				BlockNumber:  version.OldBlockNumber,
+				LockHash:     version.LockHash,
+				LockHashCRC:  crc32.ChecksumIEEE([]byte(version.LockHash)),
+				RecoveryMode: version.OldRecoveryMode,
+				Must:         version.OldMust,
+				Total:        version.OldTotal,
+				Signers:      version.OldSigners,
+			})
+		}
+		if len(updatedSocialKvPairs) > 0 {
+			if err := tx.WithContext(ctx).Create(updatedSocialKvPairs).Error; err != nil {
+				return err
+			}
+		}
+		// delete all updated sub key pair versions by the block number
+		if err := tx.WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Delete(SocialKvPairVersion{}).Error; err != nil {
 			return err
 		}
 
