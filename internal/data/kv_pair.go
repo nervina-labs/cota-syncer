@@ -314,7 +314,7 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 				}
 			}
 			if err := tx.Debug().Clauses(clause.OnConflict{
-				Columns:   []clause.Column{{Name: "key"}},
+				Columns:   []clause.Column{{Name: "key"}, {Name: "lock_hash"}},
 				DoUpdates: clause.AssignmentColumns([]string{"block_number", "value", "updated_at"}),
 			}).Create(extensionPairs).Error; err != nil {
 				return err
@@ -371,7 +371,7 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 				}
 			}
 			if err := tx.Debug().Clauses(clause.OnConflict{
-				Columns:   []clause.Column{{Name: "key"}},
+				Columns:   []clause.Column{{Name: "key"}, {Name: "lock_hash"}},
 				DoUpdates: clause.AssignmentColumns([]string{"block_number", "value", "updated_at"}),
 			}).Create(updatedExtensionPairs).Error; err != nil {
 				return err
