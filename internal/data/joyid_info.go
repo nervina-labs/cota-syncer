@@ -3,15 +3,14 @@ package data
 import (
 	"context"
 	"errors"
-	"fmt"
+	"strings"
+	"time"
+
 	"github.com/mitchellh/mapstructure"
 	"github.com/nervina-labs/cota-syncer/internal/biz"
 	"github.com/nervina-labs/cota-syncer/internal/logger"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 	"gorm.io/gorm/clause"
-	"regexp"
-	"strings"
-	"time"
 )
 
 var _ biz.JoyIDInfoRepo = (*joyIDInfoRepo)(nil)
@@ -32,7 +31,6 @@ type JoyIDInfo struct {
 	Avatar       string
 	Description  string
 	Extension    string
-	Nickname     string
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
@@ -58,8 +56,6 @@ type JoyIDInfoVersion struct {
 	Description    string
 	OldExtension   string
 	Extension      string
-	OldNickname    string
-	Nickname       string
 	ActionType     uint8 //	0-create 1-update 2-delete
 	TxIndex        uint32
 	CreatedAt      time.Time
@@ -153,10 +149,6 @@ func (repo joyIDInfoRepo) ParseJoyIDInfo(ctx context.Context, blockNumber uint64
 			Alg:          remove0x(v.Alg),
 		}
 	}
-	nickname, err := repo.parseNickname(ctx, joyIDInfo.Name, lockHashStr)
-	if err != nil {
-		return
-	}
 	joyID = biz.JoyIDInfo{
 		BlockNumber:  blockNumber,
 		LockHash:     lockHashStr,
@@ -170,52 +162,8 @@ func (repo joyIDInfoRepo) ParseJoyIDInfo(ctx context.Context, blockNumber uint64
 		FrontEnd:     joyIDInfo.FrontEnd,
 		CotaCellId:   remove0x(joyIDInfo.CotaCellId),
 		Extension:    joyIDInfo.Extension,
-		Nickname:     nickname,
 		SubKeys:      subKeys,
 		TxIndex:      txIndex,
-	}
-	return
-}
-
-func (repo joyIDInfoRepo) parseNickname(ctx context.Context, name string, lockHash string) (nickname string, err error) {
-	var registry RegisterCotaKvPair
-	if err = repo.data.db.WithContext(ctx).Select("cota_cell_id").Where("lock_hash = ?", lockHash).First(&registry).Error; err != nil {
-		return
-	}
-	match, err := regexp.MatchString(`^[A-Za-z0-9]{4,240}$`, name)
-	if err != nil {
-		return
-	}
-	var realName = name
-	if !match {
-		realName = "noname"
-	}
-	nickname = realName + "#" + fmt.Sprintf("%04d", registry.CotaCellID%10000)
-
-	var joyIDInfos []JoyIDInfo
-	if err = repo.data.db.Model(JoyIDInfo{}).WithContext(ctx).Where("lock_hash <> ? and nickname = ?", lockHash, nickname).Find(&joyIDInfos).Error; err != nil {
-		return
-	}
-	if len(joyIDInfos) == 0 {
-		return
-	} else {
-		nickname = realName + "#" + fmt.Sprintf("%06d", registry.CotaCellID%1000000)
-		if err = repo.data.db.Model(JoyIDInfo{}).WithContext(ctx).Where("lock_hash <> ? and nickname = ?", lockHash, nickname).Find(&joyIDInfos).Error; err != nil {
-			return
-		}
-		if len(joyIDInfos) == 0 {
-			return
-		} else {
-			nickname = realName + "#" + fmt.Sprintf("%08d", registry.CotaCellID%100000000)
-			if err = repo.data.db.Model(JoyIDInfo{}).WithContext(ctx).Where("lock_hash <> ? and nickname = ?", lockHash, nickname).Find(&joyIDInfos).Error; err != nil {
-				return
-			}
-			if len(joyIDInfos) == 0 {
-				return
-			} else {
-				nickname = realName + "#" + fmt.Sprintf("%010d", registry.CotaCellID%10000000000)
-			}
-		}
 	}
 	return
 }

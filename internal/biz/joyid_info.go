@@ -28,7 +28,6 @@ type JoyIDInfo struct {
 	Avatar       string
 	Description  string
 	Extension    string
-	Nickname     string
 	TxIndex      uint32
 	SubKeys      []SubKeyInfo
 }
