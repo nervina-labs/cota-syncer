@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+
 	"github.com/nervina-labs/cota-syncer/internal/biz"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 )
@@ -69,6 +70,9 @@ func (bp BlockSyncer) Sync(ctx context.Context, block *ckbTypes.Block, checkInfo
 		entryVec = append(entryVec, entries...)
 	}
 	pairs, err := bp.parseCotaEntries(block.Header.Number, entryVec)
+	if err != nil {
+		return err
+	}
 	pairs.Registers = kvPair.Registers
 	err = bp.kvPairUsecase.CreateCotaEntryKvPairs(ctx, checkInfo, &pairs)
 	if err != nil {
