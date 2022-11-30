@@ -63,8 +63,11 @@ func (bp MetadataSyncer) parseMetadata(ctx context.Context, blockNumber uint64, 
 		// Parse Issuer/Class/JoyID Metadata
 		if len(entry.OutputType) > 0 {
 			ctMeta, err = biz.ParseMetadata(entry.OutputType)
-			if err != nil {
-				continue
+			if err != nil && len(entry.ExtraWitness) > 0 {
+				ctMeta, err = biz.ParseMetadata(entry.ExtraWitness)
+				if err != nil {
+					continue
+				}
 			}
 		} else if len(entry.ExtraWitness) > 0 {
 			ctMeta, err = biz.ParseMetadata(entry.ExtraWitness)
