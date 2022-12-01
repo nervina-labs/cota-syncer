@@ -100,7 +100,7 @@ func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, txIndex uin
 			})
 		}
 
-		if extraWitnessesLen >= len(cotaCells) {
+		if extraWitnessesLen > groupIndex {
 			entries = append(entries, biz.Entry{
 				LockScript:   cotaCell.output.Lock,
 				TxIndex:      txIndex,
