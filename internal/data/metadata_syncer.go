@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+
 	"github.com/nervina-labs/cota-syncer/internal/biz"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 )
@@ -38,6 +39,9 @@ func (bp MetadataSyncer) Sync(ctx context.Context, block *ckbTypes.Block, checkI
 		entryVec = append(entryVec, entries...)
 	}
 	pairs, err := bp.parseMetadata(ctx, block.Header.Number, entryVec)
+	if err != nil {
+		return err
+	}
 	err = bp.kvPairUsecase.CreateMetadataKvPairs(ctx, checkInfo, &pairs)
 	if err != nil {
 		return err
@@ -50,34 +54,48 @@ func (bp MetadataSyncer) Rollback(ctx context.Context, blockNumber uint64) error
 }
 
 func (bp MetadataSyncer) parseMetadata(ctx context.Context, blockNumber uint64, entries []biz.Entry) (biz.KvPair, error) {
-	var kvPair biz.KvPair
+	var (
+		kvPair biz.KvPair
+		ctMeta biz.CTMeta
+		err    error
+	)
 	for _, entry := range entries {
 		// Parse Issuer/Class/JoyID Metadata
 		if len(entry.OutputType) > 0 {
-			ctMeta, err := biz.ParseMetadata(entry.OutputType)
+			ctMeta, err = biz.ParseMetadata(entry.OutputType)
+			if err != nil && len(entry.ExtraWitness) > 0 {
+				ctMeta, err = biz.ParseMetadata(entry.ExtraWitness)
+				if err != nil {
+					continue
+				}
+			}
+		} else if len(entry.ExtraWitness) > 0 {
+			ctMeta, err = biz.ParseMetadata(entry.ExtraWitness)
 			if err != nil {
 				continue
 			}
-			switch ctMeta.Metadata.Type {
-			case "issuer":
-				issuerInfo, err := bp.issuerInfoUsecase.ParseMetadata(blockNumber, entry.TxIndex, entry.LockScript, ctMeta.Metadata.Data)
-				if err != nil {
-					return kvPair, err
-				}
-				kvPair.IssuerInfos = append(kvPair.IssuerInfos, issuerInfo)
-			case "cota":
-				classInfo, err := bp.classInfoUsecase.ParseMetadata(blockNumber, entry.TxIndex, ctMeta.Metadata.Data)
-				if err != nil {
-					return kvPair, err
-				}
-				kvPair.ClassInfos = append(kvPair.ClassInfos, classInfo)
-			case "joy_id":
-				joyIDInfo, err := bp.joyIDInfoUsecase.ParseMetadata(ctx, blockNumber, entry.TxIndex, entry.LockScript, ctMeta.Metadata.Data)
-				if err != nil {
-					return kvPair, err
-				}
-				kvPair.JoyIDInfos = append(kvPair.JoyIDInfos, joyIDInfo)
+		} else {
+			continue
+		}
+		switch ctMeta.Metadata.Type {
+		case "issuer":
+			issuerInfo, err := bp.issuerInfoUsecase.ParseMetadata(blockNumber, entry.TxIndex, entry.LockScript, ctMeta.Metadata.Data)
+			if err != nil {
+				return kvPair, err
 			}
+			kvPair.IssuerInfos = append(kvPair.IssuerInfos, issuerInfo)
+		case "cota":
+			classInfo, err := bp.classInfoUsecase.ParseMetadata(blockNumber, entry.TxIndex, ctMeta.Metadata.Data)
+			if err != nil {
+				return kvPair, err
+			}
+			kvPair.ClassInfos = append(kvPair.ClassInfos, classInfo)
+		case "joy_id":
+			joyIDInfo, err := bp.joyIDInfoUsecase.ParseMetadata(ctx, blockNumber, entry.TxIndex, entry.LockScript, ctMeta.Metadata.Data)
+			if err != nil {
+				return kvPair, err
+			}
+			kvPair.JoyIDInfos = append(kvPair.JoyIDInfos, joyIDInfo)
 		}
 	}
 	return kvPair, nil

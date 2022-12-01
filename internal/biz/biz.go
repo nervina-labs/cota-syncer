@@ -18,4 +18,5 @@ type Entry struct {
 	TxIndex    uint32
 	Version    uint8
 	TxHash     ckbTypes.Hash
+	ExtraWitness []byte
 }

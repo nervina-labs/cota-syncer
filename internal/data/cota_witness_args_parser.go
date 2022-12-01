@@ -65,7 +65,8 @@ func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, txIndex uin
 	}
 
 	var entries []biz.Entry
-	for _, cotaCell := range cotaCells {
+	extraWitnessesLen := len(tx.Witnesses) - len(tx.Inputs)
+	for groupIndex, cotaCell := range cotaCells {
 		witness := tx.Witnesses[cotaCell.index]
 		if len(witness) == 0 {
 			continue
@@ -84,6 +85,7 @@ func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, txIndex uin
 				TxHash:     tx.Hash,
 			})
 		}
+
 		if witnessArgs.InputType().IsSome() {
 			inputType, err := witnessArgs.InputType().IntoBytes()
 			if err != nil {
@@ -95,6 +97,16 @@ func (c CotaWitnessArgsParser) cotaEntries(tx *ckbTypes.Transaction, txIndex uin
 				TxIndex:    txIndex,
 				Version:    cotaCell.outputData[0],
 				TxHash:     tx.Hash,
+			})
+		}
+
+		if extraWitnessesLen > groupIndex {
+			entries = append(entries, biz.Entry{
+				LockScript:   cotaCell.output.Lock,
+				TxIndex:      txIndex,
+				Version:      cotaCell.outputData[0],
+				TxHash:       tx.Hash,
+				ExtraWitness: tx.Witnesses[len(tx.Inputs)+groupIndex],
 			})
 		}
 	}
