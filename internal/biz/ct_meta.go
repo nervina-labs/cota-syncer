@@ -47,9 +47,9 @@ type IssuerInfoJson struct {
 }
 
 type SubKeyInfoJson struct {
-	Version      string `json:"version" mapstructure:",omitempty"`
 	PubKey       string `json:"pub_key" mapstructure:",omitempty"`
 	CredentialId string `json:"credential_id" mapstructure:",omitempty"`
+	Alg          string `json:"alg" mapstructure:",omitempty"`
 }
 
 type JoyIDInfoJson struct {
@@ -62,6 +62,7 @@ type JoyIDInfoJson struct {
 	Avatar       string           `json:"avatar" mapstructure:",omitempty"`
 	Description  string           `json:"description" mapstructure:",omitempty"`
 	Extension    string           `json:"extension" mapstructure:",omitempty"`
+	FrontEnd     string           `json:"front_end" mapstructure:",omitempty"`
 	SubKeys      []SubKeyInfoJson `json:"sub_keys" mapstructure:",omitempty"`
 }
 

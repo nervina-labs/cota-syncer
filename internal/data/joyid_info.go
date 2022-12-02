@@ -125,7 +125,7 @@ func (repo joyIDInfoRepo) ParseJoyIDInfo(ctx context.Context, blockNumber uint64
 		return
 	}
 	lockHashStr := lockHash.String()[2:]
-	var joyIDInfo biz.JoyIDInfo
+	var joyIDInfo biz.JoyIDInfoJson
 	err = mapstructure.Decode(joyIDMeta, &joyIDInfo)
 	if err != nil {
 		return
