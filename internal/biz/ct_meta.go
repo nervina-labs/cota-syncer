@@ -47,23 +47,24 @@ type IssuerInfoJson struct {
 }
 
 type SubKeyInfoJson struct {
-	PubKey       string `json:"pub_key" mapstructure:",omitempty"`
-	CredentialId string `json:"credential_id" mapstructure:",omitempty"`
-	Alg          string `json:"alg" mapstructure:",omitempty"`
+	FrontEnd     string `json:"front_end" mapstructure:"front_end,omitempty"`
+	PubKey       string `json:"pub_key" mapstructure:"pub_key,omitempty"`
+	CredentialId string `json:"credential_id" mapstructure:"credential_id,omitempty"`
+	Alg          string `json:"alg" mapstructure:"alg,omitempty"`
 }
 
 type JoyIDInfoJson struct {
 	Version      string           `json:"version" mapstructure:",omitempty"`
-	PubKey       string           `json:"pub_key" mapstructure:",omitempty"`
-	CredentialId string           `json:"credential_id" mapstructure:",omitempty"`
-	Alg          string           `json:"alg" mapstructure:",omitempty"`
-	CotaCellId   string           `json:"cota_cell_id" mapstructure:",omitempty"`
+	PubKey       string           `json:"pub_key" mapstructure:"pub_key,omitempty"`
+	CredentialId string           `json:"credential_id" mapstructure:"credential_id,omitempty"`
+	Alg          string           `json:"alg" mapstructure:"alg,omitempty"`
+	CotaCellId   string           `json:"cota_cell_id" mapstructure:"cota_cell_id,omitempty"`
 	Name         string           `json:"name" mapstructure:",omitempty"`
 	Avatar       string           `json:"avatar" mapstructure:",omitempty"`
 	Description  string           `json:"description" mapstructure:",omitempty"`
 	Extension    string           `json:"extension" mapstructure:",omitempty"`
-	FrontEnd     string           `json:"front_end" mapstructure:",omitempty"`
-	SubKeys      []SubKeyInfoJson `json:"sub_keys" mapstructure:",omitempty"`
+	FrontEnd     string           `json:"front_end" mapstructure:"front_end,omitempty"`
+	SubKeys      []SubKeyInfoJson `json:"sub_keys" mapstructure:"sub_keys,omitempty"`
 }
 
 type MetaType int
