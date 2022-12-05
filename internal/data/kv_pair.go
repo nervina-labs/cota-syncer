@@ -400,10 +400,7 @@ func (rp kvPairRepo) CreateCotaEntryKvPairs(ctx context.Context, checkInfo biz.C
 					ActionType:  0,
 				}
 			}
-			if err := tx.Debug().Clauses(clause.OnConflict{
-				Columns:   []clause.Column{{Name: "lock_hash"}, {Name: "ext_data"}},
-				DoUpdates: clause.AssignmentColumns([]string{"block_number", "alg_index", "pubkey_hash", "updated_at"}),
-			}).Create(subKeyPairs).Error; err != nil {
+			if err := tx.Debug().WithContext(ctx).Create(subKeyPairs).Error; err != nil {
 				return err
 			}
 			if err := tx.Debug().WithContext(ctx).Create(subKeyPairVersions).Error; err != nil {
