@@ -47,7 +47,6 @@ type IssuerInfoJson struct {
 }
 
 type SubKeyInfoJson struct {
-	FrontEnd     string `json:"front_end" mapstructure:"front_end,omitempty"`
 	PubKey       string `json:"pub_key" mapstructure:"pub_key,omitempty"`
 	CredentialId string `json:"credential_id" mapstructure:"credential_id,omitempty"`
 	Alg          string `json:"alg" mapstructure:"alg,omitempty"`

@@ -33,7 +33,6 @@ type JoyIDInfo struct {
 }
 
 type JoyIDInfoRepo interface {
-	CreateJoyIDInfo(ctx context.Context, joyID *JoyIDInfo) error
 	DeleteJoyIDInfo(ctx context.Context, blockNumber uint64) error
 	ParseJoyIDInfo(ctx context.Context, blockNumber uint64, txIndex uint32, lockScript *ckbTypes.Script, joyIDMeta map[string]any) (JoyIDInfo, error)
 }
@@ -48,10 +47,6 @@ func NewJoyIDInfoUsecase(repo JoyIDInfoRepo, logger *logger.Logger) *JoyIDInfoUs
 		repo:   repo,
 		logger: logger,
 	}
-}
-
-func (uc *JoyIDInfoUsecase) Create(ctx context.Context, joyID *JoyIDInfo) error {
-	return uc.repo.CreateJoyIDInfo(ctx, joyID)
 }
 
 func (uc *JoyIDInfoUsecase) DeleteByBlockNumber(ctx context.Context, blockNumber uint64) error {
