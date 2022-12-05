@@ -13,6 +13,7 @@ type SubKeyInfo struct {
 	PubKey       string
 	CredentialId string
 	Alg          string
+	FrontEnd     string
 }
 
 type JoyIDInfo struct {

@@ -68,6 +68,7 @@ type SubKeyInfo struct {
 	PubKey       string
 	CredentialId string
 	Alg          string
+	FrontEnd     string
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
@@ -119,6 +120,7 @@ func (repo joyIDInfoRepo) ParseJoyIDInfo(ctx context.Context, blockNumber uint64
 			PubKey:       remove0x(v.PubKey),
 			CredentialId: remove0x(v.CredentialId),
 			Alg:          remove0x(v.Alg),
+			FrontEnd:     v.FrontEnd,
 		}
 	}
 	joyID = biz.JoyIDInfo{

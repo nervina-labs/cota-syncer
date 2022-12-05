@@ -1021,6 +1021,7 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 						PubKey:       subKey.PubKey,
 						CredentialId: subKey.CredentialId,
 						Alg:          subKey.Alg,
+						FrontEnd:     subKey.FrontEnd,
 					})
 				}
 			}
