@@ -10,7 +10,6 @@ import (
 	"github.com/nervina-labs/cota-syncer/internal/biz"
 	"github.com/nervina-labs/cota-syncer/internal/logger"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
-	"gorm.io/gorm/clause"
 )
 
 var _ biz.JoyIDInfoRepo = (*joyIDInfoRepo)(nil)
@@ -69,6 +68,7 @@ type SubKeyInfo struct {
 	PubKey       string
 	CredentialId string
 	Alg          string
+	FrontEnd     string
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
@@ -83,33 +83,6 @@ func NewJoyIDInfoRepo(data *Data, logger *logger.Logger) biz.JoyIDInfoRepo {
 		data:   data,
 		logger: logger,
 	}
-}
-
-func (repo joyIDInfoRepo) CreateJoyIDInfo(ctx context.Context, joyIDInfo *biz.JoyIDInfo) error {
-	if err := repo.data.db.WithContext(ctx).Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "lock_hash"}},
-		UpdateAll: true,
-	}).Create(joyIDInfo).Error; err != nil {
-		return err
-	}
-
-	var subKeys []biz.SubKeyInfo
-	for _, v := range joyIDInfo.SubKeys {
-		subKeys = append(subKeys, biz.SubKeyInfo{
-			BlockNumber:  joyIDInfo.BlockNumber,
-			LockHash:     joyIDInfo.LockHash,
-			PubKey:       remove0x(v.PubKey),
-			CredentialId: remove0x(v.CredentialId),
-			Alg:          remove0x(v.Alg),
-		})
-	}
-	if err := repo.data.db.WithContext(ctx).Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "pub_key"}},
-		UpdateAll: true,
-	}).Create(subKeys).Error; err != nil {
-		return err
-	}
-	return nil
 }
 
 func (repo joyIDInfoRepo) DeleteJoyIDInfo(ctx context.Context, blockNumber uint64) error {
@@ -140,13 +113,14 @@ func (repo joyIDInfoRepo) ParseJoyIDInfo(ctx context.Context, blockNumber uint64
 	}
 	subKeys := make([]biz.SubKeyInfo, len(joyIDInfo.SubKeys))
 	for i, v := range joyIDInfo.SubKeys {
-		if lenWithout0x(v.PubKey) > 128 || len(v.Alg) > 4 {
+		if lenWithout0x(v.PubKey) > 128 || lenWithout0x(v.Alg) > 2 {
 			err = ErrInvalidJoyIDInfo
 		}
 		subKeys[i] = biz.SubKeyInfo{
 			PubKey:       remove0x(v.PubKey),
 			CredentialId: remove0x(v.CredentialId),
 			Alg:          remove0x(v.Alg),
+			FrontEnd:     v.FrontEnd,
 		}
 	}
 	joyID = biz.JoyIDInfo{

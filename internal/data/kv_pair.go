@@ -1021,6 +1021,7 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 						PubKey:       subKey.PubKey,
 						CredentialId: subKey.CredentialId,
 						Alg:          subKey.Alg,
+						FrontEnd:     subKey.FrontEnd,
 					})
 				}
 			}
@@ -1032,7 +1033,7 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 			}
 			if len(subKeys) > 0 {
 				if err := tx.Model(SubKeyInfo{}).WithContext(ctx).Clauses(clause.OnConflict{
-					Columns:   []clause.Column{{Name: "pub_key"}},
+					Columns:   []clause.Column{{Name: "pub_key"}, {Name: "lock_hash"}},
 					UpdateAll: true,
 				}).Create(subKeys).Error; err != nil {
 					return err
