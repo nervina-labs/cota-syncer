@@ -1032,11 +1032,17 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 				return err
 			}
 			if len(subKeys) > 0 {
-				if err := tx.Model(SubKeyInfo{}).WithContext(ctx).Clauses(clause.OnConflict{
-					Columns:   []clause.Column{{Name: "pub_key"}, {Name: "lock_hash"}},
-					UpdateAll: true,
-				}).Create(subKeys).Error; err != nil {
-					return err
+				for _, subKey := range subKeys {
+					var oldSubkey SubKeyInfo
+					err := tx.Model(SubKeyInfo{}).WithContext(ctx).Where("lock_hash = ? and pub_key = ? and credential_id = ?", subKey.LockHash, subKey.PubKey, subKey.CredentialId).First(&oldSubkey).Error
+					if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+						return err
+					}
+					if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+						if err := tx.Model(SubKeyInfo{}).WithContext(ctx).Create(&subKey).Error; err != nil {
+							return err
+						}
+					}
 				}
 			}
 		}
