@@ -14,6 +14,7 @@ type SubKeyInfo struct {
 	CredentialId string
 	Alg          string
 	FrontEnd     string
+	DeviceName   string
 }
 
 type JoyIDInfo struct {
@@ -24,6 +25,7 @@ type JoyIDInfo struct {
 	CredentialId string
 	Alg          string
 	FrontEnd     string
+	DeviceName   string
 	CotaCellId   string
 	Name         string
 	Avatar       string

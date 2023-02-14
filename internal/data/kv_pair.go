@@ -960,6 +960,7 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 						CredentialId: info.CredentialId,
 						Alg:          info.Alg,
 						FrontEnd:     info.FrontEnd,
+						DeviceName:   info.DeviceName,
 						CotaCellId:   info.CotaCellId,
 						LockHash:     info.LockHash,
 						Extension:    info.Extension,
@@ -986,6 +987,8 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 						Alg:            info.Alg,
 						OldFrontEnd:    oldInfo.FrontEnd,
 						FrontEnd:       info.FrontEnd,
+						OldDeviceName:  oldInfo.DeviceName,
+						DeviceName:     info.DeviceName,
 						CotaCellId:     info.CotaCellId,
 						ActionType:     1,
 						TxIndex:        info.TxIndex,
@@ -1011,6 +1014,7 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 					CredentialId: joyID.CredentialId,
 					Alg:          joyID.Alg,
 					FrontEnd:     joyID.FrontEnd,
+					DeviceName:   joyID.DeviceName,
 					CotaCellId:   joyID.CotaCellId,
 					Extension:    joyID.Extension,
 				}
@@ -1022,6 +1026,7 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 						CredentialId: subKey.CredentialId,
 						Alg:          subKey.Alg,
 						FrontEnd:     subKey.FrontEnd,
+						DeviceName:   subKey.DeviceName,
 					})
 				}
 			}
@@ -1147,6 +1152,7 @@ func (rp kvPairRepo) RestoreMetadataKvPairs(ctx context.Context, blockNumber uin
 				CredentialId: version.CredentialId,
 				Alg:          version.Alg,
 				FrontEnd:     version.OldFrontEnd,
+				DeviceName:   version.OldDeviceName,
 				CotaCellId:   version.CotaCellId,
 				UpdatedAt:    time.Now().UTC(),
 			})

@@ -25,6 +25,7 @@ type JoyIDInfo struct {
 	CredentialId string
 	Alg          string
 	FrontEnd     string
+	DeviceName   string
 	CotaCellId   string
 	Name         string
 	Avatar       string
@@ -46,6 +47,8 @@ type JoyIDInfoVersion struct {
 	Alg            string
 	OldFrontEnd    string
 	FrontEnd       string
+	OldDeviceName  string
+	DeviceName     string
 	CotaCellId     string
 	OldName        string
 	Name           string
@@ -69,6 +72,7 @@ type SubKeyInfo struct {
 	CredentialId string
 	Alg          string
 	FrontEnd     string
+	DeviceName   string
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
@@ -121,6 +125,7 @@ func (repo joyIDInfoRepo) ParseJoyIDInfo(ctx context.Context, blockNumber uint64
 			CredentialId: remove0x(v.CredentialId),
 			Alg:          remove0x(v.Alg),
 			FrontEnd:     v.FrontEnd,
+			DeviceName:   v.DeviceName,
 		}
 	}
 	joyID = biz.JoyIDInfo{
@@ -134,6 +139,7 @@ func (repo joyIDInfoRepo) ParseJoyIDInfo(ctx context.Context, blockNumber uint64
 		CredentialId: remove0x(joyIDInfo.CredentialId),
 		Alg:          remove0x(joyIDInfo.Alg),
 		FrontEnd:     joyIDInfo.FrontEnd,
+		DeviceName:   joyIDInfo.DeviceName,
 		CotaCellId:   remove0x(joyIDInfo.CotaCellId),
 		Extension:    joyIDInfo.Extension,
 		SubKeys:      subKeys,
