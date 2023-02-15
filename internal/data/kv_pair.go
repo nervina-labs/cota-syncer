@@ -1048,6 +1048,11 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 							return err
 						}
 					}
+					if err == nil {
+						if err := tx.Model(&oldSubkey).WithContext(ctx).Updates(subKey).Error; err != nil {
+							return err
+						}
+					}
 				}
 			}
 		}
