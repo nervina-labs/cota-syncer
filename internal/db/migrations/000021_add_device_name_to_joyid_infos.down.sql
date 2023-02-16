@@ -13,4 +13,3 @@ ALTER TABLE sub_key_infos
     DROP COLUMN device_type;
 
 DROP TABLE IF EXISTS sub_key_info_versions;
-
