@@ -77,6 +77,24 @@ type SubKeyInfo struct {
 	UpdatedAt    time.Time
 }
 
+type SubKeyInfoVersion struct {
+	ID             uint `gorm:"primaryKey"`
+	OldBlockNumber uint64
+	BlockNumber    uint64
+	LockHash       string
+	PubKey         string
+	CredentialId   string
+	Alg            string
+	OldFrontEnd    string
+	FrontEnd       string
+	OldDeviceName  string
+	DeviceName     string
+	ActionType     uint8 //	0-create 1-update 2-delete
+	TxIndex        uint32
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+}
+
 type joyIDInfoRepo struct {
 	data   *Data
 	logger *logger.Logger
