@@ -51,6 +51,8 @@ type SubKeyInfoJson struct {
 	CredentialId string `json:"credential_id" mapstructure:"credential_id,omitempty"`
 	Alg          string `json:"alg" mapstructure:"alg,omitempty"`
 	FrontEnd     string `json:"front_end" mapstructure:"front_end,omitempty"`
+	DeviceName   string `json:"device_name" mapstructure:"device_name,omitempty"`
+	DeviceType   string `json:"device_type" mapstructure:"device_type,omitempty"`
 }
 
 type JoyIDInfoJson struct {
@@ -64,6 +66,8 @@ type JoyIDInfoJson struct {
 	Description  string           `json:"description" mapstructure:",omitempty"`
 	Extension    string           `json:"extension" mapstructure:",omitempty"`
 	FrontEnd     string           `json:"front_end" mapstructure:"front_end,omitempty"`
+	DeviceName   string           `json:"device_name" mapstructure:"device_name,omitempty"`
+	DeviceType   string           `json:"device_type" mapstructure:"device_type,omitempty"`
 	SubKeys      []SubKeyInfoJson `json:"sub_keys" mapstructure:"sub_keys,omitempty"`
 }
 

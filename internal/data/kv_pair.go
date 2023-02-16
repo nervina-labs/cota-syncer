@@ -938,8 +938,9 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 			}
 		}
 		if kvPair.HasJoyIDInfos() {
-			// save joyID info versions
+			// save joyID info versions and subkey info versions
 			joyIDInfoVersions := make([]JoyIDInfoVersion, len(kvPair.JoyIDInfos))
+			var subKeyVersions []SubKeyInfoVersion
 			for i, info := range kvPair.JoyIDInfos {
 				var oldInfo JoyIDInfo
 				err := tx.Model(JoyIDInfo{}).WithContext(ctx).Where("lock_hash = ?", info.LockHash).First(&oldInfo).Error
@@ -960,6 +961,8 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 						CredentialId: info.CredentialId,
 						Alg:          info.Alg,
 						FrontEnd:     info.FrontEnd,
+						DeviceName:   info.DeviceName,
+						DeviceType:   info.DeviceType,
 						CotaCellId:   info.CotaCellId,
 						LockHash:     info.LockHash,
 						Extension:    info.Extension,
@@ -986,17 +989,63 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 						Alg:            info.Alg,
 						OldFrontEnd:    oldInfo.FrontEnd,
 						FrontEnd:       info.FrontEnd,
+						OldDeviceName:  oldInfo.DeviceName,
+						DeviceName:     info.DeviceName,
+						OldDeviceType:  oldInfo.DeviceType,
+						DeviceType:     info.DeviceType,
 						CotaCellId:     info.CotaCellId,
 						ActionType:     1,
 						TxIndex:        info.TxIndex,
 					}
 				}
-			}
 
+				for _, sub := range info.SubKeys {
+					var oldSub SubKeyInfo
+					err := tx.Model(SubKeyInfo{}).WithContext(ctx).Where("lock_hash = ? and pub_key = ?", info.LockHash, info.PubKey).First(&oldSub).Error
+					if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+						return err
+					}
+					if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+						subKeyVersions = append(subKeyVersions, SubKeyInfoVersion{
+							BlockNumber:  0,
+							PubKey:       sub.PubKey,
+							CredentialId: sub.CredentialId,
+							Alg:          sub.Alg,
+							FrontEnd:     sub.FrontEnd,
+							DeviceName:   sub.DeviceName,
+							DeviceType:   sub.DeviceType,
+							LockHash:     sub.LockHash,
+							ActionType:   0,
+							TxIndex:      info.TxIndex,
+						})
+					} else {
+						subKeyVersions = append(subKeyVersions, SubKeyInfoVersion{
+							OldBlockNumber: oldSub.BlockNumber,
+							BlockNumber:    sub.BlockNumber,
+							LockHash:       sub.LockHash,
+							PubKey:         sub.PubKey,
+							CredentialId:   sub.CredentialId,
+							Alg:            sub.Alg,
+							OldFrontEnd:    oldSub.FrontEnd,
+							FrontEnd:       sub.FrontEnd,
+							OldDeviceName:  oldSub.DeviceName,
+							DeviceName:     sub.DeviceName,
+							OldDeviceType:  oldSub.DeviceType,
+							DeviceType:     sub.DeviceType,
+							ActionType:     1,
+							TxIndex:        info.TxIndex,
+						})
+					}
+				}
+			}
 			if err := tx.Model(JoyIDInfoVersion{}).WithContext(ctx).Create(joyIDInfoVersions).Error; err != nil {
 				return err
 			}
-			// insert joyID info
+			if err := tx.Model(SubKeyInfoVersion{}).WithContext(ctx).Create(subKeyVersions).Error; err != nil {
+				return err
+			}
+
+			// insert joyID info and subkey info
 			var subKeys []SubKeyInfo
 			joyIDInfos := make([]JoyIDInfo, len(kvPair.JoyIDInfos))
 			for i, joyID := range kvPair.JoyIDInfos {
@@ -1011,6 +1060,8 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 					CredentialId: joyID.CredentialId,
 					Alg:          joyID.Alg,
 					FrontEnd:     joyID.FrontEnd,
+					DeviceName:   joyID.DeviceName,
+					DeviceType:   joyID.DeviceType,
 					CotaCellId:   joyID.CotaCellId,
 					Extension:    joyID.Extension,
 				}
@@ -1022,6 +1073,8 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 						CredentialId: subKey.CredentialId,
 						Alg:          subKey.Alg,
 						FrontEnd:     subKey.FrontEnd,
+						DeviceName:   subKey.DeviceName,
+						DeviceType:   subKey.DeviceType,
 					})
 				}
 			}
@@ -1040,6 +1093,11 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 					}
 					if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 						if err := tx.Model(SubKeyInfo{}).WithContext(ctx).Create(&subKey).Error; err != nil {
+							return err
+						}
+					}
+					if err == nil {
+						if err := tx.Model(&oldSubkey).WithContext(ctx).Updates(subKey).Error; err != nil {
 							return err
 						}
 					}
@@ -1147,6 +1205,8 @@ func (rp kvPairRepo) RestoreMetadataKvPairs(ctx context.Context, blockNumber uin
 				CredentialId: version.CredentialId,
 				Alg:          version.Alg,
 				FrontEnd:     version.OldFrontEnd,
+				DeviceName:   version.OldDeviceName,
+				DeviceType:   version.OldDeviceType,
 				CotaCellId:   version.CotaCellId,
 				UpdatedAt:    time.Now().UTC(),
 			})
@@ -1156,6 +1216,36 @@ func (rp kvPairRepo) RestoreMetadataKvPairs(ctx context.Context, blockNumber uin
 				Columns:   []clause.Column{{Name: "lock_hash"}},
 				UpdateAll: true,
 			}).Create(updatedJoyIDInfos).Error; err != nil {
+				return err
+			}
+		}
+		// delete all subkey info by the block number
+		if err := tx.Debug().WithContext(ctx).Where("block_number = ?", blockNumber).Delete(SubKeyInfo{}).Error; err != nil {
+			return err
+		}
+		var subKeyInfoVersions []SubKeyInfoVersion
+		if err := tx.Model(SubKeyInfoVersion{}).WithContext(ctx).Where("block_number = ? and action_type = ?", blockNumber, 1).Group("lock_hash").Order("tx_index").Find(&subKeyInfoVersions).Error; err != nil {
+			return err
+		}
+		var updatedSubKeyInfos []SubKeyInfo
+		for _, version := range subKeyInfoVersions {
+			updatedSubKeyInfos = append(updatedSubKeyInfos, SubKeyInfo{
+				BlockNumber:  version.OldBlockNumber,
+				LockHash:     version.LockHash,
+				PubKey:       version.PubKey,
+				CredentialId: version.CredentialId,
+				Alg:          version.Alg,
+				FrontEnd:     version.OldFrontEnd,
+				DeviceName:   version.OldDeviceName,
+				DeviceType:   version.OldDeviceType,
+				UpdatedAt:    time.Now().UTC(),
+			})
+		}
+		if len(updatedSubKeyInfos) > 0 {
+			if err := tx.Debug().Model(JoyIDInfo{}).WithContext(ctx).Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "lock_hash"}},
+				UpdateAll: true,
+			}).Create(updatedSubKeyInfos).Error; err != nil {
 				return err
 			}
 		}
