@@ -1,12 +1,16 @@
 ALTER TABLE joy_id_info_versions
     ADD old_device_name varchar(255) NOT NULL AFTER front_end,
-    ADD device_name varchar(255) NOT NULL AFTER old_device_name;
+    ADD device_name varchar(255) NOT NULL AFTER old_device_name,
+    ADD old_device_type varchar(255) NOT NULL AFTER device_name,
+    ADD device_type varchar(255) NOT NULL AFTER old_device_type;
 
 ALTER TABLE joy_id_infos
-    ADD device_name varchar(255) NOT NULL AFTER front_end;
+    ADD device_name varchar(255) NOT NULL AFTER front_end,
+    ADD device_type varchar(255) NOT NULL AFTER device_name;
 
 ALTER TABLE sub_key_infos
-    ADD device_name varchar(255) NOT NULL AFTER front_end;
+    ADD device_name varchar(255) NOT NULL AFTER front_end,
+    ADD device_type varchar(255) NOT NULL AFTER device_name;
 
 CREATE TABLE IF NOT EXISTS sub_key_info_versions (
     id bigint NOT NULL AUTO_INCREMENT,
@@ -20,6 +24,8 @@ CREATE TABLE IF NOT EXISTS sub_key_info_versions (
     front_end varchar(255) NOT NULL,
     old_device_name varchar(255) NOT NULL,
     device_name varchar(255) NOT NULL,
+    old_device_type varchar(255) NOT NULL,
+    device_type varchar(255) NOT NULL,
     action_type tinyint unsigned NOT NULL,
     tx_index int unsigned NOT NULL,
     created_at datetime(6) NOT NULL,
