@@ -106,6 +106,7 @@ func (repo classInfoRepo) ParseClassInfo(blockNumber uint64, txIndex uint32, cla
 	}
 	characteristic, err := json.Marshal(classInfo.Characteristic)
 	if len(classInfo.CotaId) != CotaIdLen {
+		repo.logger.Infof(context.TODO(), "class info: %+v", classInfo)
 		err = ErrInvalidClassInfo
 	}
 	if err != nil {
