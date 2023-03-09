@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"errors"
+
 	"github.com/nervina-labs/cota-syncer/internal/biz"
 	ckbTypes "github.com/nervosnetwork/ckb-sdk-go/types"
 )
@@ -16,8 +17,8 @@ type MetadataSyncer struct {
 }
 
 func NewMetadataSyncer(
-		kvPairUsecase *biz.SyncKvPairUsecase, cotaWitnessArgsParser CotaWitnessArgsParser, issuerInfoUsecase *biz.IssuerInfoUsecase,
-		classInfoUsecase *biz.ClassInfoUsecase, joyIDInfoUsecase *biz.JoyIDInfoUsecase) MetadataSyncer {
+	kvPairUsecase *biz.SyncKvPairUsecase, cotaWitnessArgsParser CotaWitnessArgsParser, issuerInfoUsecase *biz.IssuerInfoUsecase,
+	classInfoUsecase *biz.ClassInfoUsecase, joyIDInfoUsecase *biz.JoyIDInfoUsecase) MetadataSyncer {
 
 	return MetadataSyncer{
 		kvPairUsecase:         kvPairUsecase,
@@ -97,6 +98,9 @@ func (bp MetadataSyncer) parseMetadata(ctx context.Context, blockNumber uint64, 
 			kvPair.ClassInfos = append(kvPair.ClassInfos, classInfo)
 		case "joy_id":
 			joyIDInfo, err := bp.joyIDInfoUsecase.ParseMetadata(ctx, blockNumber, entry.TxIndex, entry.LockScript, ctMeta.Metadata.Data)
+			if errors.Is(err, ErrInvalidJoyIDInfo) {
+				continue
+			}
 			if err != nil {
 				return kvPair, err
 			}
