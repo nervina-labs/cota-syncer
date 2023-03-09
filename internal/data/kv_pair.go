@@ -1041,8 +1041,10 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 			if err := tx.Model(JoyIDInfoVersion{}).WithContext(ctx).Create(joyIDInfoVersions).Error; err != nil {
 				return err
 			}
-			if err := tx.Model(SubKeyInfoVersion{}).WithContext(ctx).Create(subKeyVersions).Error; err != nil {
-				return err
+			if len(subKeyVersions) > 0 {
+				if err := tx.Model(SubKeyInfoVersion{}).WithContext(ctx).Create(subKeyVersions).Error; err != nil {
+					return err
+				}
 			}
 
 			// insert joyID info and subkey info
