@@ -913,6 +913,8 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 			}
 			// insert class info
 			classInfos := make([]ClassInfo, len(kvPair.ClassInfos))
+			audios := make([]biz.Audio, 0)
+
 			for i, class := range kvPair.ClassInfos {
 				classInfos[i] = ClassInfo{
 					BlockNumber:    class.BlockNumber,
@@ -929,12 +931,42 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 					Properties:     class.Properties,
 					Localization:   class.Localization,
 				}
+
+				for i, audio := range class.Audios {
+					audios = append(audios, biz.Audio{
+						CotaId: class.CotaId,
+						Url:    audio.Url,
+						Name:   audio.Name,
+						Idx:    uint32(i),
+					})
+				}
 			}
+
 			if err := tx.Model(ClassInfo{}).WithContext(ctx).Clauses(clause.OnConflict{
 				Columns:   []clause.Column{{Name: "cota_id"}},
 				UpdateAll: true,
 			}).Create(classInfos).Error; err != nil {
 				return err
+			}
+
+			if len(audios) > 0 {
+				for _, audio := range audios {
+					var oldAudio Audio
+					err := tx.Model(Audio{}).WithContext(ctx).Where("cota_id = ? and idx = ?", audio.CotaId, audio.Idx).First(&oldAudio).Error
+					if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+						return err
+					}
+					if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+						if err := tx.Model(Audio{}).WithContext(ctx).Create(&audio).Error; err != nil {
+							return err
+						}
+					}
+					if err == nil {
+						if err := tx.Model(&oldAudio).WithContext(ctx).Updates(audio).Error; err != nil {
+							return err
+						}
+					}
+				}
 			}
 		}
 		if kvPair.HasJoyIDInfos() {
@@ -1086,6 +1118,8 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 			}).Create(joyIDInfos).Error; err != nil {
 				return err
 			}
+
+			//
 			if len(subKeys) > 0 {
 				for _, subKey := range subKeys {
 					var oldSubkey SubKeyInfo
