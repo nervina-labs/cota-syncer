@@ -17,6 +17,16 @@ var ErrInvalidClassInfo = errors.New("class info is invalid")
 
 const CotaIdLen = 42
 
+type Audio struct {
+	ID        uint `gorm:"primaryKey"`
+	Url       string
+	Name      string
+	CotaId    string
+	Idx       uint32
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
 type ClassInfo struct {
 	ID             uint `gorm:"primaryKey"`
 	BlockNumber    uint64
