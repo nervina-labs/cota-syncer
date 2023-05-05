@@ -18,7 +18,7 @@ var ErrInvalidClassInfo = errors.New("class info is invalid")
 
 const CotaIdLen = 42
 
-type Audio struct {
+type TokenClassAudio struct {
 	ID        uint `gorm:"primaryKey"`
 	Url       string
 	Name      string
