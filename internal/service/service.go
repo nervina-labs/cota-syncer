@@ -24,18 +24,23 @@ type BlockSyncService struct {
 
 func (s *BlockSyncService) Start(ctx context.Context, mode string) error {
 	s.logger.Info(ctx, "Successfully started the sync service~")
+
+	var interval time.Duration
+
+	if mode == "normal" {
+		interval = time.Second
+	}
+
 	go func() {
 		for {
 			select {
 			case <-ctx.Done():
 				s.status <- struct{}{}
 				s.logger.Infof(ctx, "receive cancel signal %v", ctx.Err())
+
 				return
-			default:
+			case <-time.After(interval):
 				s.sync(ctx)
-				if mode == "normal" {
-					time.Sleep(1 * time.Second)
-				}
 			}
 		}
 	}()

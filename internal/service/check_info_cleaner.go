@@ -31,12 +31,21 @@ func (scv CheckInfoCleanerService) clean(ctx context.Context, checkType biz.Chec
 
 func (scv CheckInfoCleanerService) Start(ctx context.Context, mode string) error {
 	scv.logger.Info(ctx, "Successfully started the check info cleaner~")
+
+	var interval time.Duration
+
+	if mode == "normal" {
+		interval = 30 * time.Minute
+	} else {
+		interval = 1 * time.Minute
+	}
+
 	go func() {
 		for {
 			select {
 			case <-ctx.Done():
 				scv.logger.Infof(ctx, "cleaner received cancel signal %v", ctx.Err())
-			default:
+			case <-time.After(interval):
 				eg, ctx := errgroup.WithContext(ctx)
 				checkTypes := []biz.CheckType{biz.SyncBlock, biz.SyncMetadata}
 				for _, checkType := range checkTypes {
@@ -47,11 +56,6 @@ func (scv CheckInfoCleanerService) Start(ctx context.Context, mode string) error
 				}
 				if err := eg.Wait(); err != nil {
 					scv.logger.Errorf(ctx, "clean check info failed, %v", err)
-				}
-				if mode == "normal" {
-					time.Sleep(30 * time.Minute)
-				} else {
-					time.Sleep(1 * time.Minute)
 				}
 			}
 		}
