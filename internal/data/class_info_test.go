@@ -94,7 +94,7 @@ func Test_classInfoRepo_ParseClassInfo(t *testing.T) {
 			args: args{
 				blockNumber: 1000,
 				txIndex:     0,
-				classMeta:   map[string]any{"cota_id": "0x718a6223d13598926c1e093e82e18b98d148f373", "version": "1", "name": "Kernel", "symbol": "udt", "audios": []map[string]any{{"name": "audio1", "url": "http://audio1"}, {"name": "audio2", "url": "http://audio2"}}},
+				classMeta:   map[string]any{"cota_id": "0x718a6223d13598926c1e093e82e18b98d148f373", "version": "1", "name": "Kernel", "symbol": "udt", "audios": []map[string]any{{"name": "audio1", "url": "http://example.com/audio1.mp3"}, {"name": "audio2", "url": "http://example.com/audio2.mp3"}}},
 			},
 			wantClass: biz.ClassInfo{
 				BlockNumber:    1000,
@@ -105,7 +105,7 @@ func Test_classInfoRepo_ParseClassInfo(t *testing.T) {
 				Description:    "",
 				Image:          "",
 				Audio:          "",
-				Audios:         []biz.Audio{{Name: "audio1", Url: "http://audio1", CotaId: "718a6223d13598926c1e093e82e18b98d148f373", Idx: 0}, {Name: "audio2", Url: "http://audio2", CotaId: "718a6223d13598926c1e093e82e18b98d148f373", Idx: 1}},
+				Audios:         []biz.Audio{{Name: "audio1", Url: "http://example.com/audio1.mp3", CotaId: "718a6223d13598926c1e093e82e18b98d148f373", Idx: 0}, {Name: "audio2", Url: "http://example.com/audio2.mp3", CotaId: "718a6223d13598926c1e093e82e18b98d148f373", Idx: 1}},
 				Video:          "",
 				Model:          "",
 				Characteristic: "",
