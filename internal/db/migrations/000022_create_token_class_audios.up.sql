@@ -7,5 +7,5 @@ CREATE TABLE IF NOT EXISTS token_class_audios (
     created_at datetime(6) NOT NULL,
     updated_at datetime(6) NOT NULL,
     PRIMARY KEY (id),
-    KEY `idx_cota_id_on_class_audios` (`cota_id`)
+    KEY `idx_cota_id_idx_on_class_audios` (`cota_id`, `idx`),
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
