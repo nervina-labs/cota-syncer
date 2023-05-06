@@ -2,8 +2,16 @@ package biz
 
 import (
 	"context"
+
 	"github.com/nervina-labs/cota-syncer/internal/logger"
 )
+
+type Audio struct {
+	Name   string
+	Url    string
+	CotaId string
+	Idx    uint32
+}
 
 type ClassInfo struct {
 	BlockNumber    uint64
@@ -14,6 +22,7 @@ type ClassInfo struct {
 	Description    string
 	Image          string
 	Audio          string
+	Audios         []Audio
 	Video          string
 	Model          string
 	Characteristic string

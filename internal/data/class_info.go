@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"time"
+
 	"github.com/mitchellh/mapstructure"
 	"github.com/nervina-labs/cota-syncer/internal/biz"
 	"github.com/nervina-labs/cota-syncer/internal/logger"
 	"gorm.io/gorm/clause"
-	"time"
 )
 
 var _ biz.ClassInfoRepo = (*classInfoRepo)(nil)
@@ -16,6 +17,16 @@ var _ biz.ClassInfoRepo = (*classInfoRepo)(nil)
 var ErrInvalidClassInfo = errors.New("class info is invalid")
 
 const CotaIdLen = 42
+
+type TokenClassAudio struct {
+	ID        uint `gorm:"primaryKey"`
+	Url       string
+	Name      string
+	CotaId    string
+	Idx       uint32
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
 
 type ClassInfo struct {
 	ID             uint `gorm:"primaryKey"`
@@ -124,6 +135,17 @@ func (repo classInfoRepo) ParseClassInfo(blockNumber uint64, txIndex uint32, cla
 	if propertiesStr == "null" {
 		propertiesStr = ""
 	}
+
+	audios := make([]biz.Audio, len(classInfo.Audios))
+	for i, audio := range classInfo.Audios {
+		audios[i] = biz.Audio{
+			CotaId: classInfo.CotaId[2:],
+			Url:    audio.Url,
+			Name:   audio.Name,
+			Idx:    uint32(i),
+		}
+	}
+
 	localization, err := json.Marshal(classInfo.Localization)
 	if err != nil {
 		return
@@ -141,6 +163,7 @@ func (repo classInfoRepo) ParseClassInfo(blockNumber uint64, txIndex uint32, cla
 		Description:    classInfo.Description,
 		Image:          classInfo.Image,
 		Audio:          classInfo.Audio,
+		Audios:         audios,
 		Video:          classInfo.Video,
 		Model:          classInfo.Model,
 		Properties:     propertiesStr,

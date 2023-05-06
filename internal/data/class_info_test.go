@@ -1,10 +1,11 @@
 package data
 
 import (
-	"github.com/nervina-labs/cota-syncer/internal/biz"
-	"github.com/nervina-labs/cota-syncer/internal/logger"
 	"reflect"
 	"testing"
+
+	"github.com/nervina-labs/cota-syncer/internal/biz"
+	"github.com/nervina-labs/cota-syncer/internal/logger"
 )
 
 func Test_classInfoRepo_ParseClassInfo(t *testing.T) {
@@ -37,13 +38,14 @@ func Test_classInfoRepo_ParseClassInfo(t *testing.T) {
 			},
 			wantClass: biz.ClassInfo{
 				BlockNumber:    1000,
-				CotaId:         "0x718a6223d13598926c1e093e82e18b98d148f373",
+				CotaId:         "718a6223d13598926c1e093e82e18b98d148f373",
 				Version:        "1",
 				Name:           "Kernel",
 				Symbol:         "udt",
 				Description:    "",
 				Image:          "",
 				Audio:          "",
+				Audios:         []biz.Audio{},
 				Video:          "",
 				Model:          "",
 				Characteristic: "",
@@ -67,17 +69,47 @@ func Test_classInfoRepo_ParseClassInfo(t *testing.T) {
 			},
 			wantClass: biz.ClassInfo{
 				BlockNumber:    1000,
-				CotaId:         "0x718a6223d13598926c1e093e82e18b98d148f373",
+				CotaId:         "718a6223d13598926c1e093e82e18b98d148f373",
 				Version:        "1",
 				Name:           "Kernel",
 				Symbol:         "udt",
 				Description:    "nice token",
 				Image:          "",
 				Audio:          "",
+				Audios:         []biz.Audio{},
 				Video:          "",
 				Model:          "",
 				Characteristic: "[[\"hp\",\"1\"],[\"act\",\"3\"]]",
 				Properties:     "{\"power\":{\"value\":\"1\",\"value1\":\"2\"}}",
+				Localization:   "",
+				TxIndex:        0,
+			},
+			wantErr: false,
+		}, {
+			name: "should return corresponding audios",
+			fields: fields{
+				data:   nil,
+				logger: nil,
+			},
+			args: args{
+				blockNumber: 1000,
+				txIndex:     0,
+				classMeta:   map[string]any{"cota_id": "0x718a6223d13598926c1e093e82e18b98d148f373", "version": "1", "name": "Kernel", "symbol": "udt", "audios": []map[string]any{{"name": "audio1", "url": "http://example.com/audio1.mp3"}, {"name": "audio2", "url": "http://example.com/audio2.mp3"}}},
+			},
+			wantClass: biz.ClassInfo{
+				BlockNumber:    1000,
+				CotaId:         "718a6223d13598926c1e093e82e18b98d148f373",
+				Version:        "1",
+				Name:           "Kernel",
+				Symbol:         "udt",
+				Description:    "",
+				Image:          "",
+				Audio:          "",
+				Audios:         []biz.Audio{{Name: "audio1", Url: "http://example.com/audio1.mp3", CotaId: "718a6223d13598926c1e093e82e18b98d148f373", Idx: 0}, {Name: "audio2", Url: "http://example.com/audio2.mp3", CotaId: "718a6223d13598926c1e093e82e18b98d148f373", Idx: 1}},
+				Video:          "",
+				Model:          "",
+				Characteristic: "",
+				Properties:     "",
 				Localization:   "",
 				TxIndex:        0,
 			},

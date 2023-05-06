@@ -23,6 +23,11 @@ type Localization struct {
 	Locales []string `json:"locales,omitempty" mapstructure:",omitempty"`
 }
 
+type AudioJson struct {
+	Url  string `json:"url"`
+	Name string `json:"name"`
+}
+
 type ClassInfoJson struct {
 	CotaId         string         `json:"cota_id" mapstructure:"cota_id,omitempty"`
 	Version        string         `json:"version" mapstructure:",omitempty"`
@@ -31,6 +36,7 @@ type ClassInfoJson struct {
 	Description    string         `json:"description" mapstructure:",omitempty"`
 	Image          string         `json:"image" mapstructure:",omitempty"`
 	Audio          string         `json:"audio"`
+	Audios         []AudioJson    `json:"audios"`
 	Video          string         `json:"video" mapstructure:",omitempty"`
 	Model          string         `json:"model" mapstructure:",omitempty"`
 	Characteristic [][]any        `json:"characteristic" mapstructure:",omitempty"`

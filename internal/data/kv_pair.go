@@ -913,6 +913,8 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 			}
 			// insert class info
 			classInfos := make([]ClassInfo, len(kvPair.ClassInfos))
+			audios := make([]TokenClassAudio, 0)
+
 			for i, class := range kvPair.ClassInfos {
 				classInfos[i] = ClassInfo{
 					BlockNumber:    class.BlockNumber,
@@ -929,12 +931,29 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 					Properties:     class.Properties,
 					Localization:   class.Localization,
 				}
+
+				for i, audio := range class.Audios {
+					audios = append(audios, TokenClassAudio{
+						CotaId: class.CotaId,
+						Url:    audio.Url,
+						Name:   audio.Name,
+						Idx:    uint32(i),
+					})
+				}
 			}
+
 			if err := tx.Model(ClassInfo{}).WithContext(ctx).Clauses(clause.OnConflict{
 				Columns:   []clause.Column{{Name: "cota_id"}},
 				UpdateAll: true,
 			}).Create(classInfos).Error; err != nil {
 				return err
+			}
+
+			// insert audios
+			if len(audios) > 0 {
+				if err := rp.upsertAudios(tx, audios, ctx); err != nil {
+					return err
+				}
 			}
 		}
 		if kvPair.HasJoyIDInfos() {
@@ -1086,6 +1105,7 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 			}).Create(joyIDInfos).Error; err != nil {
 				return err
 			}
+
 			if len(subKeys) > 0 {
 				for _, subKey := range subKeys {
 					var oldSubkey SubKeyInfo
@@ -1116,6 +1136,18 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 		}
 		return nil
 	})
+}
+
+func (rp kvPairRepo) upsertAudios(tx *gorm.DB, audios []TokenClassAudio, ctx context.Context) error {
+	for _, audio := range audios {
+		if err := tx.Model(TokenClassAudio{}).WithContext(ctx).Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "cota_id"}, {Name: "idx"}},
+			DoUpdates: clause.AssignmentColumns([]string{"name", "url", "updated_at"}),
+		}).Create(&audio).Error; err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (rp kvPairRepo) RestoreMetadataKvPairs(ctx context.Context, blockNumber uint64) error {
