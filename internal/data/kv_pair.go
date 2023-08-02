@@ -1032,7 +1032,7 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 					}
 					if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 						subKeyVersions = append(subKeyVersions, SubKeyInfoVersion{
-							BlockNumber:          0,
+							BlockNumber:          sub.BlockNumber,
 							PubKey:               sub.PubKey,
 							CredentialId:         sub.CredentialId,
 							Alg:                  sub.Alg,

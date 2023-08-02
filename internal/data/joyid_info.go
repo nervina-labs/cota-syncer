@@ -157,6 +157,7 @@ func (repo joyIDInfoRepo) ParseJoyIDInfo(ctx context.Context, blockNumber uint64
 			err = ErrInvalidJoyIDInfo
 		}
 		subKeys[i] = biz.SubKeyInfo{
+			BlockNumber:          blockNumber,
 			LockHash:             lockHashStr,
 			PubKey:               remove0x(v.PubKey),
 			CredentialId:         remove0x(v.CredentialId),
