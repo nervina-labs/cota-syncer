@@ -1026,7 +1026,7 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 
 				for _, sub := range info.SubKeys {
 					var oldSub SubKeyInfo
-					err := tx.Model(SubKeyInfo{}).WithContext(ctx).Where("lock_hash = ? and pub_key = ?", info.LockHash, info.PubKey).First(&oldSub).Error
+					err := tx.Model(SubKeyInfo{}).WithContext(ctx).Where("lock_hash = ? and pub_key = ?", sub.LockHash, sub.PubKey).First(&oldSub).Error
 					if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 						return err
 					}
@@ -1063,7 +1063,7 @@ func (rp kvPairRepo) CreateMetadataKvPairs(ctx context.Context, checkInfo biz.Ch
 							TxIndex:                 info.TxIndex,
 							OldDerivationCId:        oldSub.DerivationCId,
 							DerivationCId:           sub.DerivationCId,
-							OldDerivationCommitment: oldInfo.DerivationCommitment,
+							OldDerivationCommitment: oldSub.DerivationCommitment,
 							DerivationCommitment:    sub.DerivationCommitment,
 						})
 					}
