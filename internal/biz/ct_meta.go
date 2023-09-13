@@ -23,6 +23,11 @@ type Localization struct {
 	Locales []string `json:"locales,omitempty" mapstructure:",omitempty"`
 }
 
+type Derivation struct {
+	CredentialId string `json:"credential_id" mapstructure:"credential_id,omitempty"`
+	Commitment   string `json:"commitment" mapstructure:"commitment,omitempty"`
+}
+
 type AudioJson struct {
 	Url  string `json:"url"`
 	Name string `json:"name"`
@@ -53,12 +58,13 @@ type IssuerInfoJson struct {
 }
 
 type SubKeyInfoJson struct {
-	PubKey       string `json:"pub_key" mapstructure:"pub_key,omitempty"`
-	CredentialId string `json:"credential_id" mapstructure:"credential_id,omitempty"`
-	Alg          string `json:"alg" mapstructure:"alg,omitempty"`
-	FrontEnd     string `json:"front_end" mapstructure:"front_end,omitempty"`
-	DeviceName   string `json:"device_name" mapstructure:"device_name,omitempty"`
-	DeviceType   string `json:"device_type" mapstructure:"device_type,omitempty"`
+	PubKey       string     `json:"pub_key" mapstructure:"pub_key,omitempty"`
+	CredentialId string     `json:"credential_id" mapstructure:"credential_id,omitempty"`
+	Alg          string     `json:"alg" mapstructure:"alg,omitempty"`
+	FrontEnd     string     `json:"front_end" mapstructure:"front_end,omitempty"`
+	DeviceName   string     `json:"device_name" mapstructure:"device_name,omitempty"`
+	DeviceType   string     `json:"device_type" mapstructure:"device_type,omitempty"`
+	Derivation   Derivation `json:"derivation" mapstructure:"derivation,omitempty"`
 }
 
 type JoyIDInfoJson struct {
@@ -74,6 +80,7 @@ type JoyIDInfoJson struct {
 	FrontEnd     string           `json:"front_end" mapstructure:"front_end,omitempty"`
 	DeviceName   string           `json:"device_name" mapstructure:"device_name,omitempty"`
 	DeviceType   string           `json:"device_type" mapstructure:"device_type,omitempty"`
+	Derivation   Derivation       `json:"derivation" mapstructure:"derivation,omitempty"`
 	SubKeys      []SubKeyInfoJson `json:"sub_keys" mapstructure:"sub_keys,omitempty"`
 }
 

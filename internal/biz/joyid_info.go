@@ -8,33 +8,37 @@ import (
 )
 
 type SubKeyInfo struct {
-	BlockNumber  uint64
-	LockHash     string
-	PubKey       string
-	CredentialId string
-	Alg          string
-	FrontEnd     string
-	DeviceName   string
-	DeviceType   string
+	BlockNumber          uint64
+	LockHash             string
+	PubKey               string
+	CredentialId         string
+	Alg                  string
+	FrontEnd             string
+	DeviceName           string
+	DeviceType           string
+	DerivationCId        string
+	DerivationCommitment string
 }
 
 type JoyIDInfo struct {
-	BlockNumber  uint64
-	LockHash     string
-	Version      string
-	PubKey       string
-	CredentialId string
-	Alg          string
-	FrontEnd     string
-	DeviceName   string
-	DeviceType   string
-	CotaCellId   string
-	Name         string
-	Avatar       string
-	Description  string
-	Extension    string
-	TxIndex      uint32
-	SubKeys      []SubKeyInfo
+	BlockNumber          uint64
+	LockHash             string
+	Version              string
+	PubKey               string
+	CredentialId         string
+	Alg                  string
+	FrontEnd             string
+	DeviceName           string
+	DeviceType           string
+	CotaCellId           string
+	Name                 string
+	Avatar               string
+	Description          string
+	Extension            string
+	DerivationCId        string
+	DerivationCommitment string
+	TxIndex              uint32
+	SubKeys              []SubKeyInfo
 }
 
 type JoyIDInfoRepo interface {
