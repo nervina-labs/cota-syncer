@@ -124,10 +124,18 @@ func (rp extensionPairRepo) parseSubKeyPairs(entries *smt.ExtensionEntries, bloc
 		key := subKeyLeafKeys.Get(i)
 		value := subKeyLeafValues.Get(i)
 
-		if extData, err = strconv.ParseInt(hex.EncodeToString(key.ExtData().RawData()), 10, 32); err != nil {
+		if extData, err = strconv.ParseInt(hex.EncodeToString(key.ExtData().AsSlice()), 16, 32); err != nil {
+			rp.logger.Errorf(context.TODO(), "as slice extData: %+v", key.ExtData().AsSlice())
 			return nil, err
 		}
+
+		if extData, err = strconv.ParseInt(hex.EncodeToString(key.ExtData().RawData()), 16, 32); err != nil {
+			rp.logger.Errorf(context.TODO(), "raw data extData: %+v", key.ExtData().RawData())
+			return nil, err
+		}
+
 		if algIndex, err = strconv.ParseInt(hex.EncodeToString(value.AlgIndex().RawData()), 10, 16); err != nil {
+			rp.logger.Errorf(context.TODO(), "algIndex: %+v", value.AlgIndex().RawData())
 			return nil, err
 		}
 		subKeys = append(subKeys, biz.SubKeyPair{
