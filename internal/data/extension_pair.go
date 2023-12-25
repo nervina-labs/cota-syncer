@@ -124,10 +124,10 @@ func (rp extensionPairRepo) parseSubKeyPairs(entries *smt.ExtensionEntries, bloc
 		key := subKeyLeafKeys.Get(i)
 		value := subKeyLeafValues.Get(i)
 
-		if extData, err = strconv.ParseInt(hex.EncodeToString(key.ExtData().RawData()), 10, 32); err != nil {
+		if extData, err = strconv.ParseInt(hex.EncodeToString(key.ExtData().RawData()), 16, 32); err != nil {
 			return nil, err
 		}
-		if algIndex, err = strconv.ParseInt(hex.EncodeToString(value.AlgIndex().RawData()), 10, 16); err != nil {
+		if algIndex, err = strconv.ParseInt(hex.EncodeToString(value.AlgIndex().RawData()), 16, 16); err != nil {
 			return nil, err
 		}
 		subKeys = append(subKeys, biz.SubKeyPair{
@@ -157,13 +157,13 @@ func (rp extensionPairRepo) parseSocialPairs(entries *smt.ExtensionEntries, bloc
 		return nil, nil
 	}
 
-	if recoveryMode, err = strconv.ParseInt(hex.EncodeToString(socialLeafValue.RecoveryMode().AsSlice()), 10, 8); err != nil {
+	if recoveryMode, err = strconv.ParseInt(hex.EncodeToString(socialLeafValue.RecoveryMode().AsSlice()), 16, 8); err != nil {
 		return nil, err
 	}
-	if must, err = strconv.ParseInt(hex.EncodeToString(socialLeafValue.Must().AsSlice()), 10, 8); err != nil {
+	if must, err = strconv.ParseInt(hex.EncodeToString(socialLeafValue.Must().AsSlice()), 16, 8); err != nil {
 		return nil, err
 	}
-	if total, err = strconv.ParseInt(hex.EncodeToString(socialLeafValue.Total().AsSlice()), 10, 8); err != nil {
+	if total, err = strconv.ParseInt(hex.EncodeToString(socialLeafValue.Total().AsSlice()), 16, 8); err != nil {
 		return nil, err
 	}
 
