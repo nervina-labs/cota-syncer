@@ -1296,7 +1296,7 @@ func (rp kvPairRepo) RestoreMetadataKvPairs(ctx context.Context, blockNumber uin
 			})
 		}
 		if len(updatedSubKeyInfos) > 0 {
-			if err := tx.Debug().Model(JoyIDInfo{}).WithContext(ctx).Clauses(clause.OnConflict{
+			if err := tx.Debug().Model(SubKeyInfo{}).WithContext(ctx).Clauses(clause.OnConflict{
 				Columns:   []clause.Column{{Name: "lock_hash"}},
 				UpdateAll: true,
 			}).Create(updatedSubKeyInfos).Error; err != nil {
