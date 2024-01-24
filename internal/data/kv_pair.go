@@ -730,7 +730,7 @@ func (rp kvPairRepo) RestoreCotaEntryKvPairs(ctx context.Context, blockNumber ui
 			})
 		}
 		if len(updatedSubKeyKvPairs) > 0 {
-			if err := tx.WithContext(ctx).Create(updatedExtensionPairs).Error; err != nil {
+			if err := tx.WithContext(ctx).Create(updatedSubKeyKvPairs).Error; err != nil {
 				return err
 			}
 		}
