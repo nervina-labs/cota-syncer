@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
 	"hash/crc32"
 	"strconv"
 	"strings"
@@ -125,10 +126,10 @@ func (rp extensionPairRepo) parseSubKeyPairs(entries *smt.ExtensionEntries, bloc
 		value := subKeyLeafValues.Get(i)
 
 		if extData, err = strconv.ParseInt(hex.EncodeToString(key.ExtData().RawData()), 16, 32); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("parse extData err: %w", err)
 		}
 		if algIndex, err = strconv.ParseInt(hex.EncodeToString(value.AlgIndex().RawData()), 16, 16); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("parse alg idx err: %w", err)
 		}
 		subKeys = append(subKeys, biz.SubKeyPair{
 			BlockNumber: blockNumber,
@@ -158,13 +159,13 @@ func (rp extensionPairRepo) parseSocialPairs(entries *smt.ExtensionEntries, bloc
 	}
 
 	if recoveryMode, err = strconv.ParseInt(hex.EncodeToString(socialLeafValue.RecoveryMode().AsSlice()), 16, 8); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parse recover mode err: %w", err)
 	}
 	if must, err = strconv.ParseInt(hex.EncodeToString(socialLeafValue.Must().AsSlice()), 16, 8); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parse must err: %w", err)
 	}
 	if total, err = strconv.ParseInt(hex.EncodeToString(socialLeafValue.Total().AsSlice()), 16, 8); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parse total err: %w", err)
 	}
 
 	lockScriptVec := socialLeafValue.Signers()

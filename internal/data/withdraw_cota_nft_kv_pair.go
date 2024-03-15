@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/binary"
 	"encoding/hex"
+	"fmt"
 	"hash/crc32"
 	"strconv"
 	"time"
 
+	"github.com/nervina-labs/cota-smt-go/smt"
 	"github.com/nervina-labs/cota-syncer/internal/biz"
 	"github.com/nervina-labs/cota-syncer/internal/logger"
-	"github.com/nervina-labs/cota-smt-go/smt"
 )
 
 var _ biz.WithdrawCotaNftKvPairRepo = (*withdrawCotaNftKvPairRepo)(nil)
@@ -100,7 +101,12 @@ func (rp withdrawCotaNftKvPairRepo) FindOrCreateScript(ctx context.Context, scri
 }
 
 func hashType(hashTypeStr string) (int64, error) {
-	return strconv.ParseInt(hashTypeStr, 16, 32)
+	t, err := strconv.ParseInt(hashTypeStr, 16, 32)
+	if err != nil {
+		return 0, fmt.Errorf("parse hash type: %s, err: %w", hashTypeStr, err)
+	}
+
+	return t, nil
 }
 
 func generateV0WithdrawKvPair(blockNumber uint64, entry biz.Entry, rp withdrawCotaNftKvPairRepo) (withdrawCotas []biz.WithdrawCotaNftKvPair, err error) {
