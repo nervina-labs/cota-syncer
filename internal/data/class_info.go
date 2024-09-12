@@ -113,6 +113,8 @@ func (repo classInfoRepo) ParseClassInfo(blockNumber uint64, txIndex uint32, cla
 	var classInfo biz.ClassInfoJson
 	err = mapstructure.Decode(classMeta, &classInfo)
 	if err != nil {
+		err = ErrInvalidClassInfo
+
 		return
 	}
 	characteristic, err := json.Marshal(classInfo.Characteristic)
